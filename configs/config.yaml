@@ -1,0 +1,3 @@
+datadir: '/Users/katalinvoss/Documents/Studium/PhD/Research/data/*/*.tsv' #change this to directory with folder to folders with different airr data
+output: '/Users/katalinvoss/Documents/Studium/PhD/Research/output/' #change this to directory where you want results to be saved
+simtool: 'partis'
