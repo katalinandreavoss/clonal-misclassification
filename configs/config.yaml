@@ -1,4 +1,7 @@
-datadir: '/home1/kavoss/data/' #'/Users/katalinvoss/Documents/Studium/PhD/Research/data/' #change this to directory with folder to folders with different airr data
-output: '/home1/kavoss/data/output/' #'/Users/katalinvoss/Documents/Studium/PhD/Research/output/' #change this to directory where you want results to be saved
+datadir: '/home1/kavoss/data/'
+#datadir: '/Users/katalinvoss/Documents/Studium/PhD/Research/data/' #change this to directory with folder to folders with different airr data
+output: '/home1/kavoss/data/output/'
+#output: '/Users/katalinvoss/Documents/Studium/PhD/Research/output/' #change this to directory where you want results to be saved
+partis: '/home1/kavoss/partis/bin/partis' #specifiy where partis is located
 #TODO: add argument simtool to snakefile
 #simtool: 'partis'
