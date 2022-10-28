@@ -16,7 +16,7 @@ do
     esac
 done
 
-$partis cache-parameters --infname $fasta  --parameter-dir $output --locus
+$partis cache-parameters --infname $fasta  --parameter-dir $output
 
 # partition the fasta file used in cache-parameters to create multi-hmm folder in the parameter directory
 #bin/partis partition --infname name.fasta --outfname name_pd.yaml --parameter-dir folder_name --count-parameters
