@@ -1,5 +1,7 @@
 # clonal-misclassification
 
+![Pipeline](https://github.com/katalinandreavoss/clonal-misclassification/blob/main/dag.svg?raw=true)
+
 ## Download-data
 
 ``tsv_to_fasta.py`` converts iReceptor data into a fasta file
