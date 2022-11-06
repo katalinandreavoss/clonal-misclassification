@@ -46,9 +46,10 @@ rule simulate:
     input:
         fasta = OUTPUT + "{d}.fasta",
         script = 'partis/partis_simulation/simulate.sh',
+        partis = PARTIS
     output:
         out= OUTPUT + "{d}/"
     shell:
         "echo " + platform.node() + " >> {log} && \
         mkdir {output.out} && \
-        sh {input.script} -f {input.fasta} -o {output.out} -p PARTIS &&>> {log}"
+        sh {input.script} -f {input.fasta} -p {input.partis} -o {output.out} &&>> {log}"
