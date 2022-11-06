@@ -13,11 +13,10 @@ do
         p) partis=${OPTARG};;
         f) fasta=${OPTARG};;
         o) output=${OPTARG};;
-        l) locus=${OPTARG};;
     esac
 done
 
-$partis cache-parameters --infname $fasta  --parameter-dir $output --locus $locus
+$partis cache-parameters --infname $fasta  --parameter-dir $output
 
 # partition the fasta file used in cache-parameters to create multi-hmm folder in the parameter directory
 $partis partition --infname $fasta --outfname $output/pd.yaml --parameter-dir $output --count-parameters
