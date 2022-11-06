@@ -51,4 +51,4 @@ rule simulate:
     shell:
         "echo " + platform.node() + " >> {log} && \
         mkdir {output.out} && \
-        sh {input.script} -f {input.fasta} -o {output.out} &&>> {log}"
+        sh {input.script} -f {input.fasta} -o {output.out} -p PARTIS &&>> {log}"
