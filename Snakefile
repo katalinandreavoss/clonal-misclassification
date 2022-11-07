@@ -39,7 +39,7 @@ rule tsv_to_fasta:
 #simulation partis    
 rule simulate:
     resources:
-        mem="10G",
+        mem="50G",
     threads: 2
     log: os.path.join(DATADIR, "logs", "simulate_{d}.log")
     input:
