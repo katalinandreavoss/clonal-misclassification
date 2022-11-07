@@ -36,8 +36,7 @@ rule tsv_to_fasta:
         python {input.script} -i {input.tsv} -o {output.fasta} &&>> {log}"
 
 
-#simulation partis 
-#TODO: make flexible for multiple loci    
+#simulation partis    
 rule simulate:
     resources:
         mem="10G",
@@ -53,3 +52,20 @@ rule simulate:
         "echo " + platform.node() + " >> {log} && \
         mkdir {output.out} && \
         sh {input.script} -f {input.fasta} -p {input.partis} -o {output.out} &&>> {log}"
+
+#simulation partis    
+#rule simulate:
+#    resources:
+#        mem="10G",
+#    threads: 2
+#    log: os.path.join(DATADIR, "logs", "simulate_{d}.log")
+#    input:
+#        fasta = OUTPUT + "{d}.fasta",
+#        script = 'partis/partis_simulation/simulate.sh',
+#        partis = PARTIS
+#    output:
+#        out= OUTPUT + "{d}/"
+#    shell:
+#        "echo " + platform.node() + " >> {log} && \
+#        mkdir {output.out} && \
+#        sh {input.script} -f {input.fasta} -p {input.partis} -o {output.out} &&>> {log}"
