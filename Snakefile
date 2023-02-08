@@ -15,6 +15,8 @@ data = glob.glob(DATADIR+"*/*.tsv")
 
 data = [d.split('.')[0].split('/')[-2] for d in data]
 
+wildcard_constraints:
+    d = "[a-zA-Z]+\d"
 
 rule result:
     input:
@@ -39,17 +41,22 @@ rule tsv_to_fasta:
 #simulation partis    
 rule simulate:
     resources:
-        mem="50G",
-    threads: 2
+        mem="100G",
+    threads: 1
     log: os.path.join(DATADIR, "logs", "simulate_{d}.log")
     input:
         fasta = OUTPUT + "{d}.fasta",
         script = 'partis/partis_simulation/simulate.sh',
         partis = PARTIS
     output:
-        out= OUTPUT + "{d}/"
+        out = directory(OUTPUT + "{d}/")
     shell:
-        "echo " + platform.node() + " >> {log} && \
+        "module purge && \
+        module load gcc/8.3.0 && \
+        module load gsl/2.5 && \
+        module load git && \
+        export PATH=/home1/kavoss/anaconda2/bin:$PATH && \
+        echo " + platform.node() + " >> {log} && \
         mkdir {output.out} && \
         sh {input.script} -f {input.fasta} -p {input.partis} -o {output.out} &&>> {log}"
 
@@ -61,6 +68,7 @@ rule simulate:
 #    log: os.path.join(DATADIR, "logs", "simulate_{d}.log")
 #    input:
 #        fasta = OUTPUT + "{d}.fasta",
+
 #        script = 'partis/partis_simulation/simulate.sh',
 #        partis = PARTIS
 #    output:

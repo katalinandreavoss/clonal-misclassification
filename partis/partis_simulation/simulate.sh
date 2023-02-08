@@ -1,3 +1,4 @@
+#!/bin/bash
 ##### Code to simulate sequences #####
 ## simulate sequences in partis
 
@@ -19,14 +20,14 @@ done
 $partis cache-parameters --infname $fasta  --parameter-dir $output --outfname $output/simu.yaml
 
 # partition the fasta file used in cache-parameters to create multi-hmm folder in the parameter directory
-$partis partition --infname $fasta --outfname $output/pd.yaml --parameter-dir $output --count-parameters
+#$partis partition --infname $fasta --outfname $output/pd.yaml --parameter-dir $output --count-parameters
 
 ##### Step 2: Simulate Sequences #####
 
 ## simulate and rearrange from scratch:
 
 #set x for number of desired simulations $(seq 1 x)
-for i in $(seq 1 5); do echo “$i”; $partis simulate --parameter-dir $output --n-sim-events integer --outfname $i.yaml; done
+#for i in $(seq 1 5); do echo “$i”; $partis simulate --parameter-dir $output --n-sim-events integer --outfname $i.yaml; done
  
 
 #########################################################################################################################
