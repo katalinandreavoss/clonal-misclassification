@@ -20,7 +20,7 @@ wildcard_constraints:
 
 rule result:
     input:
-        expand(OUTPUT + "{d}/", d=data)
+        expand(OUTPUT + "{d}/*.yaml", d=data)
         
 #turn tsv into fasta     
 rule tsv_to_fasta:
@@ -72,7 +72,7 @@ rule partion_simulate:
         partis = PARTIS,
         out = directory(OUTPUT + "{d}/")
     output:
-        out= OUTPUT + "{d}/pd.yaml"
+        out= OUTPUT + "{d}/*.yaml"
     shell:
         "module purge && \
         module load gcc/8.3.0 && \
