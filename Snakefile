@@ -68,7 +68,7 @@ rule partion_simulate:
     log: os.path.join(DATADIR, "logs", "partition_simulate_{d}.log")
     input:
         fasta = OUTPUT + "{d}.fasta",
-        script = 'partis/partis_simulation/partion_simulate.sh',
+        script = 'partis/partis_simulation/partition_simulate_simulate.sh',
         partis = PARTIS,
         out = directory(OUTPUT + "{d}/")
     output:
