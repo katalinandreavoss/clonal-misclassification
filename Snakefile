@@ -61,16 +61,16 @@ rule simulate:
         sh {input.script} -f {input.fasta} -p {input.partis} -o {output.out} &&>> {log}"
 
 #simulation partis    
-rule partion_simulate:
+rule partition_simulate:
     resources:
         mem="50G",
     threads: 10
     log: os.path.join(DATADIR, "logs", "partition_simulate_{d}.log")
     input:
         fasta = OUTPUT + "{d}.fasta",
-        script = 'partis/partis_simulation/partition_simulate_simulate.sh',
+        script = 'partis/partis_simulation/partition_simulate.sh',
         partis = PARTIS,
-        out = directory(OUTPUT + "{d}/")
+        out = OUTPUT + "{d}/"
     output:
         out= OUTPUT + "{d}/*.yaml"
     shell:
