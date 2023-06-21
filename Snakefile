@@ -42,7 +42,7 @@ rule tsv_to_fasta:
 rule simulate:
     resources:
         mem="20G",
-    threads: 1
+    threads: 10
     log: os.path.join(DATADIR, "logs", "simulate_{d}.log")
     input:
         fasta = OUTPUT + "{d}.fasta",
@@ -61,19 +61,24 @@ rule simulate:
         sh {input.script} -f {input.fasta} -p {input.partis} -o {output.out} &&>> {log}"
 
 #simulation partis    
-#rule simulate:
-#    resources:
-#        mem="10G",
-#    threads: 2
-#    log: os.path.join(DATADIR, "logs", "simulate_{d}.log")
-#    input:
-#        fasta = OUTPUT + "{d}.fasta",
-
-#        script = 'partis/partis_simulation/simulate.sh',
-#        partis = PARTIS
-#    output:
-#        out= OUTPUT + "{d}/"
-#    shell:
-#        "echo " + platform.node() + " >> {log} && \
-#        mkdir {output.out} && \
-#        sh {input.script} -f {input.fasta} -p {input.partis} -o {output.out} &&>> {log}"
+rule partion_simulate:
+    resources:
+        mem="50G",
+    threads: 10
+    log: os.path.join(DATADIR, "logs", "partition_simulate_{d}.log")
+    input:
+        fasta = OUTPUT + "{d}.fasta",
+        script = 'partis/partis_simulation/partion_simulate.sh',
+        partis = PARTIS,
+        out = directory(OUTPUT + "{d}/")
+    output:
+        out= OUTPUT + "{d}/pd.yaml"
+    shell:
+        "module purge && \
+        module load gcc/8.3.0 && \
+        module load gsl/2.5 && \
+        module load git && \
+        export PATH=/home1/kavoss/anaconda2/bin:$PATH && \
+        echo " + platform.node() + " >> {log} && \
+        mkdir {output.out} && \
+        sh {input.script} -f {input.fasta} -p {input.partis} -o {input.out} &&>> {log}"
