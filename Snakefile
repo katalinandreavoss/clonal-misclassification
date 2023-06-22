@@ -80,5 +80,4 @@ rule partition_simulate:
         module load git && \
         export PATH=/home1/kavoss/anaconda2/bin:$PATH && \
         echo " + platform.node() + " >> {log} && \
-        mkdir {output.out} && \
         sh {input.script} -f {input.fasta} -p {input.partis} -o {input.out} &&>> {log}"
