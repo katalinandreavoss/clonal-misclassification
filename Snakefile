@@ -86,8 +86,8 @@ rule partition_simulate:
 rule analyze_partis_output:
      resources:
             mem="50G",
-        threads: 10
-        log: os.path.join(DATADIR, "logs", "analyze_partis_output_{d}.log")
+     threads: 10
+     log: os.path.join(DATADIR, "logs", "analyze_partis_output_{d}.log")
      input:
         yaml = OUTPUT + "{d}.yaml",
         script1 = 'analyze_partis_simulation_output/yaml_to_families.py',
