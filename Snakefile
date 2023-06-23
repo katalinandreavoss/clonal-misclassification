@@ -81,3 +81,24 @@ rule partition_simulate:
         export PATH=/home1/kavoss/anaconda2/bin:$PATH && \
         echo " + platform.node() + " >> {log} && \
         sh {input.script} -f {input.fasta} -p {input.partis} -o {input.out} &&>> {log}"
+
+#analyze_partis_output
+rule analyze_partis_output:
+     resources:
+            mem="50G",
+        threads: 10
+        log: os.path.join(DATADIR, "logs", "analyze_partis_output_{d}.log")
+     input:
+        yaml = OUTPUT + "{d}.yaml",
+        script1 = 'analyze_partis_simulation_output/yaml_to_families.py',
+        script2 = 'analyze_partis_simulation_output/partition_to_fasta.py',
+        out = OUTPUT + "{d}/*.yaml"
+    output:
+        partitions = OUTPUT + "{d}/partitions.txt",
+        naive = OUTPUT + "{d}/naive.txt"
+    shell:
+        "echo " + platform.node() + " >> {log} && \
+        python {input.script1} {input.yaml} {output.partitions} {output.naive} &&>> {log}" && \
+        python {input.script2} {input.yaml} {output.partitions} &&>> {log}"
+
+
