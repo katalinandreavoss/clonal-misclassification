@@ -94,7 +94,7 @@ rule simulate:
         partis = PARTIS,
         out = OUTPUT + "{d}/"
     output:
-        out= OUTPUT + "{d}/pd.yaml"
+        out= OUTPUT + "{d}/sim_1.yaml"
     shell:
         "module purge && \
         module load gcc/8.3.0 && \
