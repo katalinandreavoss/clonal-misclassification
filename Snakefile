@@ -38,15 +38,15 @@ rule tsv_to_fasta:
         python {input.script} -i {input.tsv} -o {output.fasta} &&>> {log}"
 
 
-#simulation partis    
-rule simulate:
+#cache_parameters partis
+rule cache_parameters:
     resources:
         mem="20G",
     threads: 10
-    log: os.path.join(DATADIR, "logs", "simulate_{d}.log")
+    log: os.path.join(DATADIR, "logs", "cache_parameters_{d}.log")
     input:
         fasta = OUTPUT + "{d}.fasta",
-        script = 'partis/partis_simulation/simulate.sh',
+        script = 'partis/partis_simulation/cache_parameters.sh',
         partis = PARTIS
     output:
         out = directory(OUTPUT + "{d}/")
@@ -60,15 +60,15 @@ rule simulate:
         mkdir {output.out} && \
         sh {input.script} -f {input.fasta} -p {input.partis} -o {output.out} &&>> {log}"
 
-#simulation partis    
-rule partition_simulate:
+#partition partis
+rule partition:
     resources:
         mem="100G",
     threads: 10
-    log: os.path.join(DATADIR, "logs", "partition_simulate_{d}.log")
+    log: os.path.join(DATADIR, "logs", "partition_{d}.log")
     input:
         fasta = OUTPUT + "{d}.fasta",
-        script = 'partis/partis_simulation/partition_simulate.sh',
+        script = 'partis/partis_simulation/partition.sh',
         partis = PARTIS,
         out = OUTPUT + "{d}/"
     output:
@@ -81,6 +81,28 @@ rule partition_simulate:
         export PATH=/home1/kavoss/anaconda2/bin:$PATH && \
         echo " + platform.node() + " >> {log} && \
         sh {input.script} -f {input.fasta} -p {input.partis} -o {input.out} &&>> {log}"
+
+#simulation partis
+rule simulate:
+    resources:
+        mem="100G",
+    threads: 10
+    log: os.path.join(DATADIR, "logs", "simulate_{d}.log")
+    input:
+        fasta = OUTPUT + "{d}.fasta",
+        script = 'partis/partis_simulation/simulate.sh',
+        partis = PARTIS,
+        out = OUTPUT + "{d}/"
+    output:
+        out= OUTPUT + "{d}/pd.yaml"
+    shell:
+        "module purge && \
+        module load gcc/8.3.0 && \
+        module load gsl/2.5 && \
+        module load git && \
+        export PATH=/home1/kavoss/anaconda2/bin:$PATH && \
+        echo " + platform.node() + " >> {log} && \
+        sh {input.script} -p {input.partis} -o {input.out} &&>> {log}"
 
 #analyze_partis_output
 #rule analyze_partis_output:
