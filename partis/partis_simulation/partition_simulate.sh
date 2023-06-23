@@ -11,7 +11,7 @@ do
 done
 
 # partition the fasta file used in cache-parameters to create multi-hmm folder in the parameter directory
-$partis partition --infname $fasta --outfname $output/pd.yaml --parameter-dir $output --count-parameters
+$partis partition --infname $fasta --outfname $output/pd.yaml --parameter-dir $output --count-parameters --min-observations-per-gene 5
 
 ##### Step 2: Simulate Sequences #####
 
