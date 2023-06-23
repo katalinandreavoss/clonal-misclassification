@@ -63,7 +63,7 @@ rule simulate:
 #simulation partis    
 rule partition_simulate:
     resources:
-        mem="50G",
+        mem="100G",
     threads: 10
     log: os.path.join(DATADIR, "logs", "partition_simulate_{d}.log")
     input:
