@@ -20,7 +20,7 @@ wildcard_constraints:
 
 rule result:
     input:
-        expand(OUTPUT + "{d}/*.yaml", d=data)
+        expand(OUTPUT + "{d}/pd.yaml", d=data)
         
 #turn tsv into fasta     
 rule tsv_to_fasta:
