@@ -72,7 +72,7 @@ rule partition_simulate:
         partis = PARTIS,
         out = OUTPUT + "{d}/"
     output:
-        out= OUTPUT + "{d}/*.yaml"
+        out= OUTPUT + "{d}/pd.yaml"
     shell:
         "module purge && \
         module load gcc/8.3.0 && \
