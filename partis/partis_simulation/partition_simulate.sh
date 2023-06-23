@@ -18,7 +18,7 @@ $partis partition --infname $fasta --outfname $output/pd.yaml --parameter-dir $o
 ## simulate and rearrange from scratch:
 
 #set x for number of desired simulations $(seq 1 x)
-for i in $(seq 1 5); do
-  echo "$i";
-  $partis simulate --parameter-dir $output --n-sim-events ${i} --outfname sim_${i}.yaml --min-observations-per-gene 5 --n-leaf-distribution geometric;
-done
+#for i in $(seq 1 5); do
+#  echo "$i";
+#  $partis simulate --parameter-dir $output --n-sim-events ${i} --outfname sim_${i}.yaml --min-observations-per-gene 5 --n-leaf-distribution geometric;
+#done
