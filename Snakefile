@@ -5,7 +5,6 @@ import os
 
 configfile: "configs/config.yaml"
 
-
 #specify DATADIR where data is saved and OUTPUT where results are saved
 DATADIR=config['datadir']
 OUTPUT=config['output']
@@ -48,7 +47,7 @@ rule cache_parameters:
     input:
         fasta = OUTPUT + "{d}.fasta",
         script = 'partis/partis_simulation/cache_parameters.sh',
-        partis = PARTIS
+        partis = PARTIS+"bin/partis"
     output:
         out = directory(OUTPUT + "{d}/")
     shell:
@@ -70,7 +69,7 @@ rule partition:
     input:
         fasta = OUTPUT + "{d}.fasta",
         script = 'partis/partis_simulation/partition.sh',
-        partis = PARTIS,
+        partis = PARTIS+"bin/partis",
         out = OUTPUT + "{d}/"
     output:
         out= OUTPUT + "{d}/pd.yaml"
@@ -92,7 +91,7 @@ rule simulate:
     input:
         fasta = OUTPUT + "{d}.fasta",
         script = 'partis/partis_simulation/simulate.sh',
-        partis = PARTIS,
+        partis = PARTIS+"bin/partis",
         out = OUTPUT + "{d}/"
     output:
         out= OUTPUT + "{d}/sim_1.yaml"
@@ -102,6 +101,7 @@ rule simulate:
         module load gsl/2.5 && \
         module load git && \
         export PATH=/home1/kavoss/anaconda2/bin:$PATH && \
+        export LD_LIBRARY_PATH={input.partis}/packages/bpp-newlik/_build/lib64:$LD_LIBRARY_PATH && \
         echo " + platform.node() + " >> {log} && \
         sh {input.script} -p {input.partis} -o {input.out} &&>> {log}"
 
