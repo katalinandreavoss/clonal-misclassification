@@ -94,7 +94,7 @@ rule simulate:
         out = OUTPUT + "{d}/",
         yaml = OUTPUT + "{d}/pd.yaml"
     output:
-        out= OUTPUT + "{d}/sim_1.yaml"
+        out= OUTPUT + "{d}/sim_250.yaml"
     shell:
         "module purge && \
         module load gcc/8.3.0 && \
