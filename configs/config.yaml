@@ -1,8 +1,8 @@
-datadir: '/home1/kavoss/data/'
-#datadir: '/home1/kavoss/test_data/'
-#output: '/home1/kavoss/test_data/output/'
-output: '/home1/kavoss/data/output/'
+#datadir: '/home1/kavoss/data/'
+datadir: '/home1/kavoss/test_data/'
+output: '/home1/kavoss/test_data/output/'
+#output: '/home1/kavoss/data/output/'
 #output: '/Users/katalinvoss/Documents/Studium/PhD/Research/output/' #change this to directory where you want results to be saved
-partis: '/home1/kavoss/partis_without_simulation/partis/' #specifiy where partis is located
+partis: '/home1/kavoss/partis_with_simulation/partis/' #specifiy where partis is located
 #TODO: add argument simtool to snakefile
 #simtool: 'partis'
