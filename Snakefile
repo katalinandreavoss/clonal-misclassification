@@ -19,7 +19,6 @@ wildcard_constraints:
 
 rule result:
     input:
-        expand(OUTPUT + "{d}/pd.yaml", d=data),
         expand(OUTPUT + "{d}/sim_1.yaml", d=data)
         
 #turn tsv into fasta     
@@ -92,7 +91,8 @@ rule simulate:
         fasta = OUTPUT + "{d}.fasta",
         script = 'partis/partis_simulation/simulate.sh',
         partis = PARTIS+"bin/partis",
-        out = OUTPUT + "{d}/"
+        out = OUTPUT + "{d}/",
+        yaml = OUTPUT + "{d}/pd.yaml
     output:
         out= OUTPUT + "{d}/sim_1.yaml"
     shell:
