@@ -92,7 +92,7 @@ rule simulate:
         script = 'partis/partis_simulation/simulate.sh',
         partis = PARTIS+"bin/partis",
         out = OUTPUT + "{d}/",
-        yaml = OUTPUT + "{d}/pd.yaml
+        yaml = OUTPUT + "{d}/pd.yaml"
     output:
         out= OUTPUT + "{d}/sim_1.yaml"
     shell:
