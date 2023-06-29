@@ -14,8 +14,9 @@ for key,val in conf.items():
     if key == "partitions":
         n_partitions = len(key)
         for i in range(n_partitions):
-            result = subprocess.run(["python", partis_dir+"/bin/parse-output.py", yaml_file, output_dir+"/partition_"+str(i)+".fasta"  "--partition-index", i], capture_output=True, text=True, check=False)
-            print(result.stdout)
+            result = subprocess.Popen(["python", partis_dir+"/bin/parse-output.py", yaml_file, output_dir+"/partition_"+str(i)+".fasta"  "--partition-index", i])
+            stdout, stderr = result.communicate()
+            print(stdout)
             #print("partition"+str(i))
 
         #for e in val:
