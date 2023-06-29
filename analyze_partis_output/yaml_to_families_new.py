@@ -1,16 +1,13 @@
 import sys
 import subprocess
 import yaml
-from pathlib import Path
 
 yaml_file = sys.argv[1]  # .yaml file from partis partition as input
 partis_dir = sys.argv[2]
 output_dir = sys.argv[3]
 
-#c1 = open(sys.argv[2], "w")  # .txt file for partitions with sequences in one file
-#c2 = open(sys.argv[3], "w")
-
-conf = yaml.safe_load(Path(yaml_file).read_text())
+#conf = yaml.safe_load(Path(yaml_file).read_text())
+conf = yaml.load(open(yaml_file), Loader=yaml.Loader)
 
 n=0
 for key,val in conf.items():
