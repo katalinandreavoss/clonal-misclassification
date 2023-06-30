@@ -62,8 +62,8 @@ rule cache_parameters:
 #partition partis
 rule partition:
     resources:
-        mem="125G",
-    threads: 10
+        mem="100G",
+    threads: 100
     log: os.path.join(DATADIR, "logs", "partition_{d}.log")
     input:
         fasta = OUTPUT + "{d}.fasta",
