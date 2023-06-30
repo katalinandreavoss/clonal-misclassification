@@ -106,21 +106,21 @@ rule simulate:
         sh {input.script} -p {input.partis} -o {input.out} &&>> {log}"
 
 #analyze_partis_output
-rule analyze_partis_output:
-     resources:
-            mem="50G",
-     threads: 10
-     log: os.path.join(DATADIR, "logs", "analyze_partis_output_{d}.log")
-     input:
-        yaml = OUTPUT + "{d}.yaml",
-        script1 = 'analyze_partis_output/yaml_to_families_news.py',
-        prev = OUTPUT + "{d}/pd.yaml",
-        partis = PARTIS+"bin/partis"
-    output:
-        out = OUTPUT + "{d}/partitions/"
-    shell:
-        "echo " + platform.node() + " >> {log} && \
-        mkdir  {input.out} && \
-        python {input.script1} {input.yaml} {input.partis} {input.out} &&>> {log}"
+#rule analyze_partis_output:
+#     resources:
+#            mem="50G",
+#     threads: 10
+#     log: os.path.join(DATADIR, "logs", "analyze_partis_output_{d}.log")
+#     input:
+#        yaml = OUTPUT + "{d}.yaml",
+#        script1 = 'analyze_partis_output/yaml_to_families_news.py',
+#        prev = OUTPUT + "{d}/pd.yaml",
+#        partis = PARTIS+"bin/partis"
+#    output:
+#        out = OUTPUT + "{d}/partitions/"
+#    shell:
+#        "echo " + platform.node() + " >> {log} && \
+#        mkdir  {input.out} && \
+#        python {input.script1} {input.yaml} {input.partis} {input.out} &&>> {log}"
 
 
