@@ -62,7 +62,7 @@ rule cache_parameters:
 #partition partis
 rule partition:
     resources:
-        mem="100G",
+        mem="150G",
     threads: 10
     log: os.path.join(DATADIR, "logs", "partition_{d}.log")
     input:
@@ -108,7 +108,7 @@ rule simulate:
 #analyze_partis_output
 #rule analyze_partis_output:
 #     resources:
-#            mem="50G",
+#        mem="50G",
 #     threads: 10
 #     log: os.path.join(DATADIR, "logs", "analyze_partis_output_{d}.log")
 #     input:
