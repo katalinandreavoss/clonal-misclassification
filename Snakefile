@@ -10,6 +10,7 @@ DATADIR=config['datadir']
 OUTPUT=config['output']
 PARTIS=config['partis']
 HAMPARTIS=config['ham_partis']
+RAXML=config['raxml']
 
 data = glob.glob(DATADIR+"*/*.tsv")
 
@@ -114,7 +115,7 @@ rule simulate:
 #     log: os.path.join(DATADIR, "logs", "analyze_partis_output_{d}.log")
 #     input:
 #        yaml = OUTPUT + "{d}.yaml",
-#        script1 = 'analyze_partis_output/yaml_to_families_news.py',
+#        script = 'analyze_partis_output/yaml_to_families_news.py',
 #        prev = OUTPUT + "{d}/pd.yaml",
 #        partis = PARTIS+"bin/partis"
 #    output:
@@ -122,6 +123,45 @@ rule simulate:
 #    shell:
 #        "echo " + platform.node() + " >> {log} && \
 #        mkdir  {input.out} && \
-#        python {input.script1} {input.yaml} {input.partis} {input.out} &&>> {log}"
+#        python {input.script} {input.yaml} {input.partis} {input.out} &&>> {log}"
+
+#rule align_partitions:
+#     resources:
+#        mem="50G",
+#     threads: 10
+#     log: os.path.join(DATADIR, "logs", "align_partitions_{d}.log")
+#     input:
+#        partitions = OUTPUT + "{d}/partitions/",
+#        script = 'tree_building/align_partitions.sh'
+#    output:
+#        out = OUTPUT + "{d}/partitions_aligned/"
+#    shell:
+#        "echo " + platform.node() + " >> {log} && \
+#        mkdir  {output.out} && \
+#        sh {input.script} -d {input.partitions} -o {output.out} &&>> {log}"
+
+
+#rule build_tree:
+#     resources:
+#        mem="50G",
+#     threads: 10
+#     log: os.path.join(DATADIR, "logs", "build_tree_{d}.log")
+#     input:
+#        partitions_aligned = OUTPUT + "{d}/partitions_aligned/",
+#        script = 'tree_building/build_tree.sh',
+#        raxml  = RAXML+"raxml-ng"
+#    output:
+#        out = OUTPUT + "{d}/tree_files/"
+#    shell:
+#        "echo " + platform.node() + " >> {log} && \
+#        mkdir  {output.out} && \
+#        sh {input.script} -r {input.raxml} -d {input.partitions} -o {output.out} &&>> {log}"
+
+
+
+
+
+
+
 
 
