@@ -9,6 +9,7 @@ configfile: "configs/config.yaml"
 DATADIR=config['datadir']
 OUTPUT=config['output']
 PARTIS=config['partis']
+HAMPARTIS=config['ham_partis']
 
 data = glob.glob(DATADIR+"*/*.tsv")
 
@@ -62,13 +63,13 @@ rule cache_parameters:
 #partition partis
 rule partition:
     resources:
-        mem="125G",
-    threads: 10
+        mem="150G",
+    threads: 100
     log: os.path.join(DATADIR, "logs", "partition_{d}.log")
     input:
         fasta = OUTPUT + "{d}.fasta",
         script = 'partis/partis_simulation/partition.sh',
-        partis = PARTIS+"bin/partis",
+        partis = HAMPARTIS+"bin/partis",
         out = OUTPUT + "{d}/"
     output:
         out= OUTPUT + "{d}/pd.yaml"
