@@ -3,5 +3,6 @@ output: '/home1/kavoss/data/output/'
 #datadir: '/home1/kavoss/test_data/'
 #output: '/home1/kavoss/test_data/output/' #change this to directory where you want results to be saved
 partis: '/home1/kavoss/partis_with_simulation/partis/' #specifiy where partis is located
+ham_partis: '/home1/kavoss/partis_without_simulation/partis/'
 #TODO: add argument simtool to snakefile
 #simtool: 'partis'
