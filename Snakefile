@@ -133,9 +133,9 @@ rule align_partitions:
      input:
         partitions = OUTPUT + "{d}/partitions/",
         script = 'tree_building/align_partitions.sh'
-    output:
+     output:
         out = OUTPUT + "{d}/partitions_aligned/"
-    shell:
+     shell:
         "echo " + platform.node() + " >> {log} && \
         mkdir  {output.out} && \
         sh {input.script} -d {input.partitions} -o {output.out} &&>> {log}"
@@ -150,9 +150,9 @@ rule build_tree:
         partitions_aligned = OUTPUT + "{d}/partitions_aligned/",
         script = 'tree_building/build_tree.sh',
         raxml  = RAXML+"raxml-ng"
-    output:
+     output:
         out = OUTPUT + "{d}/tree_files/"
-    shell:
+     shell:
         "echo " + platform.node() + " >> {log} && \
         mkdir  {output.out} && \
         sh {input.script} -r {input.raxml} -d {input.partitions} -o {output.out} &&>> {log}"
