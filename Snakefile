@@ -104,7 +104,7 @@ rule simulate:
         export PATH=/home1/kavoss/anaconda2/bin:$PATH && \
         echo " + platform.node() + " >> {log} && \
         mkdir {output.out_dir} && \
-        export LD_LIBRARY_PATH={input.partis}/packages/bpp-newlik/_build/lib64:$LD_LIBRARY_PATH && \
+        export LD_LIBRARY_PATH=/home1/kavoss/partis_with_simulation/partis/packages/bpp-newlik/_build/lib64:$LD_LIBRARY_PATH && \
         sh {input.script} -p {input.partis} -o {input.dir} &&>> {log}"
 
 #analyze_partis_output
