@@ -92,11 +92,10 @@ rule simulate:
     input:
         fasta = OUTPUT + "{d}.fasta",
         script = 'partis/partis_simulation/simulate.sh',
-        partis = PARTIS+"bin/partis",
-        out = OUTPUT + "{d}/",
-        yaml = OUTPUT + "{d}/pd.yaml"
+        partis = PARTIS+"bin/partis"
     output:
-        out= OUTPUT + "{d}/sim_250.yaml"
+        out_dir= OUTPUT + "{d}/simulations/
+        out= OUTPUT + "{d}/simulations/sim_250.yaml"
     shell:
         "module purge && \
         module load gcc/8.3.0 && \
@@ -104,26 +103,26 @@ rule simulate:
         module load git && \
         export PATH=/home1/kavoss/anaconda2/bin:$PATH && \
         export LD_LIBRARY_PATH={input.partis}/packages/bpp-newlik/_build/lib64:$LD_LIBRARY_PATH && \
+        mkdir
         echo " + platform.node() + " >> {log} && \
-        sh {input.script} -p {input.partis} -o {input.out} &&>> {log}"
+        sh {input.script} -p {input.partis} -o {output.out_dir} &&>> {log}"
 
 #analyze_partis_output
-#rule analyze_partis_output:
-#     resources:
-#        mem="50G",
-#     threads: 10
-#     log: os.path.join(DATADIR, "logs", "analyze_partis_output_{d}.log")
-#     input:
-#        yaml = OUTPUT + "{d}.yaml",
-#        script = 'analyze_partis_output/yaml_to_families_news.py',
-#        prev = OUTPUT + "{d}/pd.yaml",
-#        partis = PARTIS+"bin/partis"
-#    output:
-#        out = OUTPUT + "{d}/partitions/"
-#    shell:
-#        "echo " + platform.node() + " >> {log} && \
-#        mkdir  {input.out} && \
-#        python {input.script} {input.yaml} {input.partis} {input.out} &&>> {log}"
+rule analyze_partis_output:
+     resources:
+        mem="50G",´´
+     threads: 10
+     log: os.path.join(DATADIR, "logs", "analyze_partis_output_{d}.log")
+     input:
+        dir= OUTPUT + "{d}/simulations/",
+        script = 'analyze_partis_output/simulation_analysis.sh',
+        partis = PARTIS+"bin/partis"
+    output:
+        out = OUTPUT + "{d}/partitions/"
+    shell:
+        "echo " + platform.node() + " >> {log} && \
+        mkdir  {input.out} && \
+        sh {input.script} -d {input.dir} -p {input.partis} -o {input.out} &&>> {log}"
 
 #rule align_partitions:
 #     resources:
@@ -137,7 +136,7 @@ rule simulate:
 #        out = OUTPUT + "{d}/partitions_aligned/"
 #    shell:
 #        "echo " + platform.node() + " >> {log} && \
-#        mkdir  {output.out} && \
+#       mkdir  {output.out} && \
 #        sh {input.script} -d {input.partitions} -o {output.out} &&>> {log}"
 
 
