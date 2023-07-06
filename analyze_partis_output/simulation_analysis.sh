@@ -11,5 +11,7 @@ do
 done
 
 for simu in $directory/*sim_*.yaml; do
-  python analyze_partis_output/yaml_to_families_new.py ${simu} ${partis} ${output}
+  name=${simu%.yaml}
+  name=${name##*/}
+  python analyze_partis_output/yaml_to_families_new.py ${simu} ${partis} ${output}/${name}
 done
