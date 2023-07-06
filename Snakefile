@@ -92,7 +92,7 @@ rule simulate:
     log: os.path.join(DATADIR, "logs", "simulate_{d}.log")
     input:
         script = 'partis/partis_simulation/simulate.sh',
-        dir= directory(OUTPUT + "{d}/"),
+        dir= OUTPUT + "{d}/",
         partis = PARTIS+"bin/partis"
     output:
         out_dir = directory(OUTPUT + "{d}/simulations/")#,out= OUTPUT + "{d}/simulations/sim_250.yaml"
