@@ -91,11 +91,11 @@ rule simulate:
     threads: 10
     log: os.path.join(DATADIR, "logs", "simulate_{d}.log")
     input:
-        fasta = OUTPUT + "{d}.fasta",
         script = 'partis/partis_simulation/simulate.sh',
         partis = PARTIS+"bin/partis"
     output:
-        dir= directory(OUTPUT + "{d}/") #, out= OUTPUT + "{d}/simulations/sim_250.yaml"
+        dir= directory(OUTPUT + "{d}/"),
+        out_dir = directory(OUTPUT + "{d}/simulations/")#,out= OUTPUT + "{d}/simulations/sim_250.yaml"
     shell:
         "module purge && \
         module load gcc/8.3.0 && \
@@ -103,7 +103,7 @@ rule simulate:
         module load git && \
         export PATH=/home1/kavoss/anaconda2/bin:$PATH && \
         echo " + platform.node() + " >> {log} && \
-        mkdir {output.dir} && \
+        mkdir {output.out_dir} && \
         export LD_LIBRARY_PATH={input.partis}/packages/bpp-newlik/_build/lib64:$LD_LIBRARY_PATH && \
         sh {input.script} -p {input.partis} -o {output.dir} &&>> {log}"
 
