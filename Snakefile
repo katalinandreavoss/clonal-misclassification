@@ -98,7 +98,7 @@ rule simulate:
         out_dir= directory(OUTPUT + "{d}/simulations/"),
         out= OUTPUT + "{d}/simulations/sim_250.yaml"
     shell:
-        "module purge && >> {log} && \
+        "module purge >> {log} && \
         module load gcc/8.3.0 >> {log} && \
         module load gsl/2.5 >> {log} && \
         module load git >> {log} && \
