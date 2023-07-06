@@ -35,7 +35,7 @@ rule tsv_to_fasta:
     output:
         fasta= OUTPUT + "{d}.fasta"
     shell:
-        "echo " + platform.node() + " >> {log} && \
+        "echo " + platform.node() + " &>> {log} && \
         python {input.script} -i {input.tsv} -o {output.fasta} &&>> {log}"
 
 
@@ -52,14 +52,14 @@ rule cache_parameters:
     output:
         out = directory(OUTPUT + "{d}/")
     shell:
-        "module purge && \
-        module load gcc/8.3.0 && \
-        module load gsl/2.5 && \
-        module load git && \
-        export PATH=/home1/kavoss/anaconda2/bin:$PATH && \
-        echo " + platform.node() + " >> {log} && \
-        mkdir {output.out} && \
-        sh {input.script} -f {input.fasta} -p {input.partis} -o {output.out} &&>> {log}"
+        "module purge &>> {log} && \
+        module load gcc/8.3.0 &>> {log} && \
+        module load gsl/2.5 &>> {log} && \
+        module load git &>> {log} && \
+        export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
+        echo " + platform.node() + " &>> {log} && \
+        mkdir {output.out} &>> {log} && \
+        sh {input.script} -f {input.fasta} -p {input.partis} -o {output.out} &>> {log}"
 
 #partition partis
 rule partition:
@@ -76,13 +76,13 @@ rule partition:
     output:
         out= OUTPUT + "{d}/pd.yaml"
     shell:
-        "module purge && \
-        module load gcc/8.3.0 && \
-        module load gsl/2.5 && \
-        module load git && \
-        export PATH=/home1/kavoss/anaconda2/bin:$PATH && \
-        echo " + platform.node() + " >> {log} && \
-        sh {input.script} -f {input.fasta} -p {input.partis} -o {input.out} &&>> {log}"
+        "module purge &>> {log} && \
+        module load gcc/8.3.0 &>> {log} && \
+        module load gsl/2.5 &>> {log} && \
+        module load git &>> {log} && \
+        export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
+        echo " + platform.node() + " &>> {log} && \
+        sh {input.script} -f {input.fasta} -p {input.partis} -o {input.out} &>> {log}"
 
 #simulation partis
 rule simulate:
@@ -98,15 +98,15 @@ rule simulate:
         out_dir = directory(OUTPUT + "{d}/simulations/"),
         out= OUTPUT + "{d}/simulations/sim_5.yaml"
     shell:
-        "module purge && \
-        module load gcc/8.3.0 && \
-        module load gsl/2.5 && \
-        module load git && \
-        export PATH=/home1/kavoss/anaconda2/bin:$PATH && \
-        echo " + platform.node() + " >> {log} && \
-        mkdir {output.out_dir} && \
-        export LD_LIBRARY_PATH=/home1/kavoss/partis_with_simulation/partis/packages/bpp-newlik/_build/lib64:$LD_LIBRARY_PATH && \
-        sh {input.script} -p {input.partis} -o {input.dir} &&>> {log}"
+        "module purge &>> {log} && \
+        module load gcc/8.3.0 &>> {log} && \
+        module load gsl/2.5 &>> {log} && \
+        module load git &>> {log} && \
+        export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
+        echo " + platform.node() + " &>> {log} && \
+        mkdir {output.out_dir} &>> {log} && \
+        export LD_LIBRARY_PATH=/home1/kavoss/partis_with_simulation/partis/packages/bpp-newlik/_build/lib64:$LD_LIBRARY_PATH &>> {log} && \
+        sh {input.script} -p {input.partis} -o {input.dir} &>> {log}"
 
 #analyze_partis_output
 rule analyze_partis_output:
@@ -139,9 +139,9 @@ rule align_partitions:
         out = directory(OUTPUT + "{d}/partitions_aligned/"),
         align = OUTPUT + "{d}/partitions_aligned/sim_5_partition_0_aligned.fasta"
      shell:
-        "echo " + platform.node() + " >> {log} && \
-        mkdir  {output.out} && \
-        sh {input.script} -d {input.partitions} -o {output.out} &&>> {log}"
+        "echo " + platform.node() + " &>> {log} && \
+        mkdir  {output.out} &>> {log} && \
+        sh {input.script} -d {input.partitions} -o {output.out} &>> {log}"
 
 
 rule build_tree:
@@ -158,9 +158,9 @@ rule build_tree:
         out = directory(OUTPUT + "{d}/tree_files/"),
         tree = OUTPUT + "{d}/tree_files/sim_5_partition_0_tree_.raxml.bestTree"
      shell:
-        "echo " + platform.node() + " >> {log} && \
-        mkdir  {output.out} && \
-        sh {input.script} -r {input.raxml} -d {input.partitions_aligned} -o {output.out} &&>> {log}"
+        "echo " + platform.node() + " &>> {log} && \
+        mkdir  {output.out} &>> {log}  && \
+        sh {input.script} -r {input.raxml} -d {input.partitions_aligned} -o {output.out} &>> {log}"
 
 
 
