@@ -125,37 +125,37 @@ rule analyze_partis_output:
         mkdir  {output.out} && \
         sh {input.script} -d {input.dir} -p {input.partis} -o {output.out} &&>> {log}"
 
-#rule align_partitions:
-#     resources:
-#        mem="50G",
-#     threads: 10
-#     log: os.path.join(DATADIR, "logs", "align_partitions_{d}.log")
-#     input:
-#        partitions = OUTPUT + "{d}/partitions/",
-#        script = 'tree_building/align_partitions.sh'
-#    output:
-#        out = OUTPUT + "{d}/partitions_aligned/"
-#    shell:
-#        "echo " + platform.node() + " >> {log} && \
-#       mkdir  {output.out} && \
-#        sh {input.script} -d {input.partitions} -o {output.out} &&>> {log}"
+rule align_partitions:
+     resources:
+        mem="50G",
+     threads: 10
+     log: os.path.join(DATADIR, "logs", "align_partitions_{d}.log")
+     input:
+        partitions = OUTPUT + "{d}/partitions/",
+        script = 'tree_building/align_partitions.sh'
+    output:
+        out = OUTPUT + "{d}/partitions_aligned/"
+    shell:
+        "echo " + platform.node() + " >> {log} && \
+        mkdir  {output.out} && \
+        sh {input.script} -d {input.partitions} -o {output.out} &&>> {log}"
 
 
-#rule build_tree:
-#     resources:
-#        mem="50G",
-#     threads: 10
-#     log: os.path.join(DATADIR, "logs", "build_tree_{d}.log")
-#     input:
-#        partitions_aligned = OUTPUT + "{d}/partitions_aligned/",
-#        script = 'tree_building/build_tree.sh',
-#        raxml  = RAXML+"raxml-ng"
-#    output:
-#        out = OUTPUT + "{d}/tree_files/"
-#    shell:
-#        "echo " + platform.node() + " >> {log} && \
-#        mkdir  {output.out} && \
-#        sh {input.script} -r {input.raxml} -d {input.partitions} -o {output.out} &&>> {log}"
+rule build_tree:
+     resources:
+        mem="50G",
+     threads: 10
+     log: os.path.join(DATADIR, "logs", "build_tree_{d}.log")
+     input:
+        partitions_aligned = OUTPUT + "{d}/partitions_aligned/",
+        script = 'tree_building/build_tree.sh',
+        raxml  = RAXML+"raxml-ng"
+    output:
+        out = OUTPUT + "{d}/tree_files/"
+    shell:
+        "echo " + platform.node() + " >> {log} && \
+        mkdir  {output.out} && \
+        sh {input.script} -r {input.raxml} -d {input.partitions} -o {output.out} &&>> {log}"
 
 
 
