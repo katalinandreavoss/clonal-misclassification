@@ -122,7 +122,7 @@ rule analyze_partis_output:
         out = OUTPUT + "{d}/partitions/"
      shell:
         "echo " + platform.node() + " >> {log} && \
-        mkdir  {input.out} && \
+        mkdir  {output.out} && \
         sh {input.script} -d {input.dir} -p {input.partis} -o {output.out} &&>> {log}"
 
 #rule align_partitions:
