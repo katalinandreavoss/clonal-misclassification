@@ -98,14 +98,14 @@ rule simulate:
         out_dir= directory(OUTPUT + "{d}/simulations/"),
         out= OUTPUT + "{d}/simulations/sim_250.yaml"
     shell:
-        "module purge && \
-        module load gcc/8.3.0 && \
-        module load gsl/2.5 && \
-        module load git && \
-        export PATH=/home1/kavoss/anaconda2/bin:$PATH && \
+        "module purge && >> {log} && \
+        module load gcc/8.3.0 >> {log} && \
+        module load gsl/2.5 >> {log} && \
+        module load git >> {log} && \
+        export PATH=/home1/kavoss/anaconda2/bin:$PATH >> {log} && \
         echo " + platform.node() + " >> {log} && \
-        export LD_LIBRARY_PATH={input.partis}/packages/bpp-newlik/_build/lib64:$LD_LIBRARY_PATH &&>> {log}"
-        #mkdir {output.out_dir}
+        export LD_LIBRARY_PATH={input.partis}/packages/bpp-newlik/_build/lib64:$LD_LIBRARY_PATH >> {log} && \
+        mkdir {output.out_dir} >> {log}"
         #sh {input.script} -p {input.partis} -o {output.out_dir} &&
 
 #analyze_partis_output
