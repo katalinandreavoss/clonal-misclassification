@@ -5,7 +5,7 @@ import yaml
 yaml_file = sys.argv[1]  # .yaml file from partis partition as input
 partis_dir = sys.argv[2]
 output_dir = sys.argv[3]
-
+print("in python script")
 conf = yaml.load(open(yaml_file), Loader=yaml.Loader)
 
 for key,val in conf.items():
