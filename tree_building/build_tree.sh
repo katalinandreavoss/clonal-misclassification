@@ -13,7 +13,7 @@ done
 for fasta in $directory/*_aligned.fasta; do
   name=${fasta%_aligned.fasta}
   name=${name##*/}
-  ${raxml} -model GTR -msa ${fasta} -seed 42 -prefix ${output}_${name}_tree_ --search ML tree search
+  ${raxml} -model GTR -msa ${fasta} -seed 42 -prefix ${output}/_${name}_tree_ --search ML tree search
 done
 
 
