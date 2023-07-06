@@ -9,7 +9,7 @@ do
     esac
 done
 
-for fasta in $directory*.fasta; do
+for fasta in $directory/*.fasta; do
   name=${fasta%.fasta}
   name=${name##*/}
   echo $name
