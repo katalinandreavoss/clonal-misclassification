@@ -95,8 +95,7 @@ rule simulate:
         script = 'partis/partis_simulation/simulate.sh',
         partis = PARTIS+"bin/partis"
     output:
-        dir= directory(OUTPUT + "{d}/simulations/"),
-        out= OUTPUT + "{d}/simulations/sim_250.yaml"
+        dir= directory(OUTPUT + "{d}/simulations/") #, out= OUTPUT + "{d}/simulations/sim_250.yaml"
     shell:
         "module purge && \
         module load gcc/8.3.0 && \
@@ -104,8 +103,9 @@ rule simulate:
         module load git && \
         export PATH=/home1/kavoss/anaconda2/bin:$PATH && \
         echo " + platform.node() + " >> {log} && \
-        export LD_LIBRARY_PATH={input.partis}/packages/bpp-newlik/_build/lib64:$LD_LIBRARY_PATH && \
-        mkdir {output.dir} &&>> {log}"
+        mkdir {output.dir} && \
+        export LD_LIBRARY_PATH={input.partis}/packages/bpp-newlik/_build/lib64:$LD_LIBRARY_PATH &&>> {log}"
+        #mkdir {output.dir} &&>> {log}"
         #sh {input.script} -p {input.partis} -o {output.dir} &&>> {log}"
 
 #analyze_partis_output
