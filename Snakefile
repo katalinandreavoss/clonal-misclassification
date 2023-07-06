@@ -21,7 +21,7 @@ wildcard_constraints:
 
 rule result:
     input:
-        expand(OUTPUT + "{d}/partitions/", d=data)
+        expand(OUTPUT + "{d}/tree_files/", d=data)
         
 #turn tsv into fasta     
 rule tsv_to_fasta:
