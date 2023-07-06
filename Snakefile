@@ -21,7 +21,7 @@ wildcard_constraints:
 
 rule result:
     input:
-        expand(OUTPUT + "{d}/sim_250.yaml", d=data)
+        expand(OUTPUT + "{d}/simulations/sim_250.yaml", d=data)
         
 #turn tsv into fasta     
 rule tsv_to_fasta:
@@ -104,7 +104,7 @@ rule simulate:
         module load git && \
         export PATH=/home1/kavoss/anaconda2/bin:$PATH && \
         export LD_LIBRARY_PATH={input.partis}/packages/bpp-newlik/_build/lib64:$LD_LIBRARY_PATH && \
-        mkdir
+        mkdir {output.out_dir} && \
         echo " + platform.node() + " >> {log} && \
         sh {input.script} -p {input.partis} -o {output.out_dir} &&>> {log}"
 
