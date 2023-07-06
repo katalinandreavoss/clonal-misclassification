@@ -155,7 +155,7 @@ rule build_tree:
      shell:
         "echo " + platform.node() + " >> {log} && \
         mkdir  {output.out} && \
-        sh {input.script} -r {input.raxml} -d {input.partitions} -o {output.out} &&>> {log}"
+        sh {input.script} -r {input.raxml} -d {input.partitions_aligned} -o {output.out} &&>> {log}"
 
 
 
