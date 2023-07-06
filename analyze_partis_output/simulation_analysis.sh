@@ -10,6 +10,6 @@ do
     esac
 done
 
-for simu in $directory*sim_*.yaml; do
+for simu in $directory/*sim_*.yaml; do
   python analyze_partis_output/yaml_to_families_new.py ${simu} ${partis} ${output}
 done
