@@ -92,9 +92,9 @@ rule simulate:
     log: os.path.join(DATADIR, "logs", "simulate_{d}.log")
     input:
         script = 'partis/partis_simulation/simulate.sh',
+        dir= directory(OUTPUT + "{d}/"),
         partis = PARTIS+"bin/partis"
     output:
-        dir= directory(OUTPUT + "{d}/"),
         out_dir = directory(OUTPUT + "{d}/simulations/")#,out= OUTPUT + "{d}/simulations/sim_250.yaml"
     shell:
         "module purge && \
@@ -105,7 +105,7 @@ rule simulate:
         echo " + platform.node() + " >> {log} && \
         mkdir {output.out_dir} && \
         export LD_LIBRARY_PATH={input.partis}/packages/bpp-newlik/_build/lib64:$LD_LIBRARY_PATH && \
-        sh {input.script} -p {input.partis} -o {output.dir} &&>> {log}"
+        sh {input.script} -p {input.partis} -o {input.dir} &&>> {log}"
 
 #analyze_partis_output
 rule analyze_partis_output:
