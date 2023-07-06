@@ -104,7 +104,6 @@ rule simulate:
         module load git &>> {log} && \
         export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
         echo " + platform.node() + " &>> {log} && \
-        mkdir {output.out_dir} &>> {log} && \
         export LD_LIBRARY_PATH=/home1/kavoss/partis_with_simulation/partis/packages/bpp-newlik/_build/lib64:$LD_LIBRARY_PATH &>> {log} && \
         sh {input.script} -p {input.partis} -o {input.dir} &>> {log}"
 
