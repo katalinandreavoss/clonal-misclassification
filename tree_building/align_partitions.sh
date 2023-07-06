@@ -10,8 +10,8 @@ do
 done
 
 for fasta in $directory*.fasta; do
-  echo $fasta
   name=${fasta%.fasta}
+  name=${name##*/}
   echo $name
-  clustalo -i $fasta -t DNA -o ${name}_aligned.fasta
+  clustalo -i $fasta -t DNA -o ${output}/${name}_aligned.fasta
 done
