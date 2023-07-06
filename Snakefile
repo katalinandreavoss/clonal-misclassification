@@ -139,7 +139,6 @@ rule align_partitions:
         align = OUTPUT + "{d}/partitions_aligned/sim_5_partition_0_aligned.fasta"
      shell:
         "echo " + platform.node() + " &>> {log} && \
-        mkdir  {output.out} &>> {log} && \
         sh {input.script} -d {input.partitions} -o {output.out} &>> {log}"
 
 
@@ -158,7 +157,6 @@ rule build_tree:
         tree = OUTPUT + "{d}/tree_files/sim_5_partition_0_tree_.raxml.bestTree"
      shell:
         "echo " + platform.node() + " &>> {log} && \
-        mkdir  {output.out} &>> {log}  && \
         sh {input.script} -r {input.raxml} -d {input.partitions_aligned} -o {output.out} &>> {log}"
 
 
