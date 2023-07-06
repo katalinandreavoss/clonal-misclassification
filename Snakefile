@@ -21,7 +21,7 @@ wildcard_constraints:
 
 rule result:
     input:
-        expand(OUTPUT + "{d}/simulations/sim_250.yaml", d=data)
+        expand(OUTPUT + "{d}/partitions/sim_250.yaml", d=data)
         
 #turn tsv into fasta     
 rule tsv_to_fasta:
