@@ -116,7 +116,7 @@ rule analyze_partis_output:
      input:
         dir= OUTPUT + "{d}/simulations/",
         script = 'analyze_partis_output/simulation_analysis.sh',
-        partis = PARTIS+"bin/partis"
+        partis = PARTIS
      output:
         out = directory(OUTPUT + "{d}/partitions/")
      shell:
