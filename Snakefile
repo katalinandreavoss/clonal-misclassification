@@ -95,7 +95,8 @@ rule simulate:
         dir= OUTPUT + "{d}/",
         partis = PARTIS+"bin/partis"
     output:
-        out_dir = directory(OUTPUT + "{d}/simulations/")#,out= OUTPUT + "{d}/simulations/sim_250.yaml"
+        out_dir = directory(OUTPUT + "{d}/simulations/"),
+        out= OUTPUT + "{d}/simulations/sim_5.yaml"
     shell:
         "module purge && \
         module load gcc/8.3.0 && \
@@ -116,9 +117,11 @@ rule analyze_partis_output:
      input:
         dir= OUTPUT + "{d}/simulations/",
         script = 'analyze_partis_output/simulation_analysis.sh',
-        partis = PARTIS
+        partis = PARTIS,
+        sim_check = OUTPUT + "{d}/simulations/sim_5.yaml"
      output:
-        out = directory(OUTPUT + "{d}/partitions/")
+        out = directory(OUTPUT + "{d}/partitions/"),
+        partition = OUTPUT + "{d}/partitions/sim_5_partition_0.fasta"
      shell:
         "echo " + platform.node() + " >> {log} && \
         mkdir  {output.out} && \
@@ -131,9 +134,11 @@ rule align_partitions:
      log: os.path.join(DATADIR, "logs", "align_partitions_{d}.log")
      input:
         partitions = OUTPUT + "{d}/partitions/",
-        script = 'tree_building/align_partitions.sh'
+        script = 'tree_building/align_partitions.sh',
+        partition_check =  partition = OUTPUT + "{d}/partitions/sim_5_partition_0.fasta",
      output:
-        out = directory(OUTPUT + "{d}/partitions_aligned/")
+        out = directory(OUTPUT + "{d}/partitions_aligned/"),
+        align =  partition = OUTPUT + "{d}/partitions_aligned/sim_5_partition_0_aligned.fasta"
      shell:
         "echo " + platform.node() + " >> {log} && \
         mkdir  {output.out} && \
@@ -148,9 +153,11 @@ rule build_tree:
      input:
         partitions_aligned = OUTPUT + "{d}/partitions_aligned/",
         script = 'tree_building/build_tree.sh',
-        raxml  = RAXML+"raxml-ng"
+        raxml  = RAXML+"raxml-ng",
+        align_check =  partition = OUTPUT + "{d}/partitions_aligned/sim_5_partition_0_aligned.fasta"
      output:
-        out = directory(OUTPUT + "{d}/tree_files/")
+        out = directory(OUTPUT + "{d}/tree_files/"),
+        tree = OUTPUT + "{d}/tree_files/sim_5_partition_0_tree_.raxml.bestTree"
      shell:
         "echo " + platform.node() + " >> {log} && \
         mkdir  {output.out} && \
