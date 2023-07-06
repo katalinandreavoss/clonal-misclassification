@@ -95,7 +95,7 @@ rule simulate:
         script = 'partis/partis_simulation/simulate.sh',
         partis = PARTIS+"bin/partis"
     output:
-        out_dir= OUTPUT + "{d}/simulations/
+        out_dir= OUTPUT + "{d}/simulations/",
         out= OUTPUT + "{d}/simulations/sim_250.yaml"
     shell:
         "module purge && \
