@@ -125,7 +125,7 @@ rule analyze_partis_output:
      shell:
         "echo " + platform.node() + " >> {log} && \
         mkdir  {output.out} && \
-        sh {input.script} -d {input.dir} -p {input.partis} -o {output.out} &&>> {log}"
+        sh {input.script} -d {input.dir} -p {input.partis} -o {output.out} >> {log}"
 
 rule align_partitions:
      resources:
