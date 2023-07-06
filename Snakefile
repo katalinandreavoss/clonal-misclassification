@@ -95,17 +95,17 @@ rule simulate:
         script = 'partis/partis_simulation/simulate.sh',
         partis = PARTIS+"bin/partis"
     output:
-        out_dir= OUTPUT + "{d}/simulations/",
+        out_dir= directory(OUTPUT + "{d}/simulations/"),
         out= OUTPUT + "{d}/simulations/sim_250.yaml"
     shell:
-        "module purge && \
+        "echo " + platform.node() + " >> {log} && \
+        module purge && \
         module load gcc/8.3.0 && \
         module load gsl/2.5 && \
         module load git && \
         export PATH=/home1/kavoss/anaconda2/bin:$PATH && \
         export LD_LIBRARY_PATH={input.partis}/packages/bpp-newlik/_build/lib64:$LD_LIBRARY_PATH && \
         mkdir {output.out_dir} && \
-        echo " + platform.node() + " >> {log} && \
         sh {input.script} -p {input.partis} -o {output.out_dir} &&>> {log}"
 
 #analyze_partis_output
@@ -115,11 +115,11 @@ rule analyze_partis_output:
      threads: 10
      log: os.path.join(DATADIR, "logs", "analyze_partis_output_{d}.log")
      input:
-        dir= OUTPUT + "{d}/simulations/",
+        dir= directory(OUTPUT + "{d}/simulations/"),
         script = 'analyze_partis_output/simulation_analysis.sh',
         partis = PARTIS+"bin/partis"
      output:
-        out = OUTPUT + "{d}/partitions/"
+        out = directory(OUTPUT + "{d}/partitions/")
      shell:
         "echo " + platform.node() + " >> {log} && \
         mkdir  {output.out} && \
@@ -134,7 +134,7 @@ rule align_partitions:
         partitions = OUTPUT + "{d}/partitions/",
         script = 'tree_building/align_partitions.sh'
      output:
-        out = OUTPUT + "{d}/partitions_aligned/"
+        out = directory(OUTPUT + "{d}/partitions_aligned/")
      shell:
         "echo " + platform.node() + " >> {log} && \
         mkdir  {output.out} && \
@@ -151,7 +151,7 @@ rule build_tree:
         script = 'tree_building/build_tree.sh',
         raxml  = RAXML+"raxml-ng"
      output:
-        out = OUTPUT + "{d}/tree_files/"
+        out = directory(OUTPUT + "{d}/tree_files/")
      shell:
         "echo " + platform.node() + " >> {log} && \
         mkdir  {output.out} && \
