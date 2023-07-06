@@ -115,7 +115,7 @@ rule analyze_partis_output:
      threads: 10
      log: os.path.join(DATADIR, "logs", "analyze_partis_output_{d}.log")
      input:
-        dir= OUTPUT + "{d}/simulations/",
+        dir = OUTPUT + "{d}/simulations/",
         script = 'analyze_partis_output/simulation_analysis.sh',
         partis = PARTIS,
         sim_check = OUTPUT + "{d}/simulations/sim_5.yaml"
@@ -125,7 +125,7 @@ rule analyze_partis_output:
      shell:
         "echo " + platform.node() + " >> {log} && \
         mkdir  {output.out} && \
-        sh {input.script} -d {input.dir} -p {input.partis} -o {output.out} >> {log}"
+        sh {input.script} -d {input.dir} -p {input.partis} -o {output.out} 2> {log}"
 
 rule align_partitions:
      resources:
