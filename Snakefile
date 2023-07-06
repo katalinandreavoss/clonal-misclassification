@@ -118,9 +118,9 @@ rule analyze_partis_output:
         dir= OUTPUT + "{d}/simulations/",
         script = 'analyze_partis_output/simulation_analysis.sh',
         partis = PARTIS+"bin/partis"
-    output:
+     output:
         out = OUTPUT + "{d}/partitions/"
-    shell:
+     shell:
         "echo " + platform.node() + " >> {log} && \
         mkdir  {input.out} && \
         sh {input.script} -d {input.dir} -p {input.partis} -o {input.out} &&>> {log}"
