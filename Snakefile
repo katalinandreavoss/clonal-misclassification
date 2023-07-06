@@ -123,9 +123,9 @@ rule analyze_partis_output:
         out = directory(OUTPUT + "{d}/partitions/"),
         partition = OUTPUT + "{d}/partitions/sim_5_partition_0.fasta"
      shell:
-        "echo " + platform.node() + " >> {log} && \
+        "echo " + platform.node() + " &>> {log} && \
         mkdir  {output.out} && \
-        sh {input.script} -d {input.dir} -p {input.partis} -o {output.out} 2> {log}"
+        sh {input.script} -d {input.dir} -p {input.partis} -o {output.out} &>> {log}"
 
 rule align_partitions:
      resources:
