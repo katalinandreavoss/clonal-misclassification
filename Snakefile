@@ -95,7 +95,7 @@ rule simulate:
         script = 'partis/partis_simulation/simulate.sh',
         partis = PARTIS+"bin/partis"
     output:
-        dir= directory(OUTPUT + "{d}/simulations/") #, out= OUTPUT + "{d}/simulations/sim_250.yaml"
+        dir= directory(OUTPUT + "{d}/") #, out= OUTPUT + "{d}/simulations/sim_250.yaml"
     shell:
         "module purge && \
         module load gcc/8.3.0 && \
