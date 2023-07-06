@@ -135,7 +135,7 @@ rule align_partitions:
      input:
         partitions = OUTPUT + "{d}/partitions/",
         script = 'tree_building/align_partitions.sh',
-        partition_check =  partition = OUTPUT + "{d}/partitions/sim_5_partition_0.fasta",
+        partition_check = OUTPUT + "{d}/partitions/sim_5_partition_0.fasta"
      output:
         out = directory(OUTPUT + "{d}/partitions_aligned/"),
         align =  partition = OUTPUT + "{d}/partitions_aligned/sim_5_partition_0_aligned.fasta"
