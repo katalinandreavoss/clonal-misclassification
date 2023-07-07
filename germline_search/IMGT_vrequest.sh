@@ -13,5 +13,6 @@ done
 for fasta in $directory/*.fasta; do
   name=${fasta%.fasta}
   name=${name##*/}
-  ${vquest} --species human --receptorOrLocusType IG --fileSequences ${fasta} -o ${output} && mv ${output}/001 ${output}/${name}
+  cd ${vquest}
+  vquest --species human --receptorOrLocusType IG --fileSequences ${fasta} -o ${output} && mv ${output}/001 ${output}/${name}
 done
