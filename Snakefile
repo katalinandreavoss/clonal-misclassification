@@ -152,7 +152,7 @@ rule find_germline:
      log: os.path.join(DATADIR, "logs", "find_germline{d}.log")
      input:
         dir = OUTPUT + "{d}/germline_search/",
-        seq_check = OUTPUT + "{d}/germline_search/sim_5_partition_0/3_Nt_sequences.txt"
+        seq_check = OUTPUT + "{d}/germline_search/sim_5_partition_0/3_Nt_sequences.txt",
         script = 'germline_search/IMGT_vrequest.sh',
         vquest = VQUEST,
         partition_check = OUTPUT + "{d}/partitions/sim_5_partition_0.fasta"
