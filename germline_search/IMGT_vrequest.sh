@@ -10,8 +10,8 @@ do
     esac
 done
 
-for fasta in $directory/*.fasta; do
-  name=${fasta%.fasta}
+for fasta in $directory/*_aligned.fasta; do
+  name=${fasta%_aligned.fasta}
   name=${name##*/}
   cd ${vquest}
   python -m vquest --species human --receptorOrLocusType IG --fileSequences ${fasta} -o ${output} && mv ${output}/001 ${output}/${name}

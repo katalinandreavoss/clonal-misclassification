@@ -5,6 +5,7 @@ output: '/home1/kavoss/data/output/'
 partis: '/home1/kavoss/partis_with_simulation/partis/' #specifiy where partis is located
 ham_partis: '/home1/kavoss/partis_without_simulation/'
 raxml: '/home1/kavoss/raxml-ng/' #specify where raxml is located
-vquest: '/home1/kavoss/vquest'
+vquest: '/home1/kavoss/vquest' #specify where vquest is located
+RevertToGermline: '/home1/kavoss/TRIgS' #specify where RevertToGermline is located
 #TODO: add argument simtool to snakefile
 #simtool: 'partis'

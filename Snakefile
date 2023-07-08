@@ -12,7 +12,7 @@ PARTIS=config['partis']
 HAMPARTIS=config['ham_partis']
 RAXML=config['raxml']
 VQUEST=config['vquest']
-
+RTG=config['RevertToGermline']
 data = glob.glob(DATADIR+"*/*.tsv")
 
 data = [d.split('.')[0].split('/')[-2] for d in data]
@@ -127,26 +127,6 @@ rule analyze_partis_output:
         export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
         sh {input.script} -d {input.dir} -p {input.partis} -o {output.out} &>> {log}"
 
-
-rule findVDJ:
-     resources:
-        mem="10G",
-     threads: 10
-     log: os.path.join(DATADIR, "logs", "findVDJ_{d}.log")
-     input:
-        dir = OUTPUT + "{d}/partitions/",
-        script = 'germline_search/IMGT_vrequest.sh',
-        vquest = VQUEST,
-        partition_check = OUTPUT + "{d}/partitions/sim_5_partition_0.fasta"
-     output:
-        out = directory(OUTPUT + "{d}/germline_search/"),
-        seq = OUTPUT + "{d}/germline_search/sim_5_partition_0/3_Nt_sequences.txt"
-     shell:
-        "echo " + platform.node() + " &>> {log} && \
-        export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
-        sh {input.script} -d {input.dir} -v {input.vquest} -o {output.out} &>> {log}"
-
-
 rule align_partitions:
      resources:
         mem="50G",
@@ -162,6 +142,43 @@ rule align_partitions:
      shell:
         "echo " + platform.node() + " &>> {log} && \
         sh {input.script} -d {input.partitions} -o {output.out} &>> {log}"
+
+
+rule findVDJ:
+     resources:
+        mem="10G",
+     threads: 10
+     log: os.path.join(DATADIR, "logs", "findVDJ_{d}.log")
+     input:
+        dir = OUTPUT + "{d}/partitions_aligned/",
+        script = 'germline_search/IMGT_vrequest.sh',
+        vquest = VQUEST,
+        align_check = OUTPUT + "{d}/partitions_aligned/sim_5_partition_0_aligned.fasta"
+     output:
+        out = directory(OUTPUT + "{d}/germline_search/"),
+        seq = OUTPUT + "{d}/germline_search/sim_5_partition_0/3_Nt_sequences.txt"
+     shell:
+        "echo " + platform.node() + " &>> {log} && \
+        sh {input.script} -d {input.dir} -v {input.vquest} -o {output.out} &>> {log}"
+
+rule find_germline:
+     resources:
+        mem="10G",
+     threads: 10
+     log: os.path.join(DATADIR, "logs", "find_germline{d}.log")
+     input:
+        dir = OUTPUT + "{d}/germline_search/",
+        script = 'germline_search/IMGT_vrequest.sh',
+        RevertToGermline = RTG,
+        seq_check = OUTPUT + "{d}/germline_search/sim_5_partition_0/3_Nt_sequences.txt"
+     output:
+        out = directory(OUTPUT + "{d}/germline_search/"),
+        seq = OUTPUT + "{d}/germline_search/sim_5_partition_0/germline.fasta"
+     shell:
+        "echo " + platform.node() + " &>> {log} && \
+        export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
+        sh {input.script} -d {input.dir} -r {input.vquest} -o {output.out} &>> {log}"
+
 
 
 rule build_tree:
