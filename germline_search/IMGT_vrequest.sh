@@ -14,5 +14,5 @@ for fasta in $directory/*.fasta; do
   name=${fasta%.fasta}
   name=${name##*/}
   cd ${vquest}
-  python -m vquest --species human --receptorOrLocusType IG --fileSequences ${fasta} -o ${output} && mv ${output}/001 ${output}/${name}
+  python -m vquest --align --species human --receptorOrLocusType IG --fileSequences ${fasta} -o ${output} && mv ${output}/001 ${output}/${name}
 done
