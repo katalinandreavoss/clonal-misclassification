@@ -152,25 +152,6 @@ rule find_germline:
      log: os.path.join(DATADIR, "logs", "find_germline{d}.log")
      input:
         dir = OUTPUT + "{d}/germline_search/",
-        seq_check = OUTPUT + "{d}/germline_search/sim_5_partition_0/3_Nt_sequences.txt",
-        script = 'germline_search/IMGT_vrequest.sh',
-        vquest = VQUEST,
-        partition_check = OUTPUT + "{d}/partitions/sim_5_partition_0.fasta"
-     output:
-        out = directory(OUTPUT + "{d}/germline_search/"),
-        seq = OUTPUT + "{d}/germline_search/sim_5_partition_0/3_Nt_sequences.txt"
-     shell:
-        "echo " + platform.node() + " &>> {log} && \
-        export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
-        sh {input.script} -d {input.dir} -v {input.vquest} -o {output.out} &>> {log}"
-
-rule find_germline:
-     resources:
-        mem="10G",
-     threads: 10
-     log: os.path.join(DATADIR, "logs", "find_germline{d}.log")
-     input:
-        dir = OUTPUT + "{d}/germline_search/",
         script = 'germline_search/IMGT_vrequest.sh',
         RevertToGermline = RTG,
         seq_check = OUTPUT + "{d}/germline_search/sim_5_partition_0/3_Nt_sequences.txt"
