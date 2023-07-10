@@ -154,7 +154,7 @@ rule find_germline:
      log: os.path.join(DATADIR, "logs", "find_germline{d}.log")
      input:
         dir = OUTPUT + "{d}/germline_search/",
-        script = 'germline_search/IMGT_vrequest.sh',
+        script = 'germline_search/find_germline_RevertToGermline.sh',
         RevertToGermline = RTG,
         seq_check = OUTPUT + "{d}/germline_search/sim_5_partition_0/3_Nt-sequences.txt"
      output:
