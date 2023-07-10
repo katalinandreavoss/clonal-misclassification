@@ -11,7 +11,7 @@ do
 done
 
 for dir in $directory/*/; do
-  file=${dir}3_Nt_sequences.txt
+  file=${dir}3_Nt-sequences.txt
   name=${dir##*/}
   python ${RTG}/RevertToGermlineCmd.py ${file} ${RTG}/imgt_germlines.fasta "Homo sapiens" ${output}/${name}/germline.fasta ocjv
 done
