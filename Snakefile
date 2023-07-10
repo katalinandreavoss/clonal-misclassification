@@ -161,7 +161,7 @@ rule find_germline:
      shell:
         "echo " + platform.node() + " &>> {log} && \
         export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
-        sh {input.script} -d {input.dir} -r {input.RevertToGermline} -o {output.out} &>> {log}"
+        sh {input.script} -d {input.dir} -r {input.RevertToGermline} -o {input.dir} &>> {log}"
 
 rule align_partitions:
      resources:
