@@ -141,7 +141,7 @@ rule findVDJ:
         partition_check = OUTPUT + "{d}/partitions/sim_5_partition_0.fasta"
      output:
         out = directory(OUTPUT + "{d}/germline_search/"),
-        out = directory(OUTPUT + "{d}/germline_search/sim_5_partition_0"),
+        dir_check = directory(OUTPUT + "{d}/germline_search/sim_5_partition_0"),
         seq = OUTPUT + "{d}/germline_search/sim_5_partition_0/3_Nt_sequences.txt"
      shell:
         "echo " + platform.node() + " &>> {log} && \
