@@ -15,5 +15,5 @@ for fasta in $directory/*.fasta; do
   name=${name##*/}
   cd ${vquest}
   python -m vquest --species human --receptorOrLocusType IG --fileSequences ${fasta} -o ${output} && mv ${output}/001 ${output}/${name}
-  [ -d ${output}/${name}/001 ] && cd ${output}/${name}/001 && mv * ${output}/${name} && rm -rf ${output}/${name}/001
+  [ -d ${output}/${name}/001 ] && cd ${output}/${name}/001 && mv * ${output}/${name} && rm -rf ${output}/${name}/001; #for some reason the last simulation gets stores incorrectly, this fixes it
 done
