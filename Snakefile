@@ -157,7 +157,8 @@ rule find_germline:
         RevertToGermline = RTG,
         seq_check = OUTPUT + "{d}/germline_search/sim_5_partition_0/3_Nt_sequences.txt"
      output:
-        seq = OUTPUT + "{d}/germline_search/sim_4_partition_0/germline.fasta"
+        dir = directory(OUTPUT + "{d}/germline_search/sim_4_partition_0/"),
+        seq = OUTPUT + "{d}/germline_search/sim_5_partition_0/germline.fasta"
      shell:
         "echo " + platform.node() + " &>> {log} && \
         export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
