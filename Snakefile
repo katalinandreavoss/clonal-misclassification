@@ -23,7 +23,7 @@ wildcard_constraints:
 rule result:
     input:
         expand(OUTPUT + "{d}/tree_files/", d=data),
-        expand(OUTPUT + "{d}/germline_search/sim_5_partition_0/germline.fasta")
+        expand(OUTPUT + "{d}/germline_search/sim_5_partition_0/germline.fasta", d=data)
         
 #turn tsv into fasta     
 rule tsv_to_fasta:
