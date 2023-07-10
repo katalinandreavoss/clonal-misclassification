@@ -142,7 +142,7 @@ rule findVDJ:
      output:
         out = directory(OUTPUT + "{d}/germline_search/"),
         dir_check = directory(OUTPUT + "{d}/germline_search/sim_5_partition_0"),
-        seq = OUTPUT + "{d}/germline_search/sim_5_partition_0/3_Nt_sequences.txt"
+        seq = OUTPUT + "{d}/germline_search/sim_5_partition_0/3_Nt-sequences.txt"
      shell:
         "echo " + platform.node() + " &>> {log} && \
         sh {input.script} -d {input.dir} -v {input.vquest} -o {output.out} &>> {log}"
@@ -156,7 +156,7 @@ rule find_germline:
         dir = OUTPUT + "{d}/germline_search/",
         script = 'germline_search/IMGT_vrequest.sh',
         RevertToGermline = RTG,
-        seq_check = OUTPUT + "{d}/germline_search/sim_5_partition_0/3_Nt_sequences.txt"
+        seq_check = OUTPUT + "{d}/germline_search/sim_5_partition_0/3_Nt-sequences.txt"
      output:
         seq = OUTPUT + "{d}/germline_search/sim_5_partition_0/germline.fasta"
      shell:
