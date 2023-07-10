@@ -16,7 +16,7 @@ done
 #set x for number of desired simulations $(seq 1 x)
 for i in $(seq 1 5); do
   echo "$i";
-  $partis simulate --parameter-dir $output --n-sim-events 5 --outfname $output/simulations/sim_${i}.yaml --debug 1
+  $partis simulate --parameter-dir $output --n-sim-events 5 --outfname $output/simulations/sim_${i}.yaml --min-observations-per-gene 5 --n-leaf-distribution geometric --debug 1
 done
 #for example file add
 #--min-observations-per-gene 5 --n-leaf-distribution geometric;
