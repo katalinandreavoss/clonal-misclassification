@@ -157,7 +157,6 @@ rule find_germline:
         RevertToGermline = RTG,
         seq_check = OUTPUT + "{d}/germline_search/sim_5_partition_0/3_Nt_sequences.txt"
      output:
-        out = directory(OUTPUT + "{d}/germline_search/"),
         seq = OUTPUT + "{d}/germline_search/sim_5_partition_0/germline.fasta"
      shell:
         "echo " + platform.node() + " &>> {log} && \
