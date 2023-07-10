@@ -19,4 +19,4 @@ for fasta in $directory/*.fasta; do
   echo "one loop done";
 done
 
-eco "completely done"
+echo "completely done"
