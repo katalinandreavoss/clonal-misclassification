@@ -20,12 +20,12 @@ sims = range(2,21,2)
 data = ["sim_"+str(s) for s in sims]
 
 wildcard_constraints:
-    s = "sim_\d+"
+    d = "sim_\d+"
    # d = "[a-zA-Z]+\d"
 
 rule result:
     input:
-        expand(OUTPUT + "{d}/simulations/sim_0_01.yaml",d=data)
+        expand(OUTPUT + "{d}/partitions/sim_0_01_partition_0.fasta", d=data)
         #expand(OUTPUT + "{d}/tree_files/", d=data),
         #expand(OUTPUT + "{d}/germline_search/partition_0/germline.fasta", d=data)
         
@@ -95,6 +95,7 @@ rule result:
 ############################
 #simulate from scratch
 #simulation partis
+
 rule simulate:
     resources:
         mem="50G",
@@ -104,7 +105,6 @@ rule simulate:
         script = 'partis/partis_simulation/simulate.sh',
         partis = PARTIS+"bin/partis"
     output:
-        dir= directory(OUTPUT + "{d}/"),
         out_dir = directory(OUTPUT + "{d}/simulations/"),
         out= OUTPUT + "{d}/simulations/sim_0_01.yaml"
     shell:
@@ -120,17 +120,17 @@ rule simulate:
 #analyze_partis_output
 rule analyze_partis_output:
      resources:
-        mem="100G",
+        mem="50G",
      threads: 10
      log: os.path.join(DATADIR, "logs", "analyze_partis_output_{d}.log")
      input:
         dir = OUTPUT + "{d}/simulations/",
         script = 'analyze_partis_output/simulation_analysis.sh',
         partis = PARTIS,
-        sim_check = OUTPUT + "{d}/simulations/sim_5.yaml"
+        sim_check = OUTPUT + "{d}/simulations/sim_0_01.yaml"
      output:
         out = directory(OUTPUT + "{d}/partitions/"),
-        partition = OUTPUT + "{d}/partitions/sim_5_partition_0.fasta"
+        partition = OUTPUT + "{d}/partitions/sim_0_01_partition_0.fasta"
      shell:
         "echo " + platform.node() + " &>> {log} && \
         export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
