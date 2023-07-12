@@ -6,7 +6,7 @@ import os
 configfile: "configs/config.yaml"
 
 #specify DATADIR where data is saved and OUTPUT where results are saved
-DATADIR=config['datadir']
+#DATADIR=config['datadir']
 OUTPUT=config['output']
 PARTIS=config['partis']
 HAMPARTIS=config['ham_partis']
@@ -15,16 +15,23 @@ VQUEST=config['vquest']
 RTG=config['RevertToGermline']
 data = glob.glob(DATADIR+"*/*.tsv")
 
-data = [d.split('.')[0].split('/')[-2] for d in data]
+#data = [d.split('.')[0].split('/')[-2] for d in data]
+simus = range(2,21,2)
+data = ["sim_"+str(s) for s in simus]
 
 wildcard_constraints:
-    d = "[a-zA-Z]+\d"
+    d = "sim_\d+"
+    #d = "[a-zA-Z]+\d"
 
 rule result:
     input:
-        expand(OUTPUT + "{d}/tree_files/", d=data),
-        expand(OUTPUT + "{d}/germline_search/sim_5_partition_0/germline.fasta", d=data)
+        expand(OUTPUT + "{d}/simulations/sim_0.01.yaml",d=data)
+        #expand(OUTPUT + "{d}/tree_files/", d=data),
+        #expand(OUTPUT + "{d}/germline_search/partition_0/germline.fasta", d=data)
         
+        
+############################ 
+#simulate from existing data   
 #turn tsv into fasta     
 rule tsv_to_fasta:
     resources:
@@ -32,7 +39,7 @@ rule tsv_to_fasta:
     threads: 2
     log: os.path.join(DATADIR, "logs", "tsv_to_fasta_{d}.log")
     input:
-        tsv = DATADIR+"{d}/airr-covid-19.tsv", #TODO: change to flexible tsv name
+        tsv = DATADIR+"{d}/airr-covid-19.tsv", 
         script = 'Download_data/tsv_to_fasta.py',
     output:
         fasta= OUTPUT + "{d}.fasta"
@@ -85,11 +92,12 @@ rule partition:
         export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
         echo " + platform.node() + " &>> {log} && \
         sh {input.script} -f {input.fasta} -p {input.partis} -o {input.out} &>> {log}"
-
+############################
+#simulate from scratch
 #simulation partis
 rule simulate:
     resources:
-        mem="180G",
+        mem="50G",
     threads: 10
     log: os.path.join(DATADIR, "logs", "simulate_{d}.log")
     input:
@@ -98,7 +106,7 @@ rule simulate:
         partis = PARTIS+"bin/partis"
     output:
         out_dir = directory(OUTPUT + "{d}/simulations/"),
-        out= OUTPUT + "{d}/simulations/sim_5.yaml"
+        out= OUTPUT + "{d}/simulations/sim_0.01.yaml"
     shell:
         "module purge &>> {log} && \
         module load gcc/8.3.0 &>> {log} && \
