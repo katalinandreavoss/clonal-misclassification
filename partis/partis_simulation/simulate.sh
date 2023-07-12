@@ -12,7 +12,7 @@ done
 ##### Step 2: Simulate Sequences #####
 
 ## simulate and rearrange from scratch:
-
+#test
 #set x for number of desired simulations $(seq 1 x)
 for i in $(seq 1 5); do
   echo "$i";
