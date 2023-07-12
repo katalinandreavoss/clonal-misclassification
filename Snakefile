@@ -16,85 +16,87 @@ RTG=config['RevertToGermline']
 data = glob.glob(DATADIR+"*/*.tsv")
 
 #data = [d.split('.')[0].split('/')[-2] for d in data]
-simus = range(2,21,2)
-data = ["sim_"+str(s) for s in simus]
+sims = range(2,21,2)
+data = ["sim_"+str(s) for s in sims]
 
 wildcard_constraints:
     d = "sim_\d+"
-    #d = "[a-zA-Z]+\d"
+   # d = "[a-zA-Z]+\d"
 
 rule result:
     input:
-        expand(OUTPUT + "{d}/simulations/sim_0.01.yaml",d=data)
+        expand(OUTPUT + "{d}/partitions/sim_0_01_partition_0.fasta", d=data)
         #expand(OUTPUT + "{d}/tree_files/", d=data),
         #expand(OUTPUT + "{d}/germline_search/partition_0/germline.fasta", d=data)
         
         
 ############################ 
-#simulate from existing data   
-#turn tsv into fasta     
-rule tsv_to_fasta:
-    resources:
-        mem="10G",
-    threads: 2
-    log: os.path.join(DATADIR, "logs", "tsv_to_fasta_{d}.log")
-    input:
-        tsv = DATADIR+"{d}/airr-covid-19.tsv", 
-        script = 'Download_data/tsv_to_fasta.py',
-    output:
-        fasta= OUTPUT + "{d}.fasta"
-    shell:
-        "echo " + platform.node() + " &>> {log} && \
-        python {input.script} -i {input.tsv} -o {output.fasta} &&>> {log}"
+#simulate from existing data
+#rule tsv_to_fasta:
+#    resources:
+#        mem="10G",
+#    threads: 2
+#    log: os.path.join(DATADIR, "logs", "tsv_to_fasta_{d}.log")
+#    input:
+#        tsv = DATADIR+"{d}/airr-covid-19.tsv", 
+#        script = 'Download_data/tsv_to_fasta.py',
+#    output:
+#        fasta= OUTPUT + "{d}.fasta"
+#    shell:
+#        "echo " + platform.node() + " &>> {log} && \
+#        python {input.script} -i {input.tsv} -o {output.fasta} &&>> {log}"
+
 
 
 #cache_parameters partis
-rule cache_parameters:
-    resources:
-        mem="20G",
-    threads: 10
-    log: os.path.join(DATADIR, "logs", "cache_parameters_{d}.log")
-    input:
-        fasta = OUTPUT + "{d}.fasta",
-        script = 'partis/partis_simulation/cache_parameters.sh',
-        partis = PARTIS+"bin/partis"
-    output:
-        out = directory(OUTPUT + "{d}/")
-    shell:
-        "module purge &>> {log} && \
-        module load gcc/8.3.0 &>> {log} && \
-        module load gsl/2.5 &>> {log} && \
-        module load git &>> {log} && \
-        export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
-        echo " + platform.node() + " &>> {log} && \
-        mkdir {output.out} &>> {log} && \
-        sh {input.script} -f {input.fasta} -p {input.partis} -o {output.out} &>> {log}"
+#rule cache_parameters:
+#    resources:
+#        mem="20G",
+#    threads: 10
+#    log: os.path.join(DATADIR, "logs", "cache_parameters_{d}.log")
+#    input:
+#        fasta = OUTPUT + "{d}.fasta",
+#        script = 'partis/partis_simulation/cache_parameters.sh',
+ #       partis = PARTIS+"bin/partis"
+ #   output:
+ #       out = directory(OUTPUT + "{d}/")
+ #   shell:
+ #       "module purge &>> {log} && \
+ #       module load gcc/8.3.0 &>> {log} && \
+ #       module load gsl/2.5 &>> {log} && \
+ #       module load git &>> {log} && \
+ #       export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
+ #       echo " + platform.node() + " &>> {log} && \
+ #       mkdir {output.out} &>> {log} && \
+ #       sh {input.script} -f {input.fasta} -p {input.partis} -o {output.out} &>> {log}"
 
 #partition partis
-rule partition:
-    resources:
-        mem_mb="100G",
-	mem="180G",
-    threads: 100
-    log: os.path.join(DATADIR, "logs", "partition_{d}.log")
-    input:
-        fasta = OUTPUT + "{d}.fasta",
-        script = 'partis/partis_simulation/partition.sh',
-        partis = HAMPARTIS+"bin/partis",
-        out = OUTPUT + "{d}/"
-    output:
-        out= OUTPUT + "{d}/pd.yaml"
-    shell:
-        "module purge &>> {log} && \
-        module load gcc/8.3.0 &>> {log} && \
-        module load gsl/2.5 &>> {log} && \
-        module load git &>> {log} && \
-        export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
-        echo " + platform.node() + " &>> {log} && \
-        sh {input.script} -f {input.fasta} -p {input.partis} -o {input.out} &>> {log}"
+#rule partition:
+#    resources:
+#        mem_mb="100G",
+#	mem="180G",
+#    threads: 100
+#    log: os.path.join(DATADIR, "logs", "partition_{d}.log")
+#    input:
+#        fasta = OUTPUT + "{d}.fasta",
+#        script = 'partis/partis_simulation/partition.sh',
+#        partis = HAMPARTIS+"bin/partis",
+#        out = OUTPUT + "{d}/"
+#    output:
+#        out= OUTPUT + "{d}/pd.yaml"
+#    shell:
+#        "module purge &>> {log} && \
+#        module load gcc/8.3.0 &>> {log} && \
+#        module load gsl/2.5 &>> {log} && \
+#        module load git &>> {log} && \
+#        export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
+#        echo " + platform.node() + " &>> {log} && \
+#        sh {input.script} -f {input.fasta} -p {input.partis} -o {input.out} &>> {log}"
+
 ############################
 #simulate from scratch
 #simulation partis
+
 rule simulate:
     resources:
         mem="50G",
@@ -102,11 +104,10 @@ rule simulate:
     log: os.path.join(DATADIR, "logs", "simulate_{d}.log")
     input:
         script = 'partis/partis_simulation/simulate.sh',
-        dir= OUTPUT + "{d}/",
         partis = PARTIS+"bin/partis"
     output:
         out_dir = directory(OUTPUT + "{d}/simulations/"),
-        out= OUTPUT + "{d}/simulations/sim_0.01.yaml"
+        out= OUTPUT + "{d}/simulations/sim_0_01.yaml"
     shell:
         "module purge &>> {log} && \
         module load gcc/8.3.0 &>> {log} && \
@@ -115,22 +116,22 @@ rule simulate:
         export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
         echo " + platform.node() + " &>> {log} && \
         export LD_LIBRARY_PATH=/home1/kavoss/partis_with_simulation/partis/packages/bpp-newlik/_build/lib64:$LD_LIBRARY_PATH &>> {log} && \
-        sh {input.script} -p {input.partis} -o {input.dir} &>> {log}"
+        sh {input.script} -p {input.partis} -o {output.dir} &>> {log}"
 
 #analyze_partis_output
 rule analyze_partis_output:
      resources:
-        mem="100G",
+        mem="50G",
      threads: 10
      log: os.path.join(DATADIR, "logs", "analyze_partis_output_{d}.log")
      input:
         dir = OUTPUT + "{d}/simulations/",
         script = 'analyze_partis_output/simulation_analysis.sh',
         partis = PARTIS,
-        sim_check = OUTPUT + "{d}/simulations/sim_5.yaml"
+        sim_check = OUTPUT + "{d}/simulations/sim_0_01.yaml"
      output:
         out = directory(OUTPUT + "{d}/partitions/"),
-        partition = OUTPUT + "{d}/partitions/sim_5_partition_0.fasta"
+        partition = OUTPUT + "{d}/partitions/sim_0_01_partition_0.fasta"
      shell:
         "echo " + platform.node() + " &>> {log} && \
         export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
