@@ -14,8 +14,6 @@ done
 ## simulate and rearrange from scratch:
 name=${output%/}
 name=${name##*sim_}
-echo ${name}
-
 
 #set x for number of desired simulations $(seq 1 x)
 for i in 0.01 0.05 0.1 0.2 0.3; do

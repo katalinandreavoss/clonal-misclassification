@@ -6,7 +6,7 @@ import os
 configfile: "configs/config.yaml"
 
 #specify DATADIR where data is saved and OUTPUT where results are saved
-DATADIR=config['datadir']
+#DATADIR=config['datadir']
 OUTPUT=config['output']
 PARTIS=config['partis']
 HAMPARTIS=config['ham_partis']
@@ -18,21 +18,22 @@ data = glob.glob(DATADIR+"*/*.tsv")
 #data = [d.split('.')[0].split('/')[-2] for d in data]
 sims = range(2,21,2)
 data = ["sim_"+str(s) for s in sims]
+shm = ["0_01","0_05","0_1","0_2","0_3"] #this has to match the numbers in simulate.sh
 
 wildcard_constraints:
     d = "sim_\d+"
+    s = "0_\d+"
    # d = "[a-zA-Z]+\d"
 
 rule result:
     input:
-        expand(OUTPUT + "{d}/partitions/sim_0_01_partition_0.fasta", d=data)
+        expand(OUTPUT + "{d}/partitions/sim_{s}_partition_0.fasta", d=data, s=shm)
         #expand(OUTPUT + "{d}/tree_files/", d=data),
         #expand(OUTPUT + "{d}/germline_search/partition_0/germline.fasta", d=data)
         
         
 ############################ 
-#simulate from existing data   
-#turn tsv into fasta     
+#simulate from existing data
 #rule tsv_to_fasta:
 #    resources:
 #        mem="10G",
@@ -46,6 +47,7 @@ rule result:
 #    shell:
 #        "echo " + platform.node() + " &>> {log} && \
 #        python {input.script} -i {input.tsv} -o {output.fasta} &&>> {log}"
+
 
 
 #cache_parameters partis
@@ -92,6 +94,7 @@ rule result:
 #        export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
 #        echo " + platform.node() + " &>> {log} && \
 #        sh {input.script} -f {input.fasta} -p {input.partis} -o {input.out} &>> {log}"
+
 ############################
 #simulate from scratch
 #simulation partis
@@ -106,7 +109,7 @@ rule simulate:
         partis = PARTIS+"bin/partis"
     output:
         out_dir = directory(OUTPUT + "{d}/simulations/"),
-        out= OUTPUT + "{d}/simulations/sim_0_01.yaml"
+        out= OUTPUT + "{d}/simulations/sim_{s}.yaml"
     shell:
         "module purge &>> {log} && \
         module load gcc/8.3.0 &>> {log} && \
@@ -127,10 +130,12 @@ rule analyze_partis_output:
         dir = OUTPUT + "{d}/simulations/",
         script = 'analyze_partis_output/simulation_analysis.sh',
         partis = PARTIS,
-        sim_check = OUTPUT + "{d}/simulations/sim_0_01.yaml"
+        sim_check = OUTPUT + "{d}/simulations/sim_{s}.yaml"
      output:
-        out = directory(OUTPUT + "{d}/partitions/"),
-        partition = OUTPUT + "{d}/partitions/sim_0_01_partition_0.fasta"
+        out = directory(OUTPUT + "{d}/{s}/"),
+        naive = OUTPUT + "{d}/{s}/naive.fasta",
+        all = OUTPUT + "{d}/{s}/all.fasta",
+        clonal_families = OUTPUT + "{d}/{s}/family_1.fasta"
      shell:
         "echo " + platform.node() + " &>> {log} && \
         export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
