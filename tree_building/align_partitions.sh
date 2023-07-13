@@ -1,17 +1,19 @@
 #!/bin/bash
 
-while getopts d:o: flag
+while getopts d: flag
 do
     # shellcheck disable=SC2220
     case "${flag}" in
         d) directory=${OPTARG};;
-        o) output=${OPTARG};;
     esac
 done
 
 for fasta in $directory/*.fasta; do
   name=${fasta%.fasta}
   name=${name##*/}
-  echo $name
-  clustalo -i $fasta -t DNA -o ${output}/${name}_aligned.fasta
+  lines=$(cat ${fasta} | wc -l)
+  if [ ${name} != "naive" ] && [ ${lines} -gt 2 ]; then
+    clustalo -i $fasta -t DNA --outfmt=fasta -o ${directory}/${name}_aligned.fasta
+  fi
 done
+

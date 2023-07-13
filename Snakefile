@@ -13,21 +13,21 @@ HAMPARTIS=config['ham_partis']
 RAXML=config['raxml']
 VQUEST=config['vquest']
 RTG=config['RevertToGermline']
-data = glob.glob(DATADIR+"*/*.tsv")
 
+#data = glob.glob(DATADIR+"*/*.tsv")
 #data = [d.split('.')[0].split('/')[-2] for d in data]
 sims = range(2,21,2)
 data = ["sim_"+str(s) for s in sims]
 shm = ["0_01","0_05","0_1","0_2","0_3"] #this has to match the numbers in simulate.sh
 
 wildcard_constraints:
-    d = "sim_\d+"
+    d = "sim_\d+",
     s = "0_\d+"
    # d = "[a-zA-Z]+\d"
 
 rule result:
     input:
-        expand(OUTPUT + "{d}/partitions/sim_{s}_partition_0.fasta", d=data, s=shm)
+        expand(OUTPUT + "{d}/{s}/all_aligned.fasta", d=data, s=shm)
         #expand(OUTPUT + "{d}/tree_files/", d=data),
         #expand(OUTPUT + "{d}/germline_search/partition_0/germline.fasta", d=data)
         
@@ -103,13 +103,14 @@ rule simulate:
     resources:
         mem="50G",
     threads: 10
-    log: os.path.join(DATADIR, "logs", "simulate_{d}.log")
+    log: os.path.join(OUTPUT, "logs", "simulate_{d}_{s}.log")
     input:
         script = 'partis/partis_simulation/simulate.sh',
         partis = PARTIS+"bin/partis"
+    params:
+        out_dir = OUTPUT + "{d}/{s}"
     output:
-        out_dir = directory(OUTPUT + "{d}/simulations/"),
-        out= OUTPUT + "{d}/simulations/sim_{s}.yaml"
+        out= OUTPUT + "{d}/{s}/sim_{s}.yaml"
     shell:
         "module purge &>> {log} && \
         module load gcc/8.3.0 &>> {log} && \
@@ -118,35 +119,35 @@ rule simulate:
         export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
         echo " + platform.node() + " &>> {log} && \
         export LD_LIBRARY_PATH=/home1/kavoss/partis_with_simulation/partis/packages/bpp-newlik/_build/lib64:$LD_LIBRARY_PATH &>> {log} && \
-        sh {input.script} -p {input.partis} -o {output.dir} &>> {log}"
+        sh {input.script} -p {input.partis} -o {params.out_dir} &>> {log}"
 
 #analyze_partis_output
 rule analyze_partis_output:
      resources:
         mem="50G",
      threads: 10
-     log: os.path.join(DATADIR, "logs", "analyze_partis_output_{d}.log")
+     log: os.path.join(OUTPUT, "logs", "analyze_partis_output_{d}_{s}.log")
      input:
-        dir = OUTPUT + "{d}/simulations/",
         script = 'analyze_partis_output/simulation_analysis.sh',
         partis = PARTIS,
-        sim_check = OUTPUT + "{d}/simulations/sim_{s}.yaml"
+        simulation = OUTPUT + "{d}/{s}/sim_{s}.yaml"
+     params:
+        out = OUTPUT + "{d}/{s}/"
      output:
-        out = directory(OUTPUT + "{d}/{s}/"),
         naive = OUTPUT + "{d}/{s}/naive.fasta",
         all = OUTPUT + "{d}/{s}/all.fasta",
         clonal_families = OUTPUT + "{d}/{s}/family_1.fasta"
      shell:
         "echo " + platform.node() + " &>> {log} && \
         export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
-        sh {input.script} -d {input.dir} -p {input.partis} -o {output.out} &>> {log}"
+        sh {input.script} -s {input.simulation} -p {input.partis} -o {params.out} &>> {log}"
 
 
 rule findVDJ:
      resources:
         mem="10G",
      threads: 10
-     log: os.path.join(DATADIR, "logs", "findVDJ_{d}.log")
+     log: os.path.join(OUTPUT, "logs", "findVDJ_{d}.log")
      input:
         dir = OUTPUT + "{d}/partitions/",
         script = 'germline_search/IMGT_vrequest.sh',
@@ -164,7 +165,7 @@ rule find_germline:
      resources:
         mem="10G",
      threads: 10
-     log: os.path.join(DATADIR, "logs", "find_germline{d}.log")
+     log: os.path.join(OUTPUT, "logs", "find_germline{d}.log")
      input:
         dir = OUTPUT + "{d}/germline_search/",
         script = 'germline_search/find_germline_RevertToGermline.sh',
@@ -181,24 +182,26 @@ rule align_partitions:
      resources:
         mem="50G",
      threads: 10
-     log: os.path.join(DATADIR, "logs", "align_partitions_{d}.log")
+     log: os.path.join(OUTPUT, "logs", "align_partitions_{d}_{s}.log")
      input:
-        partitions = OUTPUT + "{d}/partitions/",
-        script = 'tree_building/align_partitions.sh',
-        partition_check = OUTPUT + "{d}/partitions/sim_5_partition_0.fasta"
+        all = OUTPUT + "{d}/{s}/all.fasta",
+        clonal_families = OUTPUT + "{d}/{s}/family_1.fasta",
+        script = 'tree_building/align_partitions.sh'
+     params:
+         out = OUTPUT + "{d}/{s}/"
      output:
-        out = directory(OUTPUT + "{d}/partitions_aligned/"),
-        align = OUTPUT + "{d}/partitions_aligned/sim_5_partition_0_aligned.fasta"
+        align = OUTPUT + "{d}/{s}/all_aligned.fasta",
+        align_fam = OUTPUT + "{d}/{s}/family_1_aligned.fasta"
      shell:
         "echo " + platform.node() + " &>> {log} && \
-        sh {input.script} -d {input.partitions} -o {output.out} &>> {log}"
+        sh {input.script} -d {params.out} &>> {log}"
 
 
 rule build_tree:
      resources:
         mem="50G",
      threads: 10
-     log: os.path.join(DATADIR, "logs", "build_tree_{d}.log")
+     log: os.path.join(OUTPUT, "logs", "build_tree_{d}.log")
      input:
         partitions_aligned = OUTPUT + "{d}/partitions_aligned/",
         script = 'tree_building/build_tree.sh',
