@@ -13,6 +13,7 @@ HAMPARTIS=config['ham_partis']
 RAXML=config['raxml']
 VQUEST=config['vquest']
 RTG=config['RevertToGermline']
+PTP=config['PTP']
 
 #data = glob.glob(DATADIR+"*/*.tsv")
 #data = [d.split('.')[0].split('/')[-2] for d in data]
@@ -27,7 +28,7 @@ wildcard_constraints:
 
 rule result:
     input:
-        expand(OUTPUT + "{d}/{s}/all_aligned.fasta", d=data, s=shm)
+        expand(OUTPUT + "{d}/{s}/all_PTP.PTPPartitions.txt", d=data, s=shm)
         #expand(OUTPUT + "{d}/tree_files/", d=data),
         #expand(OUTPUT + "{d}/germline_search/partition_0/germline.fasta", d=data)
         
@@ -201,18 +202,40 @@ rule build_tree:
      resources:
         mem="50G",
      threads: 10
-     log: os.path.join(OUTPUT, "logs", "build_tree_{d}.log")
+     log: os.path.join(OUTPUT, "logs", "build_tree_{d}_{s}.log")
      input:
-        partitions_aligned = OUTPUT + "{d}/partitions_aligned/",
         script = 'tree_building/build_tree.sh',
         raxml  = RAXML+"raxml-ng",
-        align_check = OUTPUT + "{d}/partitions_aligned/sim_5_partition_0_aligned.fasta"
+        align_check = OUTPUT + "{d}/{s}/all_aligned.fasta"
+     params:
+         out = OUTPUT + "{d}/{s}/"
      output:
-        out = directory(OUTPUT + "{d}/tree_files/"),
-        tree = OUTPUT + "{d}/tree_files/sim_5_partition_0_tree_.raxml.bestTree"
+        out = directory(OUTPUT + "{d}/{s}/tree_files/"),
+        tree = OUTPUT + "{d}/{s}/tree_files/all_tree_.raxml.bestTree"
      shell:
         "echo " + platform.node() + " &>> {log} && \
-        sh {input.script} -r {input.raxml} -d {input.partitions_aligned} -o {output.out} &>> {log}"
+        sh {input.script} -r {input.raxml} -d {params.out} -o {output.out} &>> {log}"
+
+#this rule does not run on cluster because it needs X11 forwarding: do ssh with -X flag and then run snakemake without running it on the cluster
+rule cut_tree:
+     resources:
+        mem="50G",
+     threads: 10
+     log: os.path.join(OUTPUT, "logs", "cut_tree_{d}_{s}.log")
+     input:
+        ptp  = PTP,
+        tree = OUTPUT + "{d}/{s}/tree_files/all_tree_.raxml.bestTree"
+     params:
+         out = OUTPUT + "{d}/{s}/all_PTP"
+     output:
+        tree = OUTPUT + "{d}/{s}/all_PTP.PTPhSupportPartition.txt.sh.tre",
+        summary = OUTPUT + "{d}/{s}/all_PTP.PTPPartitonSummary.txt",
+        partitions = OUTPUT+ "{d}/{s}/all_PTP.PTPPartitions.txt"
+     shell:
+        "echo " + platform.node() + " &>> {log} && \
+        export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
+        python {input.ptp} -t {input.tree} -o {params.out} &>> {log}"
+
 
 
 
