@@ -28,7 +28,7 @@ wildcard_constraints:
 
 rule result:
     input:
-        expand(OUTPUT + "{d}/{s}/all_PTP.PTPPartitions.txt", d=data, s=shm)
+        expand(OUTPUT + "{d}/{s}/tree_files/all_tree_.raxml.bestTree", d=data, s=shm)
         #expand(OUTPUT + "{d}/tree_files/", d=data),
         #expand(OUTPUT + "{d}/germline_search/partition_0/germline.fasta", d=data)
         

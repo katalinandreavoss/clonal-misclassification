@@ -18,7 +18,7 @@ shm=${output##*/}
 echo ${shm}
 echo ${clonal_families}
 
-$partis simulate --simulate-from-scratch --n-sim-events ${clonal_families} --scratch-mute-freq ${shm//_/.} --outfname $output/sim_${shm}.yaml --debug 1
+$partis simulate --simulate-from-scratch --n-sim-events ${clonal_families} --scratch-mute-freq ${shm//_/.} --n-leaves 50 --outfname $output/sim_${shm}.yaml --debug 1
 
 #set x for number of desired simulations $(seq 1 x)
 #for i in 0.01 0.05 0.1 0.2 0.3; do
