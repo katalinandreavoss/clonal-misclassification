@@ -17,7 +17,7 @@ PTP=config['PTP']
 
 #data = glob.glob(DATADIR+"*/*.tsv")
 #data = [d.split('.')[0].split('/')[-2] for d in data]
-sims = range(2,21,2)
+sims = range(2,9,2)
 data = ["sim_"+str(s) for s in sims]
 shm = ["0_01","0_05","0_1","0_2","0_3"] #this has to match the numbers in simulate.sh
 
@@ -28,7 +28,9 @@ wildcard_constraints:
 
 rule result:
     input:
-        expand(OUTPUT + "{d}/{s}/tree_files/all_tree_.raxml.bestTree", d=data, s=shm)
+        expand(OUTPUT + "{d}/{s}/tree_files/all_tree_.raxml.bestTree", d=data, s=shm),
+        expand(OUTPUT + "{d}/{s}/ancestral_sequences/root_naive.txt", d=data, s=shm),
+        expand(OUTPUT+ "{d}/{s}/all_PTP.PTPhSupportPartition.txt.png", d=data, s=shm)
         #expand(OUTPUT + "{d}/tree_files/", d=data),
         #expand(OUTPUT + "{d}/germline_search/partition_0/germline.fasta", d=data)
         
@@ -200,8 +202,8 @@ rule align_partitions:
 
 rule build_tree:
      resources:
-        mem="50G",
-     threads: 10
+        mem="500G",
+     threads: 100
      log: os.path.join(OUTPUT, "logs", "build_tree_{d}_{s}.log")
      input:
         script = 'tree_building/build_tree.sh',
@@ -219,7 +221,7 @@ rule build_tree:
 #this rule does not run on cluster because it needs X11 forwarding: do ssh with -X flag and then run snakemake without running it on the cluster
 rule cut_tree:
      resources:
-        mem="50G",
+        mem="300G",
      threads: 10
      log: os.path.join(OUTPUT, "logs", "cut_tree_{d}_{s}.log")
      input:
@@ -230,11 +232,33 @@ rule cut_tree:
      output:
         tree = OUTPUT + "{d}/{s}/all_PTP.PTPhSupportPartition.txt.sh.tre",
         summary = OUTPUT + "{d}/{s}/all_PTP.PTPPartitonSummary.txt",
-        partitions = OUTPUT+ "{d}/{s}/all_PTP.PTPPartitions.txt"
+        partitions = OUTPUT+ "{d}/{s}/all_PTP.PTPPartitions.txt",
+        png = OUTPUT+ "{d}/{s}/all_PTP.PTPhSupportPartition.txt.png"
      shell:
         "echo " + platform.node() + " &>> {log} && \
         export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
         python {input.ptp} -t {input.tree} -o {params.out} &>> {log}"
+
+
+rule ancestral_sequence:
+     resources:
+        mem="150G",
+     threads: 10
+     log: os.path.join(OUTPUT, "logs", "ancestral_sequence_{d}_{s}.log")
+     input:
+        script = 'germline_search/ancestral_seq_raxml.sh',
+        raxml  = RAXML+"raxml-ng",
+        tree = OUTPUT + "{d}/{s}/tree_files/all_tree_.raxml.bestTree",
+        alignment = OUTPUT + "{d}/{s}/family_1_aligned.fasta"
+     params:
+         out = OUTPUT + "{d}/{s}/"
+     output:
+        out = directory(OUTPUT + "{d}/{s}/ancestral_sequences/"),
+        all_naive = OUTPUT + "{d}/{s}/ancestral_sequences/root_naive.txt"
+     shell:
+        "echo " + platform.node() + " &>> {log} && \
+        export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log}&& \
+        sh {input.script} -r {input.raxml} -d {params.out} -o {output.out} &>> {log}"
 
 
 
