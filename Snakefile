@@ -17,7 +17,7 @@ PTP=config['PTP']
 
 #data = glob.glob(DATADIR+"*/*.tsv")
 #data = [d.split('.')[0].split('/')[-2] for d in data]
-sims = range(2,9,2)
+sims = range(2,21,2)
 data = ["sim_"+str(s) for s in sims]
 shm = ["0_01","0_05","0_1","0_2","0_3"] #this has to match the numbers in simulate.sh
 
@@ -29,7 +29,7 @@ wildcard_constraints:
 rule result:
     input:
         expand(OUTPUT + "{d}/{s}/tree_files/all_tree_.raxml.bestTree", d=data, s=shm),
-        expand(OUTPUT + "{d}/{s}/ancestral_sequences/root_naive.txt", d=data, s=shm),
+        expand(OUTPUT + "{d}/{s}/family_sizes.txt", d=data, s=shm),
         expand(OUTPUT+ "{d}/{s}/all_PTP.PTPhSupportPartition.txt.png", d=data, s=shm)
         #expand(OUTPUT + "{d}/tree_files/", d=data),
         #expand(OUTPUT + "{d}/germline_search/partition_0/germline.fasta", d=data)
@@ -261,7 +261,22 @@ rule ancestral_sequence:
         sh {input.script} -r {input.raxml} -d {params.out} -o {output.out} &>> {log}"
 
 
-
+rule get_family_sizes:
+     resources:
+        mem="150G",
+     threads: 10
+     log: os.path.join(OUTPUT, "logs", "plot_family_sizes_{d}_{s}.log")
+     input:
+        script = 'simulation_analyses/get_real_family_sizes.sh',
+        sequences = OUTPUT + "{d}/{s}/family_1.fasta"
+     params:
+         out = OUTPUT + "{d}/{s}"
+     output:
+        family_sizes = OUTPUT + "{d}/{s}/family_sizes.txt"
+     shell:
+        "echo " + platform.node() + " &>> {log} && \
+        export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log}&& \
+        sh {input.script} -d {params.out} &>> {log}"
 
 
 
