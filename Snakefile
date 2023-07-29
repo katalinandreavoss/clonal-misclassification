@@ -17,7 +17,7 @@ PTP=config['PTP']
 
 #data = glob.glob(DATADIR+"*/*.tsv")
 #data = [d.split('.')[0].split('/')[-2] for d in data]
-sims = range(2,9,2)
+sims = range(2,21,2)
 data = ["sim_"+str(s) for s in sims]
 shm = ["0_01","0_05","0_1","0_2","0_3"] #this has to match the numbers in simulate.sh
 
@@ -30,8 +30,8 @@ rule result:
     input:
         expand(OUTPUT + "{d}/{s}/tree_files/all_tree_.raxml.bestTree", d=data, s=shm),
         expand(OUTPUT + "{d}/{s}/family_sizes.txt", d=data, s=shm),
-        expand(OUTPUT+ "{d}/{s}/all_PTP.PTPhSupportPartition.txt.png", d=data, s=shm),
-        expand(OUTPUT + "{d}/{s}/combined/", d=data, s=shm)
+        expand(OUTPUT+ "{d}/{s}/all_PTP.PTPhSupportPartition.txt.png", d=data, s=shm)
+        #expand(OUTPUT + "{d}/{s}/combined/", d=data, s=shm)
         #expand(OUTPUT + "{d}/tree_files/", d=data),
         #expand(OUTPUT + "{d}/germline_search/partition_0/germline.fasta", d=data)
         
@@ -286,6 +286,7 @@ rule compare_ancestral_seq:
      log: os.path.join(OUTPUT, "logs", "compare_ancestral_seq_{d}_{s}.log")
      input:
         script = 'germline_search/combine_naive_discerned.R',
+        script_align = 'germline_search/align_combined.sh',
         naive = OUTPUT + "{d}/{s}/naive.fasta",
         discerned = OUTPUT + "{d}/{s}/ancestral_sequences/"
      params:
@@ -296,10 +297,7 @@ rule compare_ancestral_seq:
         "echo " + platform.node() + " &>> {log} && \
         export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log}&& \
         mkdir -p {output.out} &>> {log}&& \
-        Rscript {input.script} -p {params.out} -n {input.naive} &>> {log}"
-
-
-
-
+        Rscript {input.script} -p {params.out} -n {input.naive} &>> {log}&& \
+        sh {input.script_align} -d {output.out} &>> {log}"
 
 
