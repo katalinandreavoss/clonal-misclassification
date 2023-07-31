@@ -30,10 +30,9 @@ wildcard_constraints:
 
 rule result:
     input:
-        expand(OUTPUT + "{d}/{s}/tree_files/all_tree_.raxml.bestTree", d=data, s=shm),
         expand(OUTPUT + "{d}/{s}/family_sizes.txt", d=data, s=shm),
-        expand(OUTPUT + "{d}/{s}/{r}/", d=data, s=shm,r=shuffle),
-        expand(OUTPUT+ "{d}/{s}/all_PTP.PTPhSupportPartition.txt.png", d=data, s=shm)
+        expand(OUTPUT + "{d}/{s}/{r}/ancestral_sequences/root_naive.txt", d=data, s=shm,r=shuffle)
+        #expand(OUTPUT+ "{d}/{s}/all_PTP.PTPhSupportPartition.txt.png", d=data, s=shm)
         #expand(OUTPUT + "{d}/{s}/combined/", d=data, s=shm)
         #expand(OUTPUT + "{d}/tree_files/", d=data),
         #expand(OUTPUT + "{d}/germline_search/partition_0/germline.fasta", d=data)
@@ -312,13 +311,66 @@ rule shuffle_sequences:
         script = 'resampling/resample_families.R',
         fasta = OUTPUT + "{d}/{s}/all.fasta"
      params:
-         shuffle_rate = "{r}"
+         shuffle_rate = "{r}",
+         out = OUTPUT + "{d}/{s}/{r}/"
      output:
-         out = directory(OUTPUT + "{d}/{s}/{r}/")
+         all = OUTPUT + "{d}/{s}/{r}/family_1.fasta",
      shell:
         "echo " + platform.node() + " &>> {log} && \
         export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log}&& \
-        mkdir -p {output.out} &>> {log}&& \
-        Rscript {input.script} -f {input.fasta} -o {output.out} -r {params.shuffle_rate} &>> {log}"
+        mkdir -p {params.out} &>> {log}&& \
+        Rscript {input.script} -f {input.fasta} -o {params.out} -s {params.shuffle_rate} &>> {log}"
 
 
+rule align_shuffled:
+     resources:
+        mem="50G",
+     threads: 10
+     log: os.path.join(OUTPUT, "logs", "align_shuffled{d}_{s}_{r}.log")
+     input:
+        all = OUTPUT + "{d}/{s}/{r}/family_1.fasta",
+        script = 'tree_building/align_partitions.sh'
+     params:
+         out = OUTPUT + "{d}/{s}/{r}"
+     output:
+        align_fam = OUTPUT + "{d}/{s}/{r}/family_1_aligned.fasta"
+     shell:
+        "echo " + platform.node() + " &>> {log} && \
+        sh {input.script} -d {params.out} &>> {log}"
+
+rule build_tree_shuffled:
+     resources:
+        mem="500G",
+     threads: 100
+     log: os.path.join(OUTPUT, "logs", "build_tree_shuffled_{d}_{s}_{r}.log")
+     input:
+        script = 'tree_building/build_tree.sh',
+        raxml  = RAXML+"raxml-ng",
+        align_check = OUTPUT + "{d}/{s}/{r}/family_1_aligned.fasta"
+     params:
+         out = OUTPUT + "{d}/{s}/{r}"
+     output:
+        out = directory(OUTPUT + "{d}/{s}/{r}/tree_files/")
+     shell:
+        "echo " + platform.node() + " &>> {log} && \
+        sh {input.script} -r {input.raxml} -d {params.out} -o {output.out} &>> {log}"
+
+rule ancestral_sequence_shuffled:
+     resources:
+        mem="150G",
+     threads: 10
+     log: os.path.join(OUTPUT, "logs", "ancestral_sequence_shuffled_{d}_{s}_{r}.log")
+     input:
+        script = 'germline_search/ancestral_seq_raxml.sh',
+        raxml  = RAXML+"raxml-ng",
+        trees = OUTPUT + "{d}/{s}/{r}/tree_files/",
+        alignment = OUTPUT + "{d}/{s}/{r}/family_1_aligned.fasta"
+     params:
+         out = OUTPUT + "{d}/{s}/{r}/"
+     output:
+        out = directory(OUTPUT + "{d}/{s}/{r}/ancestral_sequences/"),
+        all_naive = OUTPUT + "{d}/{s}/{r}/ancestral_sequences/root_naive.txt"
+     shell:
+        "echo " + platform.node() + " &>> {log} && \
+        export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log}&& \
+        sh {input.script} -r {input.raxml} -d {params.out} -o {output.out} &>> {log}"
