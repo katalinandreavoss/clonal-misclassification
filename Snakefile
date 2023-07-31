@@ -20,16 +20,19 @@ PTP=config['PTP']
 sims = range(2,21,2)
 data = ["sim_"+str(s) for s in sims]
 shm = ["0_01","0_05","0_1","0_2","0_3"] #this has to match the numbers in simulate.sh
+shuffle = ["0_025","0_05","0_1","0_2"]
 
 wildcard_constraints:
     d = "sim_\d+",
-    s = "0_\d+"
+    s = "0_\d+",
+    r = "0_\d+"
    # d = "[a-zA-Z]+\d"
 
 rule result:
     input:
         expand(OUTPUT + "{d}/{s}/tree_files/all_tree_.raxml.bestTree", d=data, s=shm),
         expand(OUTPUT + "{d}/{s}/family_sizes.txt", d=data, s=shm),
+        expand(OUTPUT + "{d}/{s}/{r}/", d=data, s=shm,r=shuffle),
         expand(OUTPUT+ "{d}/{s}/all_PTP.PTPhSupportPartition.txt.png", d=data, s=shm)
         #expand(OUTPUT + "{d}/{s}/combined/", d=data, s=shm)
         #expand(OUTPUT + "{d}/tree_files/", d=data),
@@ -299,5 +302,23 @@ rule compare_ancestral_seq:
         mkdir -p {output.out} &>> {log}&& \
         Rscript {input.script} -p {params.out} -n {input.naive} &>> {log}&& \
         sh {input.script_align} -d {output.out} &>> {log}"
+
+rule shuffle_sequences:
+     resources:
+        mem="50G",
+     threads: 10
+     log: os.path.join(OUTPUT, "logs", "shuffle_sequences_{d}_{s}_{r}.log")
+     input:
+        script = 'resampling/resample_families.R',
+        fasta = OUTPUT + "{d}/{s}/all.fasta"
+     params:
+         shuffle_rate = "{r}"
+     output:
+         out = directory(OUTPUT + "{d}/{s}/{r}/")
+     shell:
+        "echo " + platform.node() + " &>> {log} && \
+        export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log}&& \
+        mkdir -p {output.out} &>> {log}&& \
+        Rscript {input.script} -f {input.fasta} -o {output.out} -r {params.shuffle_rate} &>> {log}"
 
 
