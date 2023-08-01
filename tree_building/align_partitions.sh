@@ -8,7 +8,7 @@ do
     esac
 done
 
-clustalo -i ${directory}/all.fasta -t DNA --outfmt=fasta -o ${directory}/all_aligned.fasta
+clustalo -i ${directory}/clean.fasta -t DNA --outfmt=fasta -o ${directory}/clean_aligned.fasta
 
 #for fasta in $directory/*.fasta; do
 #  name=${fasta%.fasta}

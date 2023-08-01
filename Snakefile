@@ -16,7 +16,7 @@ RTG=config['RevertToGermline']
 PTP=config['PTP']
 
 
-clones = range(2,21,2)
+clones = range(4,21,2)
 shm = ["0_01","0_05","0_1","0_2","0_3"] #this has to match the numbers in simulate.sh
 leaves = ["10","20","50","100"]
 sims = range(1,11)
@@ -30,7 +30,7 @@ wildcard_constraints:
 
 rule all:
     input:
-        expand(OUTPUT + "{d}/{s}/{l}/{i}/all_aligned.fasta", d=clones, s=shm,l=leaves, i=sims)
+        expand(OUTPUT + "{d}/{s}/{l}/{i}/clean.fasta", d=clones, s=shm,l=leaves, i=sims)
    
 
 #simulation partis
@@ -83,6 +83,23 @@ rule analyze_partis_output:
         export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
         python {input.script} {input.simulation} {params.out} &>> {log}"
 
+
+rule remove_singletons:
+     resources:
+        mem="5G",
+     threads: 10
+     log: os.path.join(OUTPUT, "logs", "remove_singletons_{d}_{s}_{l}_{i}.log")
+     input:
+        script = 'tree_building/remove_singletons.R',
+        all = OUTPUT + "{d}/{s}/{l}/{i}/all.fasta"
+     params:
+        out = OUTPUT + "{d}/{s}/{l}/{i}/"
+     output:
+        clean = OUTPUT + "{d}/{s}/{l}/{i}/clean.fasta",
+     shell:
+        "echo " + platform.node() + " &>> {log} && \
+        Rscript {input.script} -f {input.all} -o {params.out} &>> {log}"
+
 #align
 rule align:
      resources:
@@ -90,12 +107,12 @@ rule align:
      threads: 10
      log: os.path.join(OUTPUT, "logs", "align_{d}_{s}_{l}_{i}.log")
      input:
-        all = OUTPUT + "{d}/{s}/{l}/{i}/all.fasta",
+        all = OUTPUT + "{d}/{s}/{l}/{i}/clean.fasta",
         script = 'tree_building/align_partitions.sh'
      params:
          out = OUTPUT + "{d}/{s}/{l}/{i}/"
      output:
-        align = OUTPUT + "{d}/{s}/{l}/{i}/all_aligned.fasta",
+        align = OUTPUT + "{d}/{s}/{l}/{i}/clean_aligned.fasta",
      shell:
         "echo " + platform.node() + " &>> {log} && \
         sh {input.script} -d {params.out} &>> {log}"
@@ -103,7 +120,7 @@ rule align:
 #build megatree
 rule build_tree:
      resources:
-        mem="500G",
+        mem="100G",
      threads: 100
      log: os.path.join(OUTPUT, "logs", "build_tree_{d}_{s}_{l}_{i}.log")
      input:
@@ -114,7 +131,7 @@ rule build_tree:
          out = OUTPUT + "{d}/{s}/{l}/{i}/"
      output:
         out = directory(OUTPUT + "{d}/{s}/{l}/{i}/tree_files/"),
-        tree = OUTPUT + "{d}/{s}/{l}/{i}/tree_files/all_tree_.raxml.bestTree"
+        tree = OUTPUT + "{d}/{s}/{l}/{i}/tree_files/mega_tree_.raxml.bestTree"
      shell:
         "echo " + platform.node() + " &>> {log} && \
         sh {input.script} -r {input.raxml} -d {params.out} -o {output.out} &>> {log}"
@@ -144,7 +161,7 @@ rule cut_tree:
 
 rule get_family_sizes:
      resources:
-        mem="150G",
+        mem="10G",
      threads: 10
      log: os.path.join(OUTPUT, "logs", "plot_family_sizes_{d}_{s}.log")
      input:
@@ -159,26 +176,7 @@ rule get_family_sizes:
         export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log}&& \
         sh {input.script} -d {params.out} &>> {log}"
 
-rule compare_ancestral_seq:
-     resources:
-        mem="50G",
-     threads: 10
-     log: os.path.join(OUTPUT, "logs", "compare_ancestral_seq_{d}_{s}.log")
-     input:
-        script = 'germline_search/combine_naive_discerned.R',
-        script_align = 'germline_search/align_combined.sh',
-        naive = OUTPUT + "{d}/{s}/naive.fasta",
-        discerned = OUTPUT + "{d}/{s}/ancestral_sequences/"
-     params:
-         out = OUTPUT + "{d}/{s}"
-     output:
-         out = directory(OUTPUT + "{d}/{s}/combined/")
-     shell:
-        "echo " + platform.node() + " &>> {log} && \
-        export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log}&& \
-        mkdir -p {output.out} &>> {log}&& \
-        Rscript {input.script} -p {params.out} -n {input.naive} &>> {log}&& \
-        sh {input.script_align} -d {output.out} &>> {log}"
+
 
 
 
