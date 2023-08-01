@@ -30,13 +30,13 @@ wildcard_constraints:
 
 rule all:
     input:
-        expand(OUTPUT + "{d}/{s}/{l}/{i}/clones_{d}_shm_{s}_leaves_{l}_sim_{i}.yaml", d=clones, s=shm,l=leaves, i=sims)
+        expand(OUTPUT + "{d}/{s}/{l}/{i}/all.fasta", d=clones, s=shm,l=leaves, i=sims)
    
 
 #simulation partis
 rule simulate:
     resources:
-        mem="10G",
+        mem="20G",
     threads: 10
     log: os.path.join(OUTPUT, "logs", "simulate_{d}_{s}_{l}_{i}.log")
     input:
@@ -65,23 +65,23 @@ rule simulate:
 #analyze_partis_output
 rule analyze_partis_output:
      resources:
-        mem="5G",
+        mem="10G",
      threads: 10
-     log: os.path.join(OUTPUT, "logs", "analyze_partis_output_{d}_{s}.log")
+     log: os.path.join(OUTPUT, "logs", "analyze_partis_output_{d}_{s}_{l}_{i}.log")
      input:
-        script = 'analyze_partis_output/simulation_analysis.sh',
+        script = 'analyze_partis_output/yaml_to_families_new.py',
         partis = PARTIS,
-        simulation = OUTPUT + "{d}/{s}/sim_{s}.yaml"
+        simulation = OUTPUT + "{d}/{s}/{l}/{i}/clones_{d}_shm_{s}_leaves_{l}_sim_{i}.yaml"
      params:
-        out = OUTPUT + "{d}/{s}/"
+        out = OUTPUT + "{d}/{s}/{l}/{i}/"
      output:
-        naive = OUTPUT + "{d}/{s}/naive.fasta",
-        all = OUTPUT + "{d}/{s}/all.fasta",
-        clonal_families = OUTPUT + "{d}/{s}/family_1.fasta"
+        naive = OUTPUT + "{d}/{s}/{l}/{i}/naive.fasta",
+        all = OUTPUT + "{d}/{s}/{l}/{i}/all.fasta",
+        clonal_families = OUTPUT + "{d}/{s}/{l}/{i}/family_1.fasta"
      shell:
         "echo " + platform.node() + " &>> {log} && \
         export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
-        sh {input.script} -s {input.simulation} -p {input.partis} -o {params.out} &>> {log}"
+        python {input.script} {input.simulation} {params.out} &>> {log}"
 
 
 rule align_partitions:

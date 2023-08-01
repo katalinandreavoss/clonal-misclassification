@@ -1,10 +1,8 @@
 import sys
-import subprocess
 import yaml
 
 yaml_file = sys.argv[1]  # .yaml file from partis partition as input
-partis_dir = sys.argv[2]
-output_dir = sys.argv[3]
+output_dir = sys.argv[2]
 
 conf = yaml.load(open(yaml_file), Loader=yaml.Loader)
 naive= open(output_dir+"naive.fasta","w") #file for naive sequences
