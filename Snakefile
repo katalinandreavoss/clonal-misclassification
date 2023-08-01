@@ -30,7 +30,7 @@ wildcard_constraints:
 
 rule all:
     input:
-        expand(OUTPUT + "{d}/{s}/{l}/{i}/all.fasta", d=clones, s=shm,l=leaves, i=sims)
+        expand(OUTPUT + "{d}/{s}/{l}/{i}/all_aligned.fasta", d=clones, s=shm,l=leaves, i=sims)
    
 
 #simulation partis
@@ -83,40 +83,38 @@ rule analyze_partis_output:
         export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
         python {input.script} {input.simulation} {params.out} &>> {log}"
 
-
-rule align_partitions:
+#align
+rule align:
      resources:
-        mem="50G",
+        mem="10G",
      threads: 10
-     log: os.path.join(OUTPUT, "logs", "align_partitions_{d}_{s}.log")
+     log: os.path.join(OUTPUT, "logs", "align_{d}_{s}_{l}_{i}.log")
      input:
-        all = OUTPUT + "{d}/{s}/all.fasta",
-        clonal_families = OUTPUT + "{d}/{s}/family_1.fasta",
+        all = OUTPUT + "{d}/{s}/{l}/{i}/all.fasta",
         script = 'tree_building/align_partitions.sh'
      params:
-         out = OUTPUT + "{d}/{s}/"
+         out = OUTPUT + "{d}/{s}/{l}/{i}/"
      output:
-        align = OUTPUT + "{d}/{s}/all_aligned.fasta",
-        align_fam = OUTPUT + "{d}/{s}/family_1_aligned.fasta"
+        align = OUTPUT + "{d}/{s}/{l}/{i}/all_aligned.fasta",
      shell:
         "echo " + platform.node() + " &>> {log} && \
         sh {input.script} -d {params.out} &>> {log}"
 
-
+#build megatree
 rule build_tree:
      resources:
         mem="500G",
      threads: 100
-     log: os.path.join(OUTPUT, "logs", "build_tree_{d}_{s}.log")
+     log: os.path.join(OUTPUT, "logs", "build_tree_{d}_{s}_{l}_{i}.log")
      input:
         script = 'tree_building/build_tree.sh',
         raxml  = RAXML+"raxml-ng",
-        align_check = OUTPUT + "{d}/{s}/all_aligned.fasta"
+        align_check = OUTPUT + "{d}/{s}/{l}/{i}/all_aligned.fasta"
      params:
-         out = OUTPUT + "{d}/{s}/"
+         out = OUTPUT + "{d}/{s}/{l}/{i}/"
      output:
-        out = directory(OUTPUT + "{d}/{s}/tree_files/"),
-        tree = OUTPUT + "{d}/{s}/tree_files/all_tree_.raxml.bestTree"
+        out = directory(OUTPUT + "{d}/{s}/{l}/{i}/tree_files/"),
+        tree = OUTPUT + "{d}/{s}/{l}/{i}/tree_files/all_tree_.raxml.bestTree"
      shell:
         "echo " + platform.node() + " &>> {log} && \
         sh {input.script} -r {input.raxml} -d {params.out} -o {output.out} &>> {log}"
