@@ -15,108 +15,41 @@ VQUEST=config['vquest']
 RTG=config['RevertToGermline']
 PTP=config['PTP']
 
-#data = glob.glob(DATADIR+"*/*.tsv")
-#data = [d.split('.')[0].split('/')[-2] for d in data]
-sims = range(2,21,2)
-data = ["sim_"+str(s) for s in sims]
+
+clones = range(2,21,2)
 shm = ["0_01","0_05","0_1","0_2","0_3"] #this has to match the numbers in simulate.sh
-shuffle = ["0_025","0_05","0_1","0_2"]
+leaves = ["10","20","50","100"]
+sims = range(1,11)
+
 
 wildcard_constraints:
-    d = "sim_\d+",
+    d = "\d+",
     s = "0_\d+",
-    r = "0_\d+"
-   # d = "[a-zA-Z]+\d"
+    l = "\d+",
+    i = "\d+"
 
-rule result:
+rule all:
     input:
-        expand(OUTPUT + "{d}/{s}/family_sizes.txt", d=data, s=shm),
-        expand(OUTPUT + "{d}/{s}/{r}/ancestral_sequences/root_naive.txt", d=data, s=shm,r=shuffle)
-        #expand(OUTPUT+ "{d}/{s}/all_PTP.PTPhSupportPartition.txt.png", d=data, s=shm)
-        #expand(OUTPUT + "{d}/{s}/combined/", d=data, s=shm)
-        #expand(OUTPUT + "{d}/tree_files/", d=data),
-        #expand(OUTPUT + "{d}/germline_search/partition_0/germline.fasta", d=data)
-        
-        
-############################ 
-#simulate from existing data
-#rule tsv_to_fasta:
-#    resources:
-#        mem="10G",
-#    threads: 2
-#    log: os.path.join(DATADIR, "logs", "tsv_to_fasta_{d}.log")
-#    input:
-#        tsv = DATADIR+"{d}/airr-covid-19.tsv", 
-#        script = 'Download_data/tsv_to_fasta.py',
-#    output:
-#        fasta= OUTPUT + "{d}.fasta"
-#    shell:
-#        "echo " + platform.node() + " &>> {log} && \
-#        python {input.script} -i {input.tsv} -o {output.fasta} &&>> {log}"
+        expand(OUTPUT + "{d}/{s}/{l}/{i}/clones_{d}_shm_{s}_leaves_{l}_sim_{i}.yaml", d=clones, s=shm,l=leaves, i=sims)
+   
 
-
-
-#cache_parameters partis
-#rule cache_parameters:
-#    resources:
-#        mem="20G",
-#    threads: 10
-#    log: os.path.join(DATADIR, "logs", "cache_parameters_{d}.log")
-#    input:
-#        fasta = OUTPUT + "{d}.fasta",
-#        script = 'partis/partis_simulation/cache_parameters.sh',
- #       partis = PARTIS+"bin/partis"
- #   output:
- #       out = directory(OUTPUT + "{d}/")
- #   shell:
- #       "module purge &>> {log} && \
- #       module load gcc/8.3.0 &>> {log} && \
- #       module load gsl/2.5 &>> {log} && \
- #       module load git &>> {log} && \
- #       export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
- #       echo " + platform.node() + " &>> {log} && \
- #       mkdir {output.out} &>> {log} && \
- #       sh {input.script} -f {input.fasta} -p {input.partis} -o {output.out} &>> {log}"
-
-#partition partis
-#rule partition:
-#    resources:
-#        mem_mb="100G",
-#	mem="180G",
-#    threads: 100
-#    log: os.path.join(DATADIR, "logs", "partition_{d}.log")
-#    input:
-#        fasta = OUTPUT + "{d}.fasta",
-#        script = 'partis/partis_simulation/partition.sh',
-#        partis = HAMPARTIS+"bin/partis",
-#        out = OUTPUT + "{d}/"
-#    output:
-#        out= OUTPUT + "{d}/pd.yaml"
-#    shell:
-#        "module purge &>> {log} && \
-#        module load gcc/8.3.0 &>> {log} && \
-#        module load gsl/2.5 &>> {log} && \
-#        module load git &>> {log} && \
-#        export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
-#        echo " + platform.node() + " &>> {log} && \
-#        sh {input.script} -f {input.fasta} -p {input.partis} -o {input.out} &>> {log}"
-
-############################
-#simulate from scratch
 #simulation partis
-
 rule simulate:
     resources:
-        mem="50G",
+        mem="10G",
     threads: 10
-    log: os.path.join(OUTPUT, "logs", "simulate_{d}_{s}.log")
+    log: os.path.join(OUTPUT, "logs", "simulate_{d}_{s}_{l}_{i}.log")
     input:
         script = 'partis/partis_simulation/simulate.sh',
         partis = PARTIS+"bin/partis"
     params:
-        out_dir = OUTPUT + "{d}/{s}"
+        out_dir = OUTPUT + "{d}/{s}/{l}/{i}",
+        clones = "{d}",
+        shm = "{s}",
+        leaves = "{l}",
+        sim = "{i}"
     output:
-        out= OUTPUT + "{d}/{s}/sim_{s}.yaml"
+        out = OUTPUT + "{d}/{s}/{l}/{i}/clones_{d}_shm_{s}_leaves_{l}_sim_{i}.yaml"
     shell:
         "module purge &>> {log} && \
         module load gcc/8.3.0 &>> {log} && \
@@ -125,12 +58,14 @@ rule simulate:
         export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
         echo " + platform.node() + " &>> {log} && \
         export LD_LIBRARY_PATH=/home1/kavoss/partis_with_simulation/partis/packages/bpp-newlik/_build/lib64:$LD_LIBRARY_PATH &>> {log} && \
-        sh {input.script} -p {input.partis} -o {params.out_dir} &>> {log}"
+        sh {input.script} -p {input.partis} -o {params.out_dir} -c {params.clones} -s {params.shm} -l {params.leaves} -i {params.sim} &>> {log}"
+
+
 
 #analyze_partis_output
 rule analyze_partis_output:
      resources:
-        mem="50G",
+        mem="5G",
      threads: 10
      log: os.path.join(OUTPUT, "logs", "analyze_partis_output_{d}_{s}.log")
      input:
@@ -148,41 +83,6 @@ rule analyze_partis_output:
         export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
         sh {input.script} -s {input.simulation} -p {input.partis} -o {params.out} &>> {log}"
 
-
-rule findVDJ:
-     resources:
-        mem="10G",
-     threads: 10
-     log: os.path.join(OUTPUT, "logs", "findVDJ_{d}.log")
-     input:
-        dir = OUTPUT + "{d}/partitions/",
-        script = 'germline_search/IMGT_vrequest.sh',
-        vquest = VQUEST,
-        partition_check = OUTPUT + "{d}/partitions/sim_5_partition_0.fasta"
-     output:
-        out = directory(OUTPUT + "{d}/germline_search/"),
-        dir_check = directory(OUTPUT + "{d}/germline_search/sim_5_partition_0"),
-        seq = OUTPUT + "{d}/germline_search/sim_5_partition_0/3_Nt-sequences.txt"
-     shell:
-        "echo " + platform.node() + " &>> {log} && \
-        sh {input.script} -d {input.dir} -v {input.vquest} -o {output.out} &>> {log}"
-
-rule find_germline:
-     resources:
-        mem="10G",
-     threads: 10
-     log: os.path.join(OUTPUT, "logs", "find_germline{d}.log")
-     input:
-        dir = OUTPUT + "{d}/germline_search/",
-        script = 'germline_search/find_germline_RevertToGermline.sh',
-        RevertToGermline = RTG,
-        seq_check = OUTPUT + "{d}/germline_search/sim_5_partition_0/3_Nt-sequences.txt"
-     output:
-        seq = OUTPUT + "{d}/germline_search/sim_5_partition_0/germline.fasta"
-     shell:
-        "echo " + platform.node() + " &>> {log} && \
-        export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
-        sh {input.script} -d {input.dir} -r {input.RevertToGermline} -o {input.dir} &>> {log}"
 
 rule align_partitions:
      resources:
@@ -243,26 +143,6 @@ rule cut_tree:
         python {input.ptp} -t {input.tree} -o {params.out} &>> {log}"
 
 
-rule ancestral_sequence:
-     resources:
-        mem="150G",
-     threads: 10
-     log: os.path.join(OUTPUT, "logs", "ancestral_sequence_{d}_{s}.log")
-     input:
-        script = 'germline_search/ancestral_seq_raxml.sh',
-        raxml  = RAXML+"raxml-ng",
-        tree = OUTPUT + "{d}/{s}/tree_files/all_tree_.raxml.bestTree",
-        alignment = OUTPUT + "{d}/{s}/family_1_aligned.fasta"
-     params:
-         out = OUTPUT + "{d}/{s}/"
-     output:
-        out = directory(OUTPUT + "{d}/{s}/ancestral_sequences/"),
-        all_naive = OUTPUT + "{d}/{s}/ancestral_sequences/root_naive.txt"
-     shell:
-        "echo " + platform.node() + " &>> {log} && \
-        export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log}&& \
-        sh {input.script} -r {input.raxml} -d {params.out} -o {output.out} &>> {log}"
-
 
 rule get_family_sizes:
      resources:
@@ -302,75 +182,5 @@ rule compare_ancestral_seq:
         Rscript {input.script} -p {params.out} -n {input.naive} &>> {log}&& \
         sh {input.script_align} -d {output.out} &>> {log}"
 
-rule shuffle_sequences:
-     resources:
-        mem="50G",
-     threads: 10
-     log: os.path.join(OUTPUT, "logs", "shuffle_sequences_{d}_{s}_{r}.log")
-     input:
-        script = 'resampling/resample_families.R',
-        fasta = OUTPUT + "{d}/{s}/all.fasta"
-     params:
-         shuffle_rate = "{r}",
-         out = OUTPUT + "{d}/{s}/{r}/"
-     output:
-         all = OUTPUT + "{d}/{s}/{r}/family_1.fasta",
-     shell:
-        "echo " + platform.node() + " &>> {log} && \
-        export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log}&& \
-        mkdir -p {params.out} &>> {log}&& \
-        Rscript {input.script} -f {input.fasta} -o {params.out} -s {params.shuffle_rate} &>> {log}"
 
 
-rule align_shuffled:
-     resources:
-        mem="50G",
-     threads: 10
-     log: os.path.join(OUTPUT, "logs", "align_shuffled{d}_{s}_{r}.log")
-     input:
-        all = OUTPUT + "{d}/{s}/{r}/family_1.fasta",
-        script = 'tree_building/align_partitions.sh'
-     params:
-         out = OUTPUT + "{d}/{s}/{r}"
-     output:
-        align_fam = OUTPUT + "{d}/{s}/{r}/family_1_aligned.fasta"
-     shell:
-        "echo " + platform.node() + " &>> {log} && \
-        sh {input.script} -d {params.out} &>> {log}"
-
-rule build_tree_shuffled:
-     resources:
-        mem="500G",
-     threads: 100
-     log: os.path.join(OUTPUT, "logs", "build_tree_shuffled_{d}_{s}_{r}.log")
-     input:
-        script = 'tree_building/build_tree.sh',
-        raxml  = RAXML+"raxml-ng",
-        align_check = OUTPUT + "{d}/{s}/{r}/family_1_aligned.fasta"
-     params:
-         out = OUTPUT + "{d}/{s}/{r}"
-     output:
-        out = directory(OUTPUT + "{d}/{s}/{r}/tree_files/")
-     shell:
-        "echo " + platform.node() + " &>> {log} && \
-        sh {input.script} -r {input.raxml} -d {params.out} -o {output.out} &>> {log}"
-
-rule ancestral_sequence_shuffled:
-     resources:
-        mem="150G",
-     threads: 10
-     log: os.path.join(OUTPUT, "logs", "ancestral_sequence_shuffled_{d}_{s}_{r}.log")
-     input:
-        script = 'germline_search/ancestral_seq_raxml.sh',
-        raxml  = RAXML+"raxml-ng",
-        trees = OUTPUT + "{d}/{s}/{r}/tree_files/",
-        alignment = OUTPUT + "{d}/{s}/{r}/family_1_aligned.fasta"
-     params:
-         out = OUTPUT + "{d}/{s}/{r}/"
-     output:
-        out = directory(OUTPUT + "{d}/{s}/{r}/ancestral_sequences/"),
-        all_naive = OUTPUT + "{d}/{s}/{r}/ancestral_sequences/root_naive.txt"
-     shell:
-        "echo " + platform.node() + " &>> {log} && \
-        export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log}&& \
-        sh {input.script} -r {input.raxml} -d {params.out} -o {output.out} &>> {log}"
