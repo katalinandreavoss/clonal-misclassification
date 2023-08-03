@@ -18,7 +18,7 @@ PTP=config['PTP']
 
 clones = range(4,21,2)
 shm = ["0_01","0_05","0_1","0_2","0_3"] #this has to match the numbers in simulate.sh
-leaves = ["10","20","50","100"]
+leaves = ["10","20","50"]
 sims = range(1,11)
 
 
@@ -30,7 +30,8 @@ wildcard_constraints:
 
 rule all:
     input:
-        expand(OUTPUT + "{d}/{s}/{l}/{i}/clean.fasta", d=clones, s=shm,l=leaves, i=sims)
+        expand(OUTPUT + "{d}/{s}/{l}/{i}/family_sizes.txt", d=clones, s=shm,l=leaves, i=sims),
+        expand(OUTPUT+ "{d}/{s}/{l}/{i}/mega.PTPhSupportPartition.txt.png", d=clones, s=shm,l=leaves, i=sims)
    
 
 #simulation partis
@@ -103,7 +104,7 @@ rule remove_singletons:
 #align
 rule align:
      resources:
-        mem="10G",
+        mem="5G",
      threads: 10
      log: os.path.join(OUTPUT, "logs", "align_{d}_{s}_{l}_{i}.log")
      input:
@@ -120,13 +121,13 @@ rule align:
 #build megatree
 rule build_tree:
      resources:
-        mem="100G",
-     threads: 100
+        mem="10G",
+     threads: 16
      log: os.path.join(OUTPUT, "logs", "build_tree_{d}_{s}_{l}_{i}.log")
      input:
         script = 'tree_building/build_tree.sh',
         raxml  = RAXML+"raxml-ng",
-        align_check = OUTPUT + "{d}/{s}/{l}/{i}/all_aligned.fasta"
+        align_check = OUTPUT + "{d}/{s}/{l}/{i}/clean_aligned.fasta"
      params:
          out = OUTPUT + "{d}/{s}/{l}/{i}/"
      output:
@@ -139,42 +140,45 @@ rule build_tree:
 #this rule does not run on cluster because it needs X11 forwarding: do ssh with -X flag and then run snakemake without running it on the cluster
 rule cut_tree:
      resources:
-        mem="500G",
+        mem="10G",
      threads: 10
-     log: os.path.join(OUTPUT, "logs", "cut_tree_{d}_{s}.log")
+     log: os.path.join(OUTPUT, "logs", "cut_tree_{d}_{s}_{l}_{i}.log")
      input:
         ptp  = PTP,
-        tree = OUTPUT + "{d}/{s}/tree_files/all_tree_.raxml.bestTree"
+        tree = OUTPUT + "{d}/{s}/{l}/{i}/tree_files/mega_tree_.raxml.bestTree"
      params:
-         out = OUTPUT + "{d}/{s}/all_PTP"
+         out = OUTPUT + "{d}/{s}/{l}/{i}/mega"
      output:
-        tree = OUTPUT + "{d}/{s}/all_PTP.PTPhSupportPartition.txt.sh.tre",
-        summary = OUTPUT + "{d}/{s}/all_PTP.PTPPartitonSummary.txt",
-        partitions = OUTPUT+ "{d}/{s}/all_PTP.PTPPartitions.txt",
-        png = OUTPUT+ "{d}/{s}/all_PTP.PTPhSupportPartition.txt.png"
+        tree = OUTPUT + "{d}/{s}/{l}/{i}/mega.PTPhSupportPartition.txt.sh.tre",
+        summary = OUTPUT + "{d}/{s}/{l}/{i}/mega.PTPPartitonSummary.txt",
+        partitions = OUTPUT+ "{d}/{s}/{l}/{i}/mega.PTPPartitions.txt",
+        png = OUTPUT+ "{d}/{s}/{l}/{i}/mega.PTPhSupportPartition.txt.png"
      shell:
         "echo " + platform.node() + " &>> {log} && \
         export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
         python {input.ptp} -t {input.tree} -o {params.out} &>> {log}"
 
 
-
 rule get_family_sizes:
      resources:
-        mem="10G",
+        mem="1G",
      threads: 10
-     log: os.path.join(OUTPUT, "logs", "plot_family_sizes_{d}_{s}.log")
+     log: os.path.join(OUTPUT, "logs", "plot_family_sizes_{d}_{s}_{l}_{i}.log")
      input:
         script = 'simulation_analyses/get_real_family_sizes.sh',
-        sequences = OUTPUT + "{d}/{s}/family_1.fasta"
+        sequences = OUTPUT + "{d}/{s}/{l}/{i}/family_1.fasta"
      params:
-         out = OUTPUT + "{d}/{s}"
+         out = OUTPUT + "{d}/{s}/{l}/{i}/",
+         clones = "{d}",
+         shm = "{s}",
+         leaves = "{l}",
+         sim = "{i}"
      output:
-        family_sizes = OUTPUT + "{d}/{s}/family_sizes.txt"
+        family_sizes = OUTPUT + "{d}/{s}/{l}/{i}/family_sizes.txt"
      shell:
         "echo " + platform.node() + " &>> {log} && \
         export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log}&& \
-        sh {input.script} -d {params.out} &>> {log}"
+        sh {input.script} -d {params.out} -c {params.clones} -s {params.shm} -l {params.leaves} -i {params.sim} &>> {log}"
 
 
 
