@@ -14,8 +14,8 @@ path<-"/home1/kavoss/simulations/"
 get_values_mixcr<-function(filepath) {
   mixcr<-read.table(paste0(filepath,"clean.fasta.vdjca.clns_IGH.tsv"),header=TRUE, fill=TRUE)
   mixcr_sum<-mixcr %>% group_by(readCount) %>% summarise(n = n())
-  number_fams <- length(mixcr[mixcr$readCount!=1,]$readCount)
-  med_fam_size <- median(mixcr_sum[mixcr_sum$n!=1,]$n)
+  number_fams <- length(mixcr$readCount)
+  med_fam_size <- median(mixcr_sum$n)
   return(paste(number_fams,med_fam_size))
 }
 

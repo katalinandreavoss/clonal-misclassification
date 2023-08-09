@@ -33,7 +33,9 @@ rule all:
     input:
         expand(OUTPUT + "{d}/{s}/{l}/{i}/family_sizes.txt", d=clones, s=shm,l=leaves, i=sims),
         expand(OUTPUT+ "{d}/{s}/{l}/{i}/mptp_data.txt", d=clones, s=shm,l=leaves, i=sims),
+        expand(OUTPUT+ "{d}/{s}/{l}/{i}/mptp_data_singletons.txt", d=clones, s=shm,l=leaves, i=sims),
         expand(OUTPUT + "{d}/{s}/{l}/{i}/clean.fasta.vdjca.clns_IGH.tsv", d=clones, s=shm,l=leaves, i=sims)
+       
    
 
 #simulation partis
@@ -192,6 +194,24 @@ rule get_mptp_values:
         out = OUTPUT + "{d}/{s}/{l}/{i}/"
      output:
         out = OUTPUT+ "{d}/{s}/{l}/{i}/mptp_data.txt"
+     shell:
+        "echo " + platform.node() + " &>> {log} && \
+        export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
+        python {input.script} {params.out} &>> {log}"
+
+
+rule get_mptp_values_singletons:
+     resources:
+        mem="2G",
+     threads: 10
+     log: os.path.join(OUTPUT, "logs", "get_mptp_values_singletons_{d}_{s}_{l}_{i}.log")
+     input:
+        script = 'simulation_analyses/analyse_ptp_output_with_singletons.py',
+        partitions = OUTPUT+ "{d}/{s}/{l}/{i}/mega_mptp.txt"
+     params:
+        out = OUTPUT + "{d}/{s}/{l}/{i}/"
+     output:
+        out = OUTPUT+ "{d}/{s}/{l}/{i}/mptp_data_singletons.txt"
      shell:
         "echo " + platform.node() + " &>> {log} && \
         export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
