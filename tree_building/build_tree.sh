@@ -10,13 +10,15 @@ do
     esac
 done
 
-for fasta in $directory/*_aligned.fasta; do
-  name=${fasta%_aligned.fasta}
-  name=${name##*/}
-  lines=$(cat ${fasta} | grep ">" | wc -l)
-  if [ ${lines} -gt 4 ]; then
-    ${raxml} -model GTR -msa ${fasta} -seed 42 -prefix ${output}/${name}_tree_ --search ML tree search
-  fi
-done
+${raxml} -model GTR -msa ${directory}/clean_aligned.fasta -seed 42 -prefix ${output}/mega_tree_ --threads auto{16} --search ML tree search
+
+#for fasta in $directory/*_aligned.fasta; do
+#  name=${fasta%_aligned.fasta}
+#  name=${name##*/}
+#  lines=$(cat ${fasta} | grep ">" | wc -l)
+#  if [ ${lines} -gt 4 ]; then
+#    ${raxml} -model GTR -msa ${fasta} -seed 42 -prefix ${output}/${name}_tree_ --search ML tree search
+#  fi
+#done
 
 

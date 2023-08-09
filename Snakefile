@@ -14,11 +14,12 @@ RAXML=config['raxml']
 VQUEST=config['vquest']
 RTG=config['RevertToGermline']
 PTP=config['PTP']
+MPTP=config['MPTP']
 
 
 clones = range(4,21,2)
 shm = ["0_01","0_05","0_1","0_2","0_3"] #this has to match the numbers in simulate.sh
-leaves = ["10","20","50"]
+leaves = ["10","20","50","100"]
 sims = range(1,11)
 
 
@@ -31,7 +32,8 @@ wildcard_constraints:
 rule all:
     input:
         expand(OUTPUT + "{d}/{s}/{l}/{i}/family_sizes.txt", d=clones, s=shm,l=leaves, i=sims),
-        expand(OUTPUT+ "{d}/{s}/{l}/{i}/mega.PTPhSupportPartition.txt.png", d=clones, s=shm,l=leaves, i=sims)
+        expand(OUTPUT+ "{d}/{s}/{l}/{i}/mptp_data.txt", d=clones, s=shm,l=leaves, i=sims),
+        expand(OUTPUT + "{d}/{s}/{l}/{i}/clean.fasta.vdjca.clns_IGH.tsv", d=clones, s=shm,l=leaves, i=sims)
    
 
 #simulation partis
@@ -140,7 +142,7 @@ rule build_tree:
 #this rule does not run on cluster because it needs X11 forwarding: do ssh with -X flag and then run snakemake without running it on the cluster
 rule cut_tree:
      resources:
-        mem="10G",
+        mem="200G",
      threads: 10
      log: os.path.join(OUTPUT, "logs", "cut_tree_{d}_{s}_{l}_{i}.log")
      input:
@@ -158,6 +160,42 @@ rule cut_tree:
         export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
         python {input.ptp} -t {input.tree} -o {params.out} &>> {log}"
 
+#this rule does not run on cluster because it needs X11 forwarding: do ssh with -X flag and then run snakemake without running it on the cluster
+rule cut_tree_mptp:
+     resources:
+        mem="200G",
+     threads: 10
+     log: os.path.join(OUTPUT, "logs", "cut_tree_mptp_{d}_{s}_{l}_{i}.log")
+     input:
+        mptp  = MPTP+"mptp",
+        tree = OUTPUT + "{d}/{s}/{l}/{i}/tree_files/mega_tree_.raxml.bestTree"
+     params:
+         out = OUTPUT + "{d}/{s}/{l}/{i}/mega_mptp"
+     output:
+        partitions = OUTPUT+ "{d}/{s}/{l}/{i}/mega_mptp.txt",
+        svg = OUTPUT+ "{d}/{s}/{l}/{i}/mega_mptp.svg"
+     shell:
+        "echo " + platform.node() + " &>> {log} && \
+        export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
+        {input.mptp} --ml --single --tree_file {input.tree} --output_file {params.out} &>> {log}"
+
+
+rule get_mptp_values:
+     resources:
+        mem="2G",
+     threads: 10
+     log: os.path.join(OUTPUT, "logs", "get_mptp_values_{d}_{s}_{l}_{i}.log")
+     input:
+        script = 'simulation_analyses/analyse_ptp_output.py',
+        partitions = OUTPUT+ "{d}/{s}/{l}/{i}/mega_mptp.txt"
+     params:
+        out = OUTPUT + "{d}/{s}/{l}/{i}/"
+     output:
+        out = OUTPUT+ "{d}/{s}/{l}/{i}/mptp_data.txt"
+     shell:
+        "echo " + platform.node() + " &>> {log} && \
+        export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
+        python {input.script} {params.out} &>> {log}"
 
 rule get_family_sizes:
      resources:
@@ -181,6 +219,25 @@ rule get_family_sizes:
         sh {input.script} -d {params.out} -c {params.clones} -s {params.shm} -l {params.leaves} -i {params.sim} &>> {log}"
 
 
+rule  mixcr:
+     resources:
+        mem="20G",
+     threads: 10
+     log: os.path.join(OUTPUT, "logs", "mixcr_{d}_{s}_{l}_{i}.log")
+     input:
+        fasta = OUTPUT + "{d}/{s}/{l}/{i}/clean.fasta"
+     params:
+         out = OUTPUT + "{d}/{s}/{l}/{i}/clean.fasta.vdjca.clns.tsv"
+     output:
+        aligned = OUTPUT + "{d}/{s}/{l}/{i}/clean.fasta.vdjca",
+        clones = OUTPUT + "{d}/{s}/{l}/{i}/clean.fasta.vdjca.clns",
+        IGH = OUTPUT + "{d}/{s}/{l}/{i}/clean.fasta.vdjca.clns_IGH.tsv"
+     shell:
+        "echo " + platform.node() + " &>> {log} && \
+        export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
+        mixcr align --preset rnaseq-bcr-full-length --species HomoSapiens {input.fasta} {output.aligned} &>> {log} && \
+        mixcr assemble {output.aligned} {output.clones} &>> {log} && \
+        mixcr exportClones {output.clones} {params.out} &>> {log}"
 
 
 
