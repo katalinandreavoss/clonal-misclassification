@@ -4,7 +4,7 @@
 
 ## load packages
 require("Biostrings")
-require("reshape")
+require("reshape2")
 library("devtools")
 #install_github("helixcn/seqRFLP")
 require("seqRFLP")
@@ -35,7 +35,7 @@ sequence <- paste(fastaFile)
 df <- data.frame(seq_name, sequence)
 
 ## separate columns for seqID, famID, seqID within family
-df <- transform(df, seq_name = colsplit(seq_name, split = "\\_", names = c('fam','family', 'c','desc')))
+df <- transform(df, seq_name = colsplit(seq_name, "_", names = c('fam','family', 'c','desc')))
 
 df <- do.call(data.frame, df)
 df <- df[,c('seq_name.family','seq_name.desc','sequence')]
@@ -84,7 +84,7 @@ dfs3[[i]] <- df3
 
 ## save files, one fasta file for each family
 lapply(1:length(dfs3), function(i) dataframe2fas(dfs3[[i]], 
-                                                 file = paste0(opt$out,opt$shuffle,'/family_',names(dfs)[i], ".fasta")))
+                                                 file = paste0(opt$out,'/family_',names(dfs)[i], ".fasta")))
 
 
 

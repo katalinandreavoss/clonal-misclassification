@@ -20,7 +20,7 @@ MPTP=config['MPTP']
 clones = range(4,21,2)
 shm = ["0_01","0_05","0_1","0_2","0_3"] #this has to match the numbers in simulate.sh
 leaves = ["10","20","50","100"]
-sims = range(1,11)
+sims = range(1,51)
 
 
 wildcard_constraints:
@@ -31,17 +31,18 @@ wildcard_constraints:
 
 rule all:
     input:
-        expand(OUTPUT + "{d}/{s}/{l}/{i}/family_sizes.txt", d=clones, s=shm,l=leaves, i=sims),
-        expand(OUTPUT+ "{d}/{s}/{l}/{i}/mptp_data.txt", d=clones, s=shm,l=leaves, i=sims),
-        expand(OUTPUT+ "{d}/{s}/{l}/{i}/mptp_data_singletons.txt", d=clones, s=shm,l=leaves, i=sims),
-        expand(OUTPUT + "{d}/{s}/{l}/{i}/clean.fasta.vdjca.clns_IGH.tsv", d=clones, s=shm,l=leaves, i=sims)
+        expand(OUTPUT + "{d}/{s}/{l}/{i}/tree_files/mega_tree_.raxml.bestTree", d=clones, s=shm,l=leaves, i=sims)
+        #expand(OUTPUT+ "{d}/{s}/{l}/{i}/mptp_data.txt", d=clones, s=shm,l=leaves, i=sims),
+        #expand(OUTPUT+ "{d}/{s}/{l}/{i}/mptp_data_singletons.txt", d=clones, s=shm,l=leaves, i=sims),
+        #expand(OUTPUT + "{d}/{s}/{l}/{i}/clean.fasta.vdjca.clns_IGH.tsv", d=clones, s=shm,l=leaves, i=sims),
+        #expand(OUTPUT + "{d}/{s}/{l}/{i}/germline_search/001/3_Nt-sequences.txt",d=clones, s=shm,l=leaves, i=sims)
        
    
 
 #simulation partis
 rule simulate:
     resources:
-        mem="20G",
+        mem="50G",
     threads: 10
     log: os.path.join(OUTPUT, "logs", "simulate_{d}_{s}_{l}_{i}.log")
     input:
@@ -54,7 +55,7 @@ rule simulate:
         leaves = "{l}",
         sim = "{i}"
     output:
-        out = OUTPUT + "{d}/{s}/{l}/{i}/clones_{d}_shm_{s}_leaves_{l}_sim_{i}.yaml"
+        out =  OUTPUT + "{d}/{s}/{l}/{i}/clones_{d}_shm_{s}_leaves_{l}_sim_{i}.yaml" 
     shell:
         "module purge &>> {log} && \
         module load gcc/8.3.0 &>> {log} && \
@@ -91,7 +92,7 @@ rule analyze_partis_output:
 
 rule remove_singletons:
      resources:
-        mem="5G",
+        mem="2G",
      threads: 10
      log: os.path.join(OUTPUT, "logs", "remove_singletons_{d}_{s}_{l}_{i}.log")
      input:
@@ -108,7 +109,7 @@ rule remove_singletons:
 #align
 rule align:
      resources:
-        mem="5G",
+        mem="2G",
      threads: 10
      log: os.path.join(OUTPUT, "logs", "align_{d}_{s}_{l}_{i}.log")
      input:
@@ -125,8 +126,8 @@ rule align:
 #build megatree
 rule build_tree:
      resources:
-        mem="10G",
-     threads: 16
+        mem="5G",
+     threads: 32
      log: os.path.join(OUTPUT, "logs", "build_tree_{d}_{s}_{l}_{i}.log")
      input:
         script = 'tree_building/build_tree.sh',
@@ -142,25 +143,25 @@ rule build_tree:
         sh {input.script} -r {input.raxml} -d {params.out} -o {output.out} &>> {log}"
 
 #this rule does not run on cluster because it needs X11 forwarding: do ssh with -X flag and then run snakemake without running it on the cluster
-rule cut_tree:
-     resources:
-        mem="200G",
-     threads: 10
-     log: os.path.join(OUTPUT, "logs", "cut_tree_{d}_{s}_{l}_{i}.log")
-     input:
-        ptp  = PTP,
-        tree = OUTPUT + "{d}/{s}/{l}/{i}/tree_files/mega_tree_.raxml.bestTree"
-     params:
-         out = OUTPUT + "{d}/{s}/{l}/{i}/mega"
-     output:
-        tree = OUTPUT + "{d}/{s}/{l}/{i}/mega.PTPhSupportPartition.txt.sh.tre",
-        summary = OUTPUT + "{d}/{s}/{l}/{i}/mega.PTPPartitonSummary.txt",
-        partitions = OUTPUT+ "{d}/{s}/{l}/{i}/mega.PTPPartitions.txt",
-        png = OUTPUT+ "{d}/{s}/{l}/{i}/mega.PTPhSupportPartition.txt.png"
-     shell:
-        "echo " + platform.node() + " &>> {log} && \
-        export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
-        python {input.ptp} -t {input.tree} -o {params.out} &>> {log}"
+#rule cut_tree:
+#     resources:
+#        mem="200G",
+#     threads: 10
+#     log: os.path.join(OUTPUT, "logs", "cut_tree_{d}_{s}_{l}_{i}.log")
+#     input:
+#        ptp  = PTP,
+#        tree = OUTPUT + "{d}/{s}/{l}/{i}/tree_files/mega_tree_.raxml.bestTree"
+#     params:
+#         out = OUTPUT + "{d}/{s}/{l}/{i}/mega"
+#     output:
+#        tree = OUTPUT + "{d}/{s}/{l}/{i}/mega.PTPhSupportPartition.txt.sh.tre",
+#        summary = OUTPUT + "{d}/{s}/{l}/{i}/mega.PTPPartitonSummary.txt",
+#        partitions = OUTPUT+ "{d}/{s}/{l}/{i}/mega.PTPPartitions.txt",
+#        png = OUTPUT+ "{d}/{s}/{l}/{i}/mega.PTPhSupportPartition.txt.png"
+#     shell:
+#        "echo " + platform.node() + " &>> {log} && \
+#        export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
+#        python {input.ptp} -t {input.tree} -o {params.out} &>> {log}"
 
 #this rule does not run on cluster because it needs X11 forwarding: do ssh with -X flag and then run snakemake without running it on the cluster
 rule cut_tree_mptp:
@@ -260,4 +261,22 @@ rule  mixcr:
         mixcr exportClones {output.clones} {params.out} &>> {log}"
 
 
+rule findVDJ:
+     resources:
+        mem="10G",
+     threads: 10
+     log: os.path.join(OUTPUT, "logs", "findVDJ_{d}_{s}_{l}_{i}.log")
+     input:
+        script = 'germline_search/IMGT_vrequest.sh',
+        vquest = VQUEST,
+        fasta = OUTPUT + "{d}/{s}/{l}/{i}/clean.fasta"
+     params:
+         out = OUTPUT + "{d}/{s}/{l}/{i}/"
+     output:
+        out = directory(OUTPUT + "{d}/{s}/{l}/{i}/germline_search/"),
+        dir_check = directory(OUTPUT + "{d}/{s}/{l}/{i}/germline_search/001"),
+        seq = OUTPUT + "{d}/{s}/{l}/{i}/germline_search/001/3_Nt-sequences.txt"
+     shell:
+        "echo " + platform.node() + " &>> {log} && \
+        sh {input.script} -f {input.fasta} -v {input.vquest} -o {output.out} &>> {log}"
 

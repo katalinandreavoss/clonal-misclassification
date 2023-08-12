@@ -207,6 +207,25 @@ rule ancestral_sequence:
         sh {input.script} -r {input.raxml} -d {params.out} -o {output.out} &>> {log}"
 
 
-
+rule compare_ancestral_seq:
+     resources:
+        mem="50G",
+     threads: 10
+     log: os.path.join(OUTPUT, "logs", "compare_ancestral_seq_{d}_{s}.log")
+     input:
+        script = 'germline_search/combine_naive_discerned.R',
+        script_align = 'germline_search/align_combined.sh',
+        naive = OUTPUT + "{d}/{s}/naive.fasta",
+        discerned = OUTPUT + "{d}/{s}/ancestral_sequences/"
+     params:
+         out = OUTPUT + "{d}/{s}"
+     output:
+         out = directory(OUTPUT + "{d}/{s}/combined/")
+     shell:
+        "echo " + platform.node() + " &>> {log} && \
+        export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log}&& \
+        mkdir -p {output.out} &>> {log}&& \
+        Rscript {input.script} -p {params.out} -n {input.naive} &>> {log}&& \
+        sh {input.script_align} -d {output.out} &>> {log}"
 
 

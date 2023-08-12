@@ -3,7 +3,7 @@ require(phytools)
 require(splits)
 require(gtools)
 
-temp <- mixedsort(list.files(pattern="*.bestTree"))
+temp <- mixedsort(list.files(pattern="/home1/kavoss/simulation_from_scratch/sim_8/0_01/tree_files/*.bestTree"))
 trees <- lapply(temp,read.tree)
 
 bin <- list()

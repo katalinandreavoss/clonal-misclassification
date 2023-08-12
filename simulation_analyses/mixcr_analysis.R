@@ -2,12 +2,13 @@ require(gtools)
 require(dplyr)
 
 ## PD 1
-temp <- mixedsort(list.files(pattern="*.txt"))
+temp <- mixedsort(list.files(path="/home1/kavoss/simulations/10/0_01/20/1/", pattern="clean.fasta.vdjca.clns_IGH.tsv",full.names=TRUE,recursive = TRUE))
 mixcr_1 <- lapply(temp,read.table, header=TRUE, fill=TRUE)
+mixcr_1<-read.table(temp,header=TRUE, fill=TRUE)
 
 mixcr_n <- list()
 for (i in 1:250) {
-mixcr_n[[i]] <- mixcr_1[[i]] %>% group_by(cloneCount) %>% summarise(n = n())
+mixcr<-mixcr_1 %>% group_by(readCount) %>% summarise(n = n())
 }
 
 number_fams1 <- list()

@@ -31,7 +31,7 @@ for (x in seq_name) {
     ancestral_discerned<-tail(disc, n =1)$seq
     file_name<-paste0(path,"/combined/",x,"_combined.fasta")
     file<-file(file_name)
-    writeLines(c(">naive",naive[seq_name==x,]$sequence,">PTP_derived",ancestral_discerned), file)
+    writeLines(c(">naive",naive[seq_name==x,]$sequence,">derived",ancestral_discerned), file)
     close(file)
   }
 }

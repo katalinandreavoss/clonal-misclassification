@@ -20,12 +20,12 @@ get_values_mixcr<-function(filepath) {
 }
 
 
-get_num_fam_no_singletons <- function(file_path) {
+get_num_fam_singletons <- function(file_path) {
   df<-fread(file_path)
   num_fam=df[1,]$V2
   return(num_fam)
 }
-get_freq_no_singletons <- function(file_path) {
+get_freq_singletons <- function(file_path) {
   df<-fread(file_path)
   num_fam=df[2,]$V2
   return(num_fam)
@@ -105,7 +105,7 @@ get_MSE_fam_number<-function(data,df) {
 for (x in clonal_families) {
   print(x)
   curr_path<-paste(path,as.character(x),sep = "")
-  filenames <- list.files(path=curr_path, pattern="mptp_data.txt", full.names=TRUE,recursive = TRUE)
+  filenames <- list.files(path=curr_path, pattern="mptp_data_singletons.txt", full.names=TRUE,recursive = TRUE)
   
   total_df<-data.frame(filenames)
   total_df$params<-gsub(path,"",total_df$filenames)
@@ -115,8 +115,8 @@ for (x in clonal_families) {
   total_df<-total_df %>%
     separate(params, c("clones","SHM","leaves","sim"), "/")
   
-  total_df$number_families<-as.numeric(lapply(total_df$filenames, get_num_fam_no_singletons))
-  total_df$median_family_size<-as.numeric(lapply(total_df$filenames, get_freq_no_singletons))
+  total_df$number_families<-as.numeric(lapply(total_df$filenames, get_num_fam_singletons))
+  total_df$median_family_size<-as.numeric(lapply(total_df$filenames, get_freq_singletons))
   
   total_df$filenames<-gsub("mptp_data.txt","",total_df$filenames)
   total_df$real_fam_number<-as.numeric(lapply(total_df$filenames, get_real_family_number))
