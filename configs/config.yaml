@@ -1,12 +1,6 @@
-datadir: '/home1/kavoss/data/'
-output: '/home1/kavoss/simulations/'
-#datadir: '/home1/kavoss/test_data/'
-#output: '/home1/kavoss/test_data/output/' #change this to directory where you want results to be saved
+output: '/panfs/qcb-panasas/kavoss/simulations/'
 partis: '/home1/kavoss/partis_with_simulation/partis/' #specifiy where partis is located
-ham_partis: '/home1/kavoss/partis_without_simulation/'
 raxml: '/home1/kavoss/raxml-ng/' #specify where raxml is located
 vquest: '/home1/kavoss/vquest' #specify where vquest is located
-RevertToGermline: '/home1/kavoss/TRIgS' #specify where RevertToGermline is located
-PTP: '/home1/kavoss/PTP/bin/PTP.py' #specifiy PTP python script
 MPTP: '/home1/kavoss/mptp-0.2.4-linux-x86_64/bin/' #specifiy where mptp is located
 

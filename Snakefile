@@ -9,11 +9,8 @@ configfile: "configs/config.yaml"
 #DATADIR=config['datadir']
 OUTPUT=config['output']
 PARTIS=config['partis']
-HAMPARTIS=config['ham_partis']
 RAXML=config['raxml']
 VQUEST=config['vquest']
-RTG=config['RevertToGermline']
-PTP=config['PTP']
 MPTP=config['MPTP']
 
 
@@ -31,7 +28,7 @@ wildcard_constraints:
 
 rule all:
     input:
-        expand(OUTPUT + "{d}/{s}/{l}/{i}/tree_files/mega_tree_.raxml.bestTree", d=clones, s=shm,l=leaves, i=sims)
+        expand(OUTPUT + "{d}/{s}/{l}/{i}/clean.fasta.vdjca.clns_IGH.tsv", d=clones, s=shm,l=leaves, i=sims)
         #expand(OUTPUT+ "{d}/{s}/{l}/{i}/mptp_data.txt", d=clones, s=shm,l=leaves, i=sims),
         #expand(OUTPUT+ "{d}/{s}/{l}/{i}/mptp_data_singletons.txt", d=clones, s=shm,l=leaves, i=sims),
         #expand(OUTPUT + "{d}/{s}/{l}/{i}/clean.fasta.vdjca.clns_IGH.tsv", d=clones, s=shm,l=leaves, i=sims),
