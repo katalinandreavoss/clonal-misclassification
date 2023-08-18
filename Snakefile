@@ -28,9 +28,9 @@ wildcard_constraints:
 
 rule all:
     input:
-        expand(OUTPUT + "{d}/{s}/{l}/{i}/clean.fasta.vdjca.clns_IGH.tsv", d=clones, s=shm,l=leaves, i=sims)
-        #expand(OUTPUT+ "{d}/{s}/{l}/{i}/mptp_data.txt", d=clones, s=shm,l=leaves, i=sims),
-        #expand(OUTPUT+ "{d}/{s}/{l}/{i}/mptp_data_singletons.txt", d=clones, s=shm,l=leaves, i=sims),
+        expand(OUTPUT + "{d}/{s}/{l}/{i}/clean.fasta.vdjca.clns_IGH.tsv", d=clones, s=shm,l=leaves, i=sims),
+        expand(OUTPUT + "{d}/{s}/{l}/{i}/vquest_files/combined_db-pass_clone-pass.tsv", d=clones, s=shm,l=leaves, i=sims),
+        expand(OUTPUT+ "{d}/{s}/{l}/{i}/mptp_data_singletons.txt", d=clones, s=shm,l=leaves, i=sims),
         #expand(OUTPUT + "{d}/{s}/{l}/{i}/clean.fasta.vdjca.clns_IGH.tsv", d=clones, s=shm,l=leaves, i=sims),
         #expand(OUTPUT + "{d}/{s}/{l}/{i}/germline_search/001/3_Nt-sequences.txt",d=clones, s=shm,l=leaves, i=sims)
        
@@ -167,7 +167,6 @@ rule cut_tree_mptp:
      threads: 10
      log: os.path.join(OUTPUT, "logs", "cut_tree_mptp_{d}_{s}_{l}_{i}.log")
      input:
-        mptp  = MPTP+"mptp",
         tree = OUTPUT + "{d}/{s}/{l}/{i}/tree_files/mega_tree_.raxml.bestTree"
      params:
          out = OUTPUT + "{d}/{s}/{l}/{i}/mega_mptp"
@@ -175,9 +174,8 @@ rule cut_tree_mptp:
         partitions = OUTPUT+ "{d}/{s}/{l}/{i}/mega_mptp.txt",
         svg = OUTPUT+ "{d}/{s}/{l}/{i}/mega_mptp.svg"
      shell:
-        "echo " + platform.node() + " &>> {log} && \
-        export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
-        {input.mptp} --ml --single --tree_file {input.tree} --output_file {params.out} &>> {log}"
+        "echo " + platform.node() + " >> {log} 2>&1 && \
+        mptp --ml --single --tree_file {input.tree} --output_file {params.out} >> {log} 2>&1"
 
 
 rule get_mptp_values:
@@ -193,9 +191,8 @@ rule get_mptp_values:
      output:
         out = OUTPUT+ "{d}/{s}/{l}/{i}/mptp_data.txt"
      shell:
-        "echo " + platform.node() + " &>> {log} && \
-        export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
-        python {input.script} {params.out} &>> {log}"
+        "echo " + platform.node() + " >> {log} 2>&1 && \
+        python {input.script} {params.out} >> {log} 2>&1"
 
 
 rule get_mptp_values_singletons:
@@ -211,9 +208,8 @@ rule get_mptp_values_singletons:
      output:
         out = OUTPUT+ "{d}/{s}/{l}/{i}/mptp_data_singletons.txt"
      shell:
-        "echo " + platform.node() + " &>> {log} && \
-        export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
-        python {input.script} {params.out} &>> {log}"
+        "echo " + platform.node() + " >> {log} 2>&1 && \
+        python {input.script} {params.out} >> {log} 2>&1"
 
 rule get_family_sizes:
      resources:
@@ -251,11 +247,10 @@ rule  mixcr:
         clones = OUTPUT + "{d}/{s}/{l}/{i}/clean.fasta.vdjca.clns",
         IGH = OUTPUT + "{d}/{s}/{l}/{i}/clean.fasta.vdjca.clns_IGH.tsv"
      shell:
-        "echo " + platform.node() + " &>> {log} && \
-        export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
-        mixcr align --preset rnaseq-bcr-full-length --species HomoSapiens {input.fasta} {output.aligned} &>> {log} && \
-        mixcr assemble {output.aligned} {output.clones} &>> {log} && \
-        mixcr exportClones {output.clones} {params.out} &>> {log}"
+        "echo " + platform.node() + " >> {log} 2>&1 && \
+        mixcr align --preset rnaseq-bcr-full-length --species HomoSapiens {input.fasta} {output.aligned} >> {log} 2>&1 && \
+        mixcr assemble {output.aligned} {output.clones} >> {log} 2>&1 && \
+        mixcr exportClones {output.clones} {params.out} >> {log} 2>&1"
 
 
 rule findVDJ:
@@ -270,10 +265,48 @@ rule findVDJ:
      params:
          out = OUTPUT + "{d}/{s}/{l}/{i}/"
      output:
-        out = directory(OUTPUT + "{d}/{s}/{l}/{i}/germline_search/"),
-        dir_check = directory(OUTPUT + "{d}/{s}/{l}/{i}/germline_search/001"),
-        seq = OUTPUT + "{d}/{s}/{l}/{i}/germline_search/001/3_Nt-sequences.txt"
+        out = directory(OUTPUT + "{d}/{s}/{l}/{i}/vquest_files/"),
+        dir_check = directory(OUTPUT + "{d}/{s}/{l}/{i}/vquest_files/001"),
+        seq = OUTPUT + "{d}/{s}/{l}/{i}/vquest_files/001/3_Nt-sequences.txt"
      shell:
-        "echo " + platform.node() + " &>> {log} && \
-        sh {input.script} -f {input.fasta} -v {input.vquest} -o {output.out} &>> {log}"
+        "echo " + platform.node() + " >> {log} 2>&1 && \
+        sh {input.script} -f {input.fasta} -v {input.vquest} -o {output.out} >> {log} 2>&1"
+
+rule combine_vquest:
+     resources:
+        mem="10G",
+     threads: 10
+     log: os.path.join(OUTPUT, "logs", "combine_vquest_{d}_{s}_{l}_{i}.log")
+     input:
+        script = 'germline_search/combine_vquest.py',
+        seq=OUTPUT + "{d}/{s}/{l}/{i}/vquest_files/001/3_Nt-sequences.txt",
+        fasta = OUTPUT + "{d}/{s}/{l}/{i}/clean.fasta",
+        dir = OUTPUT + "{d}/{s}/{l}/{i}/vquest_files/"
+     params:
+         out = OUTPUT + "{d}/{s}/{l}/{i}/"
+     output:
+        out = directory(OUTPUT + "{d}/{s}/{l}/{i}/vquest_files/combined/"),
+        Nt = OUTPUT + "{d}/{s}/{l}/{i}/vquest_files/combined/3_Nt-sequences.txt",
+        summary = OUTPUT + "{d}/{s}/{l}/{i}/vquest_files/combined/1_Summary.txt"
+     shell:
+        "echo " + platform.node() + " >> {log} 2>&1 && \
+        mkdir -p {output.out} >> {log} 2>&1 && \
+        python {input.script} {input.dir} >> {log} 2>&1"
+
+rule changeo:
+     resources:
+        mem="10G",
+     threads: 10
+     log: os.path.join(OUTPUT, "logs", "changeo_{d}_{s}_{l}_{i}.log")
+     input:
+        script = 'simulation_analyses/change-o.sh',
+        summary = OUTPUT + "{d}/{s}/{l}/{i}/vquest_files/combined/1_Summary.txt",
+        dir = OUTPUT + "{d}/{s}/{l}/{i}/vquest_files/combined/",
+        fasta = OUTPUT + "{d}/{s}/{l}/{i}/clean.fasta"
+     output:
+        db = OUTPUT + "{d}/{s}/{l}/{i}/vquest_files/combined_db-pass.tsv",
+        clones = OUTPUT + "{d}/{s}/{l}/{i}/vquest_files/combined_db-pass_clone-pass.tsv"
+     shell:
+        "echo " + platform.node() + " >> {log} 2>&1 && \
+        sh {input.script} -d {input.dir} -f {input.fasta} >> {log} 2>&1"
 

@@ -9,7 +9,7 @@ library(stringr)
 library(patchwork)
 clonal_families<-c(4,6,8,10,12,14,16,18, 20)
 tools<-c("PTP","MiXCR")
-path<-"/home1/kavoss/simulations/"
+path<-"/Users/kavoss/Documents/Research/simulations/"
 
 get_values_mixcr<-function(filepath) {
   mixcr<-read.table(paste0(filepath,"clean.fasta.vdjca.clns_IGH.tsv"),header=TRUE, fill=TRUE)
