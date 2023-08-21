@@ -19,6 +19,15 @@ get_values_mixcr<-function(filepath) {
   return(paste(number_fams,med_fam_size))
 }
 
+get_values_changeo<-function(filepath) {
+  changeo<-read.table(paste0(filepath,"combined_db-pass_clone-pass.tsv"),sep="\t",header=TRUE, fill=TRUE, row.names=NULL)
+  changeo_sum<-changeo %>% group_by(clone_id) %>% summarise(n = n())
+  number_fams <- length(changeo_sum[changeo_sum$n!=1,]$n)
+  med_fam_size <- median(changeo_sum[changeo_sum$n!=1,]$n)
+  return(paste(number_fams,med_fam_size))
+}
+
+
 
 get_num_fam_no_singletons <- function(file_path) {
   df<-fread(file_path)
