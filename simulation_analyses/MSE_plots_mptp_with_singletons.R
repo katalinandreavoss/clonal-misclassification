@@ -9,7 +9,7 @@ library(stringr)
 library(patchwork)
 clonal_families<-c(4,6,8,10,12,14,16,18, 20)
 tools<-c("PTP","MiXCR")
-path<-"/home1/kavoss/simulations/"
+path<-"/Users/kavoss/Documents/Research/simulations/"
 
 get_values_mixcr<-function(filepath) {
   mixcr<-read.table(paste0(filepath,"clean.fasta.vdjca.clns_IGH.tsv"),header=TRUE, fill=TRUE)
@@ -109,7 +109,7 @@ for (x in clonal_families) {
   
   total_df<-data.frame(filenames)
   total_df$params<-gsub(path,"",total_df$filenames)
-  total_df$params<-gsub("mptp_data.txt","",total_df$params)
+  total_df$params<-gsub("mptp_data_singletons.txt","",total_df$params)
   total_df$params<-str_sub(total_df$params,0,-2)
   
   total_df<-total_df %>%
@@ -118,7 +118,7 @@ for (x in clonal_families) {
   total_df$number_families<-as.numeric(lapply(total_df$filenames, get_num_fam_singletons))
   total_df$median_family_size<-as.numeric(lapply(total_df$filenames, get_freq_singletons))
   
-  total_df$filenames<-gsub("mptp_data.txt","",total_df$filenames)
+  total_df$filenames<-gsub("mptp_data_singletons.txt","",total_df$filenames)
   total_df$real_fam_number<-as.numeric(lapply(total_df$filenames, get_real_family_number))
   
   real_freq <-

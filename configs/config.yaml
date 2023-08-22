@@ -3,4 +3,10 @@ partis: '/home1/kavoss/partis_with_simulation/partis/' #specifiy where partis is
 raxml: '/home1/kavoss/raxml-ng/' #specify where raxml is located
 vquest: '/home1/kavoss/vquest' #specify where vquest is located
 MPTP: '/home1/kavoss/mptp-0.2.4-linux-x86_64/bin/' #specifiy where mptp is located
+#output: '/Users/kavoss/Documents/Research/simulations/'
+#partis: '/Users/kavoss/Documents/Research/partis/' #specifiy where partis is located
+#raxml: '/Users/kavoss/Documents/Research/raxml/' #specify where raxml is located
+#vquest: '/Users/kavoss/Documents/Research/vquest' #specify where vquest is located
+#MPTP: '/Users/kavoss/Documents/Research/mptp/' #specifiy where mptp is located
+
 

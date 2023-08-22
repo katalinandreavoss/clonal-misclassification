@@ -8,8 +8,8 @@ library(reshape2)
 library(stringr)
 library(patchwork)
 clonal_families<-c(4,6,8,10,12,14,16,18, 20)
-tools<-c("PTP","MiXCR")
-path<-"/home1/kavoss/simulations/"
+tools<-c("PTP","MiXCR", "changeo")
+path<-"/Users/kavoss/Documents/Research/simulations/"
 
 get_values_mixcr<-function(filepath) {
   mixcr<-read.table(paste0(filepath,"clean.fasta.vdjca.clns_IGH.tsv"),header=TRUE, fill=TRUE)
@@ -18,6 +18,15 @@ get_values_mixcr<-function(filepath) {
   med_fam_size <- median(mixcr_sum[mixcr_sum$n!=1,]$n)
   return(paste(number_fams,med_fam_size))
 }
+
+get_values_changeo<-function(filepath) {
+  changeo<-read.table(paste0(filepath,"vquest_files/combined_db-pass_clone-pass.tsv"),sep="\t",header=TRUE, fill=TRUE, row.names=NULL)
+  changeo_sum<-changeo %>% group_by(clone_id) %>% summarise(n = n())
+  number_fams <- length(changeo_sum[changeo_sum$n!=1,]$n)
+  med_fam_size <- median(changeo_sum[changeo_sum$n!=1,]$n)
+  return(paste(number_fams,med_fam_size))
+}
+
 
 
 get_num_fam_no_singletons <- function(file_path) {
@@ -133,12 +142,19 @@ for (x in clonal_families) {
   mixcr_df<-mixcr_df %>%
     separate(mixcr, c("number_families", "median_family_size"), " ")
   
+  changeo_df<-total_df[c("filenames","clones","SHM","leaves","sim","real_fam_number","median_family_size_real")]
+  changeo_df$changeo<-lapply(changeo_df$filenames,get_values_changeo)
+  changeo_df<-changeo_df %>%
+    separate(changeo, c("number_families", "median_family_size"), " ")
+  
+  
   number_families<-distinct(data.frame(tool=tools,clones=x,SHM=total_df$SHM, leaves=total_df$leaves))
   
-  new<-rbindlist(list(total_df,mixcr_df), idcol = "tool",use.names=TRUE)
+  new<-rbindlist(list(total_df,mixcr_df,changeo_df), idcol = "tool",use.names=TRUE)
   new$tool<-as.character(new$tool)
   new[tool==1]$tool<-"PTP"
   new[tool==2]$tool<-"MiXCR"
+  new[tool==3]$tool<-"changeo"
   
   number_families$MSE_fam_size<-apply(number_families,1, FUN=get_MSE_median_fam_size, df=new)
   

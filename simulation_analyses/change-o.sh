@@ -1,23 +1,13 @@
 #!/bin/bash
-#SBATCH --account=             # replace this with your own account
-#SBATCH --ntasks=              # number of processes
-#SBATCH --mem-per-cpu=         # memory; default unit is megabytes
-#SBATCH --time=                # time (DD-HH:MM)
-#SBATCH --job-name=            # name
 
-module load python
-source ~/my_venv/bin/activate
-python -c "import changeo"
+while getopts d:f: flag
+do
+    # shellcheck disable=SC2220
+    case "${flag}" in
+        d) directory=${OPTARG};;
+        f) fasta=${OPTARG};;
+    esac
+done
 
-MakeDb.py imgt -i mega_1.txz -s all_fasta_1.fasta --extended
-DefineClones.py -d mega_1_db-pass.tsv
-
-MakeDb.py imgt -i mega_2.txz -s all_fasta_2.fasta --extended
-DefineClones.py -d mega_2_db-pass.tsv
-
-MakeDb.py imgt -i mega_3.txz -s all_fasta_3.fasta --extended
-DefineClones.py -d mega_3_db-pass.tsv
-
-MakeDb.py imgt -i mega_4.txz -s all_fasta_4.fasta --extended
-DefineClones.py -d mega_4_db-pass.tsv
-
+MakeDb.py imgt -i ${directory} -s ${fasta} --extended
+DefineClones.py -d ${directory}_db-pass.tsv
