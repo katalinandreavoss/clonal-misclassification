@@ -1,7 +1,7 @@
 import sys
 from glob import glob
 import pandas as pd
-
+import numpy as np
 path = sys.argv[1]  #vquest directory
 subfolders=glob(path+"/*/", recursive = True)
 
@@ -59,6 +59,8 @@ for sub in subfolders:
         first6 = first6.fillna(0)
         first6 = first6.apply(lambda x: x.astype(int) if x.dtype == 'float' else x)
 
+first3 = first3.fillna(0)
+first3['V-REGION start'] = first3['V-REGION start'].apply(np.int64)
 
 first1.to_csv(path+"/combined/1_Summary.txt", sep="\t")
 first2.to_csv(path+"/combined/2_IMGT-gapped-nt-sequences.txt", sep="\t")
