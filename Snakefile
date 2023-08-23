@@ -28,12 +28,10 @@ wildcard_constraints:
 
 rule all:
     input:
-        expand(OUTPUT + "{d}/{s}/{l}/{i}/clean.fasta.vdjca.clns_IGH.tsv", d=clones, s=shm,l=leaves, i=sims),
+        expand(OUTPUT+ "{d}/{s}/{l}/{i}/mptp_data.txt", d=clones, s=shm,l=leaves, i=sims),
         expand(OUTPUT + "{d}/{s}/{l}/{i}/vquest_files/combined_db-pass_clone-pass.tsv", d=clones, s=shm,l=leaves, i=sims),
-        expand(OUTPUT+ "{d}/{s}/{l}/{i}/mptp_data_singletons.txt", d=clones, s=shm,l=leaves, i=sims),
         #expand(OUTPUT + "{d}/{s}/{l}/{i}/clean.fasta.vdjca.clns_IGH.tsv", d=clones, s=shm,l=leaves, i=sims),
-        #expand(OUTPUT + "{d}/{s}/{l}/{i}/germline_search/001/3_Nt-sequences.txt",d=clones, s=shm,l=leaves, i=sims)
-       
+        
    
 
 #simulation partis
@@ -167,6 +165,7 @@ rule cut_tree_mptp:
      threads: 10
      log: os.path.join(OUTPUT, "logs", "cut_tree_mptp_{d}_{s}_{l}_{i}.log")
      input:
+        mptp  = MPTP+"mptp",
         tree = OUTPUT + "{d}/{s}/{l}/{i}/tree_files/mega_tree_.raxml.bestTree"
      params:
          out = OUTPUT + "{d}/{s}/{l}/{i}/mega_mptp"
@@ -175,7 +174,7 @@ rule cut_tree_mptp:
         svg = OUTPUT+ "{d}/{s}/{l}/{i}/mega_mptp.svg"
      shell:
         "echo " + platform.node() + " &>> {log} && \
-        mptp --ml --single --tree_file {input.tree} --output_file {params.out} &>> {log}"
+        {input.mptp} --ml --single --tree_file {input.tree} --output_file {params.out} &>> {log}"
 
 
 rule get_mptp_values:
@@ -192,6 +191,7 @@ rule get_mptp_values:
         out = OUTPUT+ "{d}/{s}/{l}/{i}/mptp_data.txt"
      shell:
         "echo " + platform.node() + " &>> {log} && \
+        export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
         python {input.script} {params.out} &>> {log}"
 
 
@@ -209,6 +209,7 @@ rule get_mptp_values_singletons:
         out = OUTPUT+ "{d}/{s}/{l}/{i}/mptp_data_singletons.txt"
      shell:
         "echo " + platform.node() + " &>> {log} && \
+        export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
         python {input.script} {params.out} &>> {log}"
 
 rule get_family_sizes:
@@ -274,7 +275,7 @@ rule findVDJ:
 
 rule combine_vquest:
      resources:
-        mem="10G",
+        mem="5G",
      threads: 10
      log: os.path.join(OUTPUT, "logs", "combine_vquest_{d}_{s}_{l}_{i}.log")
      input:
@@ -308,5 +309,6 @@ rule changeo:
         clones = OUTPUT + "{d}/{s}/{l}/{i}/vquest_files/combined_db-pass_clone-pass.tsv"
      shell:
         "echo " + platform.node() + " &>> {log} && \
+        export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
         sh {input.script} -d {input.dir} -f {input.fasta}&>> {log}"
 
