@@ -148,8 +148,9 @@ for (x in clonal_families) {
     separate(changeo, c("number_families", "median_family_size"), " ")
   
   
-  number_families<-distinct(data.frame(tool=tools,clones=x,SHM=total_df$SHM, leaves=total_df$leaves))
-  
+  #number_families<-distinct(data.frame(tool=tools,clones=total_df$clones,SHM=total_df$SHM, leaves=total_df$leaves))
+  number_families<-tidyr::expand_grid(tools,unique(total_df$clones),unique(total_df$SHM), unique(total_df$leaves))
+  colnames(number_families)<- c("tool","clones","SHM","leaves")
   new<-rbindlist(list(total_df,mixcr_df,changeo_df), idcol = "tool",use.names=TRUE)
   new$tool<-as.character(new$tool)
   new[tool==1]$tool<-"PTP"
@@ -181,6 +182,7 @@ all_combined<-rbindlist(list(all4,all6, all8,all10,all12,all14,all16,all18,all20
 combined<-rbindlist(list(clones4,clones6, clones8,clones10,clones12,clones14,clones16,clones18,clones20))
 
 combined$clones<-as.character(combined$clones)
+write.csv(combined, "/Users/kavoss/Documents/Research/clonal-misclassification/output.csv", row.names=FALSE)
 
 MSE_SHM_num_fam<-ggplot(combined, aes(SHM,MSE_num_fam, fill=tool)) + 
   geom_boxplot()+
