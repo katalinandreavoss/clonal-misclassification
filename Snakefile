@@ -310,3 +310,21 @@ rule changeo:
         "echo " + platform.node() + " &>> {log} && \
         sh {input.script} -d {input.dir} -f {input.fasta}&>> {log}"
 
+rule scoper:
+     resources:
+        mem="10G",
+     threads: 10
+     log: os.path.join(OUTPUT, "logs", "scoper_{d}_{s}_{l}_{i}.log")
+     input:
+        script = 'simulation_analyses/scoper.R',
+        db = OUTPUT + "{d}/{s}/{l}/{i}/vquest_files/combined_db-pass_clone-pass.tsv"
+     params:
+        dir = OUTPUT + "{d}/{s}/{l}/{i}/"
+     output:
+        identical = OUTPUT + "{d}/{s}/{l}/{i}/results_db_idClones.tsv",
+        hierarchical = OUTPUT + "{d}/{s}/{l}/{i}/results_hierClones.tsv",
+        spectral = OUTPUT + "{d}/{s}/{l}/{i}/results_specClones.tsv"
+     shell:
+        "echo " + platform.node() + " &>> {log} && \
+        Rscript {input.script} -d {input.db} -o {params.dir}&>> {log}"
+
