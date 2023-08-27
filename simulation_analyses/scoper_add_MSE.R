@@ -6,7 +6,7 @@ library(reshape2)
 library(stringr)
 library(patchwork)
 clonal_families<-c(4,6,8,10,12,14,16,18, 20)
-tools<-c("PTP","MiXCR", "changeo")
+tools<-c("SCOPer identicalClones","SCOPer hierarchicalClones", "SCOPer spectralClones")
 path<-"/Users/kavoss/Documents/Research/simulations/"
 
 
@@ -92,11 +92,11 @@ for (x in clonal_families) {
   scoper1_df<-scoper1_df %>%
     separate(mixcr, c("number_families", "median_family_size"), " ")
   
-  scoper2_df$mixcr<-lapply(scoper2_df$filenames,get_values_scoper,file_name="results_db_hierClones.tsv")
+  scoper2_df$mixcr<-lapply(scoper2_df$filenames,get_values_scoper,file_name="results_hierClones.tsv")
   scoper2_df<-scoper2_df %>%
     separate(mixcr, c("number_families", "median_family_size"), " ")
   
-  scoper3_df$mixcr<-lapply(scoper3_df$filenames,get_values_scoper,file_name="results_db_specClones.tsv")
+  scoper3_df$mixcr<-lapply(scoper3_df$filenames,get_values_scoper,file_name="results_specClones.tsv")
   scoper3_df<-scoper3_df %>%
     separate(mixcr, c("number_families", "median_family_size"), " ")
   
@@ -120,10 +120,12 @@ for (x in clonal_families) {
   
 }
 
-
-#TODO read in old combined and add to this one
 combined<-rbindlist(list(clones4,clones6, clones8,clones10,clones12,clones14,clones16,clones18,clones20))
 
+
+old<-read.table("/Users/kavoss/Documents/Research/simulations/output.csv",sep=",",header=TRUE, fill=TRUE, row.names=NULL)
+
+combined<-rbindlist(list(old,combined))
 combined$clones<-as.character(combined$clones)
 
 
@@ -167,6 +169,7 @@ MSE_leaves_size_fam<-ggplot(combined, aes(leaves,MSE_fam_size, fill=tool)) +
 
 MSE_SHM_num_fam+MSE_clones_num_fam+ MSE_leaves_num_fam+plot_annotation('number of discerned families',theme=theme(plot.title=element_text(hjust=0.5)))+ plot_layout(guides = "collect")
 MSE_SHM_size_fam+MSE_clones_size_fam+ MSE_leaves_size_fam+plot_annotation('median size of discerned families',theme=theme(plot.title=element_text(hjust=0.5)))+ plot_layout(guides = "collect")
-
-
-
+ggsave("/Users/kavoss/Documents/Research/family_size.jpg")
+MSE_SHM_num_fam
+MSE_clones_num_fam
+MSE_leaves_num_fam
