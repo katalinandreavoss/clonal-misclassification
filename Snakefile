@@ -29,7 +29,7 @@ wildcard_constraints:
 rule all:
     input:
         expand(OUTPUT+ "{d}/{s}/{l}/{i}/mptp_data.txt", d=clones, s=shm,l=leaves, i=sims),
-        expand(OUTPUT + "{d}/{s}/{l}/{i}/vquest_files/combined_db-pass_clone-pass.tsv", d=clones, s=shm,l=leaves, i=sims),
+        expand(OUTPUT + "{d}/{s}/{l}/{i}/results_specClones.tsv", d=clones, s=shm,l=leaves, i=sims),
         #expand(OUTPUT + "{d}/{s}/{l}/{i}/clean.fasta.vdjca.clns_IGH.tsv", d=clones, s=shm,l=leaves, i=sims),
         
    

@@ -9,7 +9,7 @@ library(stringr)
 library(patchwork)
 clonal_families<-c(4,6,8,10,12,14,16,18, 20)
 tools<-c("PTP","MiXCR", "changeo")
-path<-"/Users/kavoss/Documents/Research/simulations/"
+path<-"/home1/kavoss/panfs/simulations/"
 
 get_values_mixcr<-function(filepath) {
   mixcr<-read.table(paste0(filepath,"clean.fasta.vdjca.clns_IGH.tsv"),header=TRUE, fill=TRUE)
@@ -31,12 +31,13 @@ get_values_changeo<-function(filepath) {
 
 get_num_fam_no_singletons <- function(file_path) {
   df<-fread(file_path)
-  num_fam=df[1,]$V2
+  num_fam=df[1,]$X2
   return(num_fam)
 }
+
 get_freq_no_singletons <- function(file_path) {
   df<-fread(file_path)
-  num_fam=df[2,]$V2
+  num_fam=df[2,]$X2
   return(num_fam)
 }
 
@@ -133,7 +134,7 @@ for (x in clonal_families) {
   real_freq <-
     filenames <- list.files(path=curr_path, pattern="family_sizes.txt", full.names=TRUE,recursive = TRUE)%>% 
     map_df(~fread(.))
-  real_freq$V1<-gsub("_",".",real_freq$V1)
+  real_freq$X1<-gsub("_",".",real_freq$X1)
   colnames(real_freq)<-c("clones","SHM","leaves","sim","freq")
   total_df$median_family_size_real<-apply(total_df,1,FUN=get_median_fam_size,df=real_freq)
   
