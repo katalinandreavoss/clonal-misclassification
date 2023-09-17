@@ -31,13 +31,13 @@ get_values_changeo<-function(filepath) {
 
 get_num_fam_no_singletons <- function(file_path) {
   df<-fread(file_path)
-  num_fam=df[1,]$X2
+  num_fam=df[1,]$V2
   return(num_fam)
 }
 
 get_freq_no_singletons <- function(file_path) {
   df<-fread(file_path)
-  num_fam=df[2,]$X2
+  num_fam=df[2,]$V2
   return(num_fam)
 }
 
@@ -134,7 +134,7 @@ for (x in clonal_families) {
   real_freq <-
     filenames <- list.files(path=curr_path, pattern="family_sizes.txt", full.names=TRUE,recursive = TRUE)%>% 
     map_df(~fread(.))
-  real_freq$X1<-gsub("_",".",real_freq$X1)
+  #real_freq$V2<-gsub("_",".",real_freq$V2)
   colnames(real_freq)<-c("clones","SHM","leaves","sim","freq")
   total_df$median_family_size_real<-apply(total_df,1,FUN=get_median_fam_size,df=real_freq)
   
@@ -171,19 +171,12 @@ for (x in clonal_families) {
 
 all_combined<-rbindlist(list(all4,all6, all8,all10,all12,all14,all16,all18,all20))
 
-#combined$MSE_SHM<-as.numeric(lapply(combined$SHM, get_MSE_number_families, column_name=quo(SHM),df=all_combined))
-#combined$MSE_clones<-as.numeric(lapply(combined$clones, get_MSE_number_families, column_name=quo(clones),df=all_combined))
-#combined$MSE_leaves<-as.numeric(lapply(combined$leaves, get_MSE_number_families, column_name=quo(leaves),df=all_combined))
-
-#combined$MSE_SHM_family_size<-as.numeric(lapply(combined$SHM, get_MSE_family_size, column_name=quo(SHM),df=all_combined))
-#combined$MSE_clones_family_size<-as.numeric(lapply(combined$clones, get_MSE_family_size, column_name=quo(clones),df=all_combined))
-#combined$MSE_leaves_family_size<-as.numeric(lapply(combined$leaves, get_MSE_family_size, column_name=quo(leaves),df=all_combined))
 
 
 combined<-rbindlist(list(clones4,clones6, clones8,clones10,clones12,clones14,clones16,clones18,clones20))
 
 combined$clones<-as.character(combined$clones)
-write.csv(combined, "/Users/kavoss/Documents/Research/clonal-misclassification/output.csv", row.names=FALSE)
+write.csv(combined, "/home1/kavoss/panfs/simulations/output.csv", row.names=FALSE)
 
 MSE_SHM_num_fam<-ggplot(combined, aes(SHM,MSE_num_fam, fill=tool)) + 
   geom_boxplot()+

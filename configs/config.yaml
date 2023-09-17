@@ -1,4 +1,4 @@
-output: '/panfs/qcb-panasas/kavoss/simulations/'
+output: '/panfs/qcb-panasas/kavoss/method_comparison/'
 partis: '/home1/kavoss/partis_with_simulation/partis/' #specifiy where partis is located
 raxml: '/home1/kavoss/raxml-ng/' #specify where raxml is located
 vquest: '/home1/kavoss/vquest' #specify where vquest is located

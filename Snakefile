@@ -15,8 +15,9 @@ MPTP=config['MPTP']
 
 
 clones = range(4,21,2)
-shm = ["0_01","0_05","0_1","0_2","0_3"] #this has to match the numbers in simulate.sh
+shm = ["0_001", "0_005", "0_01","0_05","0_1","0_2"] #this has to match the numbers in simulate.sh
 leaves = ["10","20","50","100"]
+balance = ["0_0","0_3","0_5","1_0","1_3"]
 sims = range(1,51)
 
 
@@ -24,33 +25,33 @@ wildcard_constraints:
     d = "\d+",
     s = "0_\d+",
     l = "\d+",
+    b = "\d_\d",
     i = "\d+"
 
 rule all:
     input:
-        expand(OUTPUT+ "{d}/{s}/{l}/{i}/mptp_data.txt", d=clones, s=shm,l=leaves, i=sims),
-        expand(OUTPUT + "{d}/{s}/{l}/{i}/results_specClones.tsv", d=clones, s=shm,l=leaves, i=sims),
-        #expand(OUTPUT + "{d}/{s}/{l}/{i}/clean.fasta.vdjca.clns_IGH.tsv", d=clones, s=shm,l=leaves, i=sims),
-        
+        expand(OUTPUT + "{d}/{s}/{l}/{b}/{i}/family_sizes.txt"  , d=clones, s=shm,l=leaves, b=balance, i=sims),
+        expand(OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean_aligned.fasta"  , d=clones, s=shm,l=leaves, b=balance, i=sims)
    
 
 #simulation partis
 rule simulate:
     resources:
-        mem="50G",
+        mem="20G",
     threads: 10
-    log: os.path.join(OUTPUT, "logs", "simulate_{d}_{s}_{l}_{i}.log")
+    log: os.path.join(OUTPUT, "logs", "simulate_{d}_{s}_{l}_{b}_{i}.log")
     input:
         script = 'partis/partis_simulation/simulate.sh',
         partis = PARTIS+"bin/partis"
     params:
-        out_dir = OUTPUT + "{d}/{s}/{l}/{i}",
+        out_dir = OUTPUT + "{d}/{s}/{l}/{b}/{i}",
         clones = "{d}",
         shm = "{s}",
         leaves = "{l}",
+        balance = "{b}",
         sim = "{i}"
     output:
-        out =  OUTPUT + "{d}/{s}/{l}/{i}/clones_{d}_shm_{s}_leaves_{l}_sim_{i}.yaml" 
+        out =  OUTPUT + "{d}/{s}/{l}/{b}/{i}/simu.yaml" 
     shell:
         "module purge &>> {log} && \
         module load gcc/8.3.0 &>> {log} && \
@@ -59,7 +60,7 @@ rule simulate:
         export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
         echo " + platform.node() + " &>> {log} && \
         export LD_LIBRARY_PATH=/home1/kavoss/partis_with_simulation/partis/packages/bpp-newlik/_build/lib64:$LD_LIBRARY_PATH &>> {log} && \
-        sh {input.script} -p {input.partis} -o {params.out_dir} -c {params.clones} -s {params.shm} -l {params.leaves} -i {params.sim} &>> {log}"
+        sh {input.script} -p {input.partis} -o {params.out_dir} -c {params.clones} -s {params.shm} -l {params.leaves} -b {params.balance} -i {params.sim} &>> {log}"
 
 
 
@@ -68,17 +69,17 @@ rule analyze_partis_output:
      resources:
         mem="10G",
      threads: 10
-     log: os.path.join(OUTPUT, "logs", "analyze_partis_output_{d}_{s}_{l}_{i}.log")
+     log: os.path.join(OUTPUT, "logs", "analyze_partis_output_{d}_{s}_{l}_{b}_{i}.log")
      input:
         script = 'analyze_partis_output/yaml_to_families_new.py',
         partis = PARTIS,
-        simulation = OUTPUT + "{d}/{s}/{l}/{i}/clones_{d}_shm_{s}_leaves_{l}_sim_{i}.yaml"
+        simulation = OUTPUT + "{d}/{s}/{l}/{b}/{i}/simu.yaml" 
      params:
-        out = OUTPUT + "{d}/{s}/{l}/{i}/"
+        out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/"
      output:
-        naive = OUTPUT + "{d}/{s}/{l}/{i}/naive.fasta",
-        all = OUTPUT + "{d}/{s}/{l}/{i}/all.fasta",
-        clonal_families = OUTPUT + "{d}/{s}/{l}/{i}/family_1.fasta"
+        naive = OUTPUT + "{d}/{s}/{l}/{b}/{i}/naive.fasta",
+        all = OUTPUT + "{d}/{s}/{l}/{b}/{i}/all.fasta",
+        clonal_families = OUTPUT + "{d}/{s}/{l}/{b}/{i}/family_1.fasta"
      shell:
         "echo " + platform.node() + " &>> {log} && \
         export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
@@ -89,14 +90,14 @@ rule remove_singletons:
      resources:
         mem="2G",
      threads: 10
-     log: os.path.join(OUTPUT, "logs", "remove_singletons_{d}_{s}_{l}_{i}.log")
+     log: os.path.join(OUTPUT, "logs", "remove_singletons_{d}_{s}_{l}_{b}_{i}.log")
      input:
         script = 'tree_building/remove_singletons.R',
-        all = OUTPUT + "{d}/{s}/{l}/{i}/all.fasta"
+        all = OUTPUT + "{d}/{s}/{l}/{b}/{i}/all.fasta"
      params:
-        out = OUTPUT + "{d}/{s}/{l}/{i}/"
+        out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/"
      output:
-        clean = OUTPUT + "{d}/{s}/{l}/{i}/clean.fasta",
+        clean = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta",
      shell:
         "echo " + platform.node() + " &>> {log} && \
         Rscript {input.script} -f {input.all} -o {params.out} &>> {log}"
@@ -106,14 +107,14 @@ rule align:
      resources:
         mem="2G",
      threads: 10
-     log: os.path.join(OUTPUT, "logs", "align_{d}_{s}_{l}_{i}.log")
+     log: os.path.join(OUTPUT, "logs", "align_{d}_{s}_{l}_{b}_{i}.log")
      input:
-        all = OUTPUT + "{d}/{s}/{l}/{i}/clean.fasta",
+        all = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta",
         script = 'tree_building/align_partitions.sh'
      params:
-         out = OUTPUT + "{d}/{s}/{l}/{i}/"
+         out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/"
      output:
-        align = OUTPUT + "{d}/{s}/{l}/{i}/clean_aligned.fasta",
+        align = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean_aligned.fasta"
      shell:
         "echo " + platform.node() + " &>> {log} && \
         sh {input.script} -d {params.out} &>> {log}"
@@ -216,18 +217,18 @@ rule get_family_sizes:
      resources:
         mem="1G",
      threads: 10
-     log: os.path.join(OUTPUT, "logs", "plot_family_sizes_{d}_{s}_{l}_{i}.log")
+     log: os.path.join(OUTPUT, "logs", "plot_family_sizes_{d}_{s}_{l}_{b}_{i}.log")
      input:
         script = 'simulation_analyses/get_real_family_sizes.sh',
-        sequences = OUTPUT + "{d}/{s}/{l}/{i}/family_1.fasta"
+        sequences = OUTPUT + "{d}/{s}/{l}/{b}/{i}/family_1.fasta"
      params:
-         out = OUTPUT + "{d}/{s}/{l}/{i}/",
+         out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/",
          clones = "{d}",
          shm = "{s}",
          leaves = "{l}",
          sim = "{i}"
      output:
-        family_sizes = OUTPUT + "{d}/{s}/{l}/{i}/family_sizes.txt"
+        family_sizes = OUTPUT + "{d}/{s}/{l}/{b}/{i}/family_sizes.txt"
      shell:
         "echo " + platform.node() + " &>> {log} && \
         export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log}&& \
@@ -238,15 +239,15 @@ rule  mixcr:
      resources:
         mem="20G",
      threads: 10
-     log: os.path.join(OUTPUT, "logs", "mixcr_{d}_{s}_{l}_{i}.log")
+     log: os.path.join(OUTPUT, "logs", "mixcr_{d}_{s}_{l}_{b}_{i}.log")
      input:
-        fasta = OUTPUT + "{d}/{s}/{l}/{i}/clean.fasta"
+        fasta = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta"
      params:
-         out = OUTPUT + "{d}/{s}/{l}/{i}/clean.fasta.vdjca.clns.tsv"
+         out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta.vdjca.clns.tsv"
      output:
-        aligned = OUTPUT + "{d}/{s}/{l}/{i}/clean.fasta.vdjca",
-        clones = OUTPUT + "{d}/{s}/{l}/{i}/clean.fasta.vdjca.clns",
-        IGH = OUTPUT + "{d}/{s}/{l}/{i}/clean.fasta.vdjca.clns_IGH.tsv"
+        aligned = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta.vdjca",
+        clones = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta.vdjca.clns",
+        IGH = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta.vdjca.clns_IGH.tsv"
      shell:
         "echo " + platform.node() + " &>> {log} && \
         mixcr align --preset rnaseq-bcr-full-length --species HomoSapiens {input.fasta} {output.aligned} >> {log} 2>&1 && \
@@ -258,17 +259,17 @@ rule findVDJ:
      resources:
         mem="10G",
      threads: 10
-     log: os.path.join(OUTPUT, "logs", "findVDJ_{d}_{s}_{l}_{i}.log")
+     log: os.path.join(OUTPUT, "logs", "findVDJ_{d}_{s}_{l}_{b}_{i}.log")
      input:
         script = 'germline_search/IMGT_vrequest.sh',
         vquest = VQUEST,
-        fasta = OUTPUT + "{d}/{s}/{l}/{i}/clean.fasta"
+        fasta = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta"
      params:
-         out = OUTPUT + "{d}/{s}/{l}/{i}/"
+         out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/"
      output:
-        out = directory(OUTPUT + "{d}/{s}/{l}/{i}/vquest_files/"),
-        dir_check = directory(OUTPUT + "{d}/{s}/{l}/{i}/vquest_files/001"),
-        seq = OUTPUT + "{d}/{s}/{l}/{i}/vquest_files/001/3_Nt-sequences.txt"
+        out = directory(OUTPUT + "{d}/{s}/{l}/{b}/{i}/vquest_files/"),
+        dir_check = directory(OUTPUT + "{d}/{s}/{l}/{b}/{i}/vquest_files/001"),
+        seq = OUTPUT + "{d}/{s}/{l}/{b}/{i}/vquest_files/001/3_Nt-sequences.txt"
      shell:
         "echo " + platform.node() + " &>> {log} && \
         sh {input.script} -f {input.fasta} -v {input.vquest} -o {output.out} &>> {log}"
@@ -277,18 +278,18 @@ rule combine_vquest:
      resources:
         mem="5G",
      threads: 10
-     log: os.path.join(OUTPUT, "logs", "combine_vquest_{d}_{s}_{l}_{i}.log")
+     log: os.path.join(OUTPUT, "logs", "combine_vquest_{d}_{s}_{l}_{b}_{i}.log")
      input:
         script = 'germline_search/combine_vquest.py',
-        seq=OUTPUT + "{d}/{s}/{l}/{i}/vquest_files/001/3_Nt-sequences.txt",
-        fasta = OUTPUT + "{d}/{s}/{l}/{i}/clean.fasta",
-        dir = OUTPUT + "{d}/{s}/{l}/{i}/vquest_files/"
+        seq=OUTPUT + "{d}/{s}/{l}/{b}/{i}/vquest_files/001/3_Nt-sequences.txt",
+        fasta = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta",
+        dir = OUTPUT + "{d}/{s}/{l}/{b}/{i}/vquest_files/"
      params:
-         out = OUTPUT + "{d}/{s}/{l}/{i}/"
+         out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/"
      output:
-        out = directory(OUTPUT + "{d}/{s}/{l}/{i}/vquest_files/combined/"),
-        Nt = OUTPUT + "{d}/{s}/{l}/{i}/vquest_files/combined/3_Nt-sequences.txt",
-        summary = OUTPUT + "{d}/{s}/{l}/{i}/vquest_files/combined/1_Summary.txt"
+        out = directory(OUTPUT + "{d}/{s}/{l}/{b}/{i}/vquest_files/combined/"),
+        Nt = OUTPUT + "{d}/{s}/{l}/{b}/{i}/vquest_files/combined/3_Nt-sequences.txt",
+        summary = OUTPUT + "{d}/{s}/{l}/{b}/{i}/vquest_files/combined/1_Summary.txt"
      shell:
         "echo " + platform.node() + " &>> {log} && \
         mkdir -p {output.out} &>> {log} && \
@@ -298,15 +299,15 @@ rule changeo:
      resources:
         mem="10G",
      threads: 10
-     log: os.path.join(OUTPUT, "logs", "changeo_{d}_{s}_{l}_{i}.log")
+     log: os.path.join(OUTPUT, "logs", "changeo_{d}_{s}_{l}_{b}_{i}.log")
      input:
         script = 'simulation_analyses/change-o.sh',
-        summary = OUTPUT + "{d}/{s}/{l}/{i}/vquest_files/combined/1_Summary.txt",
-        dir = OUTPUT + "{d}/{s}/{l}/{i}/vquest_files/combined/",
-        fasta = OUTPUT + "{d}/{s}/{l}/{i}/clean.fasta"
+        summary = OUTPUT + "{d}/{s}/{l}/{b}/{i}/vquest_files/combined/1_Summary.txt",
+        dir = OUTPUT + "{d}/{s}/{l}/{b}/{i}/vquest_files/combined/",
+        fasta = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta"
      output:
-        db = OUTPUT + "{d}/{s}/{l}/{i}/vquest_files/combined_db-pass.tsv",
-        clones = OUTPUT + "{d}/{s}/{l}/{i}/vquest_files/combined_db-pass_clone-pass.tsv"
+        db = OUTPUT + "{d}/{s}/{l}/{b}/{i}/vquest_files/combined_db-pass.tsv",
+        clones = OUTPUT + "{d}/{s}/{l}/{b}/{i}/vquest_files/combined_db-pass_clone-pass.tsv"
      shell:
         "echo " + platform.node() + " &>> {log} && \
         export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
@@ -316,16 +317,16 @@ rule scoper:
      resources:
         mem="10G",
      threads: 10
-     log: os.path.join(OUTPUT, "logs", "scoper_{d}_{s}_{l}_{i}.log")
+     log: os.path.join(OUTPUT, "logs", "scoper_{d}_{s}_{l}_{b}_{i}.log")
      input:
         script = 'simulation_analyses/scoper.R',
-        db = OUTPUT + "{d}/{s}/{l}/{i}/vquest_files/combined_db-pass_clone-pass.tsv"
+        db = OUTPUT + "{d}/{s}/{l}/{b}/{i}/vquest_files/combined_db-pass_clone-pass.tsv"
      params:
-        dir = OUTPUT + "{d}/{s}/{l}/{i}/"
+        dir = OUTPUT + "{d}/{s}/{l}/{b}/{i}/"
      output:
-        identical = OUTPUT + "{d}/{s}/{l}/{i}/results_db_idClones.tsv",
-        hierarchical = OUTPUT + "{d}/{s}/{l}/{i}/results_hierClones.tsv",
-        spectral = OUTPUT + "{d}/{s}/{l}/{i}/results_specClones.tsv"
+        identical = OUTPUT + "{d}/{s}/{l}/{b}/{i}/results_db_idClones.tsv",
+        hierarchical = OUTPUT + "{d}/{s}/{l}/{b}/{i}/results_hierClones.tsv",
+        spectral = OUTPUT + "{d}/{s}/{l}/{b}/{i}/results_specClones.tsv"
      shell:
         "echo " + platform.node() + " &>> {log} && \
         Rscript {input.script} -d {input.db} -o {params.dir}&>> {log}"

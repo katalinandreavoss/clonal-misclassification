@@ -9,7 +9,7 @@ library(stringr)
 library(patchwork)
 clonal_families<-c(4,6,8,10,12,14,16,18, 20)
 tools<-c("PTP","MiXCR", "changeo")
-path<-"/Users/kavoss/Documents/Research/simulations/"
+path<-"/home1/kavoss/panfs/simulations/"
 
 get_values_mixcr<-function(filepath) {
   mixcr<-read.table(paste0(filepath,"clean.fasta.vdjca.clns_IGH.tsv"),header=TRUE, fill=TRUE)
@@ -180,7 +180,7 @@ combined<-rbindlist(list(clones4,clones6, clones8,clones10,clones12,clones14,clo
 
 combined$clones<-as.character(combined$clones)
 
-write.csv(combined, "/Users/kavoss/Documents/Research/clonal-misclassification/output_w_singletons.csv", row.names=FALSE)
+write.csv(combined, "/home1/kavoss/panfs/simulations/output_w_singletons.csv", row.names=FALSE)
 
 MSE_SHM_num_fam<-ggplot(combined, aes(SHM,MSE_num_fam, fill=tool)) + 
   geom_boxplot()+

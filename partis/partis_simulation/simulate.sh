@@ -1,6 +1,6 @@
 #!/bin/bash
 
-while getopts p:o:c:s:l:i: flag
+while getopts p:o:c:s:l:i:b: flag
 do
     # shellcheck disable=SC2220
     case "${flag}" in
@@ -9,6 +9,7 @@ do
         c) clones=${OPTARG};;
         s) shm=${OPTARG};;
         l) leaves=${OPTARG};;
+        b) balance=${OPTARG};;
         i) sim=${OPTARG};;
     esac
 done
@@ -16,10 +17,11 @@ done
 ##### Step 2: Simulate Sequences #####
 #test
 ## simulate and rearrange from scratch:
-
-
-$partis simulate --simulate-from-scratch --n-sim-events ${clones} --scratch-mute-freq ${shm//_/.} --n-leaves ${leaves} --outfname $output/clones_${clones}_shm_${shm}_leaves_${leaves}_sim_${sim}.yaml --debug 1
-
+if [[ ${balance} == "0_0" ]]; then
+    $partis simulate --simulate-from-scratch --n-sim-events ${clones} --scratch-mute-freq ${shm//_/.} --n-leaves ${leaves} --outfname $output/simu.yaml --debug 1
+else 
+    $partis simulate --simulate-from-scratch --n-sim-events ${clones} --scratch-mute-freq ${shm//_/.} --n-leaves ${leaves} --root-mrca-weibull-parameter ${balance//_/.} --outfname $output/simu.yaml --debug 1
+fi
 
 #clonal_families=${output##*sim_}
 #clonal_families=${clonal_families%/*}

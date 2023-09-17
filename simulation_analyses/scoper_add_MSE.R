@@ -7,7 +7,7 @@ library(stringr)
 library(patchwork)
 clonal_families<-c(4,6,8,10,12,14,16,18, 20)
 tools<-c("SCOPer identicalClones","SCOPer hierarchicalClones", "SCOPer spectralClones")
-path<-"/Users/kavoss/Documents/Research/simulations/"
+path<-"/home1/kavoss/panfs/simulations/"
 
 
 get_values_scoper<-function(dpath,file_name) {
@@ -16,6 +16,31 @@ get_values_scoper<-function(dpath,file_name) {
   number_fams <- length(scoper_sum[scoper_sum$n!=1,]$n)
   med_fam_size <- median(scoper_sum[scoper_sum$n!=1,]$n)
   return(paste(number_fams,med_fam_size))
+}
+
+get_real_family_number<-function(path) {
+  clean_data = readDNAStringSet(paste0(path,"clean.fasta"))
+  seq_name = names(clean_data)
+  sequence = paste(clean_data)
+  clean_data<-data.table(seq_name,sequence)
+  clean_data<-data.table(colsplit(clean_data$seq_name, "clone", c("family", "clone")),sequence)
+  size<-length(unique(clean_data$family))
+  return(size)
+}
+
+get_median_fam_size<-function(data,df) {
+  clone=data[['clones']]
+  shm=data[['SHM']]
+  leaf=data[['leaves']]
+  s=data[['sim']]
+  med<-df%>%
+    filter(clones == clone)%>%
+    filter(SHM == shm)%>%
+    filter(leaves == leaf)%>%
+    filter(sim == s)%>%
+    select(freq)
+  med_real<-median(med$freq)
+  return(med_real)
 }
 
 get_MSE_median_fam_size<-function(data,df) {
@@ -123,10 +148,11 @@ for (x in clonal_families) {
 combined<-rbindlist(list(clones4,clones6, clones8,clones10,clones12,clones14,clones16,clones18,clones20))
 
 
-old<-read.table("/Users/kavoss/Documents/Research/simulations/output.csv",sep=",",header=TRUE, fill=TRUE, row.names=NULL)
+old<-read.table("/home1/kavoss/panfs/simulations/output.csv",sep=",",header=TRUE, fill=TRUE, row.names=NULL)
 
 combined<-rbindlist(list(old,combined))
 combined$clones<-as.character(combined$clones)
+write.csv(combined, "/home1/kavoss/panfs/simulations/output_w_scoper.csv", row.names=FALSE)
 
 
 MSE_SHM_num_fam<-ggplot(combined, aes(SHM,MSE_num_fam, fill=tool)) + 
