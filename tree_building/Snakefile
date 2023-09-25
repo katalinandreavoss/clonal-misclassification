@@ -1,0 +1,68 @@
+import glob
+import yaml
+import platform
+import os
+
+configfile: "../configs/config.yaml"
+
+#specify DATADIR where data is saved and OUTPUT where results are saved
+#DATADIR=config['datadir']
+OUTPUT=config['output']
+PARTIS=config['partis']
+RAXML=config['raxml']
+VQUEST=config['vquest']
+MPTP=config['MPTP']
+
+
+clones = [10,20]
+shm = ["0_001","0_1"] #this has to match the numbers in simulate.sh
+leaves = ["50"]
+balance = ["0_0","0_3","0_5","1_0","1_3"]
+sims = range(1,51)
+
+wildcard_constraints:
+    d = "\d+",
+    s = "0_\d+",
+    l = "\d+",
+    b = "\d_\d",
+    i = "\d+"
+
+rule all:
+    input:
+        expand(OUTPUT + "{d}/{s}/{l}/{b}/{i}/tree_files/family_1_tree_.raxml.bestTree"  , d=clones, s=shm,l=leaves, b=balance, i=sims)
+
+
+rule align:
+     resources:
+        mem="2G",
+     threads: 10
+     log: os.path.join(OUTPUT, "logs", "align_{d}_{s}_{l}_{b}_{i}.log")
+     input:
+        all = OUTPUT + "{d}/{s}/{l}/{b}/{i}/family_1.fasta",
+        script = 'align_families.sh'
+     params:
+         out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/"
+     output:
+        align = OUTPUT + "{d}/{s}/{l}/{b}/{i}/family_1_aligned.fasta"
+     shell:
+        "echo " + platform.node() + " &>> {log} && \
+        sh {input.script} -d {params.out} &>> {log}"
+
+
+rule build_tree:
+     resources:
+        mem="5G",
+     threads: 32
+     log: os.path.join(OUTPUT, "logs", "build_tree_{d}_{s}_{l}_{b}_{i}.log")
+     input:
+        script = 'build_sub_trees.sh',
+        raxml  = RAXML+"raxml-ng",
+        align_check = OUTPUT + "{d}/{s}/{l}/{b}/{i}/family_1_aligned.fasta"
+     params:
+         out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/"
+     output:
+        out = directory(OUTPUT + "{d}/{s}/{l}/{b}/{i}/tree_files/"),
+        tree = OUTPUT + "{d}/{s}/{l}/{b}/{i}/tree_files/family_1_tree_.raxml.bestTree"
+     shell:
+        "echo " + platform.node() + " &>> {log} && \
+        sh {input.script} -r {input.raxml} -d {params.out} -o {output.out} &>> {log}"

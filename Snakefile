@@ -30,8 +30,8 @@ wildcard_constraints:
 
 rule all:
     input:
-        expand(OUTPUT + "{d}/{s}/{l}/{b}/{i}/family_sizes.txt"  , d=clones, s=shm,l=leaves, b=balance, i=sims),
-        expand(OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean_aligned.fasta"  , d=clones, s=shm,l=leaves, b=balance, i=sims)
+        expand(OUTPUT + "{d}/{s}/{l}/{b}/{i}/vquest_files/combined_db-pass_clone-pass.tsv" , d=clones, s=shm,l=leaves, b=balance, i=sims),
+        expand(OUTPUT + "{d}/{s}/{l}/{b}/{i}/results_specClones.tsv" , d=clones, s=shm,l=leaves, b=balance, i=sims)
    
 
 #simulation partis
@@ -276,7 +276,7 @@ rule findVDJ:
 
 rule combine_vquest:
      resources:
-        mem="5G",
+        mem="10G",
      threads: 10
      log: os.path.join(OUTPUT, "logs", "combine_vquest_{d}_{s}_{l}_{b}_{i}.log")
      input:
