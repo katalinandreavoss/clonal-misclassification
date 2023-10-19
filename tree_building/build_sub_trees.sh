@@ -18,3 +18,4 @@ for fasta in $directory/family_*_aligned.fasta; do
     ${raxml} -model GTR -msa ${fasta} -seed 42 -prefix ${output}/${name}_tree_ --search ML tree search
   fi
 done
+echo "build_tree done" > ${output}/build_tree.txt

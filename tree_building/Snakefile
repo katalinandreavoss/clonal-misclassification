@@ -15,7 +15,7 @@ MPTP=config['MPTP']
 
 
 clones = [10,20]
-shm = ["0_001","0_1"] #this has to match the numbers in simulate.sh
+shm = ["0_2"] #this has to match the numbers in simulate.sh
 leaves = ["50"]
 balance = ["0_0","0_3","0_5","1_0","1_3"]
 sims = range(1,51)

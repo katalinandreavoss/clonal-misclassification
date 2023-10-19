@@ -8,7 +8,8 @@ library(apTreeshape)
 library(CollessLike)
 
 path<-"/home1/kavoss/panfs/method_comparison/"
-folders <- c( "10/0_1/50/", "20/0_001/50/","20/0_1/50/") #"10/0_001/50/"
+#folders <- c( "10/0_1/50/", "20/0_001/50/","20/0_1/50/") #"10/0_001/50/"
+folders <- c( "10/0_2/50/", "20/0_2/50/") 
 balances <- c("0_0","0_3","0_5","1_0","1_3")
 sims<-seq(1,50,1)
 
@@ -19,7 +20,7 @@ get_indices<-function(filepath) {
   return(paste(colless,sackin))
 }
 
-#total_df<-data.table()
+total_df<-data.table()
 for (x in folders) {
   print(x)
   for (b in balances){

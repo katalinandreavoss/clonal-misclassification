@@ -4,7 +4,7 @@ library(patchwork)
 library(Biostrings)
 library(reshape2)
 library(stringr)
-
+library(patchwork)
 clonal_families<-c(4,6,8,10,12,14,16,18, 20)
 #tools<-c("MiXCR", "changeo","scoper_ID","scoper_hierarchical","scoper_spectral")
 SHM<-c("0_001","0_005", "0_01","0_05","0_1","0_2")
@@ -66,7 +66,7 @@ get_MSE_fam_number<-function(data,df) {
 for (x in clonal_families) {
   print(x)
   curr_path<-paste(path,as.character(x),sep = "")
-  filenames <- list.files(path=curr_path, pattern="analysis_complete.tsv", full.names=TRUE,recursive = TRUE)
+  filenames <- list.files(path=curr_path, pattern="analysis_no_singletons.tsv", full.names=TRUE,recursive = TRUE)
   total_df <- do.call(rbind,lapply(filenames,read.csv,sep="\t"))
   
   number_families<-tidyr::expand_grid(unique(total_df$tool),SHM, leaves,balance)
@@ -85,11 +85,11 @@ combined<-rbindlist(list(clones4,clones6, clones8,clones10,clones12,clones14,clo
 
 combined$clones<-as.character(combined$clones)
 
-write.csv(combined, "/home1/kavoss/panfs/method_comparison/output_w_singletons.csv", row.names=FALSE)
+write.csv(combined, "/home1/kavoss/panfs/method_comparison/output_without_singletons.csv", row.names=FALSE)
 
 all_combined<-rbindlist(list(all4,all6, all8,all10,all12,all14,all16,all18,all20))
 
-write.csv(all_combined, "/home1/kavoss/panfs/method_comparison/output_no_singletons.csv", row.names=FALSE)
+write.csv(all_combined, "/home1/kavoss/panfs/method_comparison/output_all_without_singletons.csv", row.names=FALSE)
 
 MSE_SHM_num_fam<-ggplot(combined, aes(SHM,MSE_num_fam, fill=tool)) + 
   geom_boxplot()+
@@ -142,6 +142,13 @@ MSE_leaves_size_fam<-ggplot(combined, aes(leaves,MSE_fam_size, fill=tool)) +
   scale_y_continuous(trans='log10')+
   ylab("Mean Squared Error - Median Family Size (log)")
 MSE_leaves_size_fam
+
+
+MSE_size_fam<-ggplot(combined, aes(tool,MSE_fam_size, fill=tool)) + 
+  geom_boxplot()+
+  scale_y_continuous(trans='log10')+
+  ylab("Mean Squared Error - Median Family Size (log)")
+MSE_size_fam
 
 MSE_SHM_num_fam+MSE_clones_num_fam+ MSE_leaves_num_fam+plot_annotation('number of discerned families',theme=theme(plot.title=element_text(hjust=0.5)))+ plot_layout(guides = "collect")
 MSE_SHM_size_fam+MSE_clones_size_fam+ MSE_leaves_size_fam+plot_annotation('median size of discerned families',theme=theme(plot.title=element_text(hjust=0.5)))+ plot_layout(guides = "collect")

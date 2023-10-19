@@ -23,6 +23,7 @@ scoper2_path = path+"results_hierClones.tsv"
 scoper3_path = path+"results_specClones.tsv"
 real_values_path = path+"family_sizes.txt"
 
+
 real_values = pd.read_csv(real_values_path, header=None)
 real_values_num_fam = len(real_values)
 real_values_med_size = statistics.median(real_values[4])
@@ -119,6 +120,25 @@ scoper3_num_fam = scoper3.groupby(['clone_id'])['sequence_id'].filter(lambda x: 
 scoper3_grouped = scoper3_grouped[scoper3.groupby(['clone_id'])['sequence_id'].apply(lambda x: len(x) > 1)]
 scoper3_med_size, scoper3_var_size = get_med_var(scoper3_grouped)
 without_singletons.write("scoper_spec\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(scoper3_num_fam)+"\t"+str(scoper3_med_size)+"\t"+str(scoper3_var_size)+"\t"+str(scoper3_singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
+
+scoper_hier = ["0_05","0_1","0_2","0_25","0_3","0_4","0_5"]
+for scop in scoper_hier:
+    print(scop)
+    scop_path = path+"results_hierClones_"+scop+".tsv"
+
+    scoper = pd.read_csv(scop_path,sep='\t')
+    scoper_num_fam = max(scoper["clone_id"])
+    scoper_grouped = scoper.groupby(['clone_id'])['sequence_id'].count()
+    scoper_med_size, scoper_var_size = get_med_var(scoper_grouped)
+    scoper_singletons = scoper.groupby(['clone_id'])['sequence_id'].filter(lambda x: len(x) == 1).count()
+    complete.write("scoper_"+scop+"\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(scoper_num_fam)+"\t"+str(scoper_med_size)+"\t"+str(scoper_var_size)+"\t"+str(scoper_singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
+
+    #without singletons
+    scoper_num_fam = scoper.groupby(['clone_id'])['sequence_id'].filter(lambda x: len(x) > 1).count()
+    scoper_grouped = scoper_grouped[scoper.groupby(['clone_id'])['sequence_id'].apply(lambda x: len(x) > 1)]
+    scoper_med_size, scoper_var_size = get_med_var(scoper_grouped)
+    without_singletons.write("scoper_"+scop+"\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(scoper_num_fam)+"\t"+str(scoper_med_size)+"\t"+str(scoper_var_size)+"\t"+str(scoper_singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
+
 
 complete.flush()
 complete.close()
