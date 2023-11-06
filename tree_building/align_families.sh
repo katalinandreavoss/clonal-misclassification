@@ -7,9 +7,9 @@ do
         d) directory=${OPTARG};;
     esac
 done
-
+#change to and from fasta/tsv 
 for fasta in $directory/family*.fasta; do
-  name=${fasta%.fasta}
+  name=${fasta%.tsv}
   name=${name##*/}
   lines=$(cat ${fasta} | wc -l)
   if [ ${name} != "naive" ] && [ ${lines} -gt 2 ]; then
@@ -19,3 +19,5 @@ for fasta in $directory/family*.fasta; do
     cp $fasta ${directory}/${name}_aligned.fasta
   fi
 done
+
+echo "done" > $directory/align.txt

@@ -14,6 +14,7 @@ VQUEST=config['vquest']
 MPTP=config['MPTP']
 
 clones = range(4,21,2)
+clones = range(16,21,5)
 #clones = range(10,21,10)
 shm = ["0_001", "0_005", "0_01","0_05","0_1","0_2"] #this has to match the numbers in simulate.sh
 leaves = ["10","20","50","100"]
@@ -31,9 +32,7 @@ wildcard_constraints:
 
 rule all:
     input:
-        expand(OUTPUT + "{d}/{s}/{l}/{b}/{i}/changeo/" , d=clones, s=shm,l=leaves, b=balance, i=sims)
-   
-
+        expand( OUTPUT + "{d}/{s}/{l}/{b}/{i}/seq_similarity.tsv", d=clones, s=shm,l=leaves, b=balance, i=sims)
 #simulation partis
 # rule simulate:
 #     resources:
@@ -152,6 +151,23 @@ rule all:
 #      shell:
 #         "echo " + platform.node() + " &>> {log} && \
 #         sh {input.script} -r {input.raxml} -d {params.out} -o {output.out} &>> {log}"
+
+# rule reroot_tree:
+#      resources:
+#         mem="5G",
+#      threads: 32
+#      log: os.path.join(OUTPUT, "logs", "reroot_tree_{d}_{s}_{l}_{b}_{i}.log")
+#      input:
+#         script = 'tree_building/reroot_midpoint.R',
+#         tree = OUTPUT + "{d}/{s}/{l}/{b}/{i}/changeo/build_tree.txt"
+#      params:
+#          out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/changeo/"
+#      output:
+#         check = OUTPUT + "{d}/{s}/{l}/{b}/{i}/changeo/reroot_tree.txt"
+#      shell:
+#         "echo " + platform.node() + " &>> {log} && \
+#         Rscript {input.script} -d {params.out} &>> {log} && \
+#         echo rerooted done > {output.check} &>> {log}"
 
 
 # #this rule does not run on cluster because it needs X11 forwarding: do ssh with -X flag and then run snakemake without running it on the cluster
@@ -273,8 +289,8 @@ rule all:
 #         mixcr assemble {output.aligned} {output.clna} &>> {log} && \
 #         mixcr exportClones {output.clones} {params.out} &>> {log} && \
 #         mkdir {output.mixcr} && \
-#        var=$(cut -f1 {output.IGH} | tail -n +2 | paste -s -d' ') && \
-#        mixcr exportReadsForClones --id $var -s {output.clna} {output.mixcr}/clean.fastq.gz &>> {log}"
+#         var=$(cut -f1 {output.IGH} | tail -n +2 | paste -s -d' ') && \
+#         mixcr exportReadsForClones --id $var -s {output.clna} {output.mixcr}/clean.fastq.gz &>> {log}"
 
 
 # rule findVDJ:
@@ -371,25 +387,27 @@ rule all:
 #        export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log}&& \
 #        python {input.script} {params.dir} >> {log} 2>&1"
 
-
-#rule ancestral_sequence:
+#out = directory(OUTPUT + "{d}/{s}/{l}/{b}/{i}/ancestral_sequences/"),
+# rule ancestral_sequence_true:
 #     resources:
-#        mem="5G",
+#        mem="2G",
 #     threads: 10
 #     log: os.path.join(OUTPUT, "logs", "ancestral_sequence_{d}_{s}_{l}_{b}_{i}.log")
 #     input:
 #        script = 'germline_search/ancestral_seq_raxml.sh',
-#       raxml  = RAXML+"raxml-ng",
-#        tree = OUTPUT + "{d}/{s}/{l}/{b}/{i}/tree_files/build_tree.txt"
+#        raxml  = RAXML+"raxml-ng",
+#        tree = OUTPUT + "{d}/{s}/{l}/{b}/{i}/tree_files/reroot_tree.txt"
 #     params:
-#         out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/"
+#         out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/",
+#         dir = OUTPUT + "{d}/{s}/{l}/{b}/{i}/ancestral_sequences/"
 #     output:
-#        out = directory(OUTPUT + "{d}/{s}/{l}/{b}/{i}/ancestral_sequences/"),
-#        all_naive = OUTPUT + "{d}/{s}/{l}/{b}/{i}/ancestral_sequences/root_naive.txt"
+#        all_naive = OUTPUT + "{d}/{s}/{l}/{b}/{i}/ancestral_sequences/root_naive_rerooted.txt"
 #     shell:
 #        "echo " + platform.node() + " &>> {log} && \
 #        export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log}&& \
-#        sh {input.script} -r {input.raxml} -d {params.out} -o {output.out} &>> {log}"
+#        sh {input.script} -r {input.raxml} -d {params.out} -o {params.dir} &>> {log}"
+
+
 
 # rule scoper_hier:
 #       resources:
@@ -408,23 +426,178 @@ rule all:
 #          "echo " + platform.node() + " &>> {log} && \
 #          Rscript {input.script} -d {input.db} -o {params.dir}&>> {log}"
 
-rule extract_fasta:
-      resources:
-         mem="2G",
-      threads: 10
-      log: os.path.join(OUTPUT, "logs", "extract_fasta_{d}_{s}_{l}_{b}_{i}.log")
-      input:
-         script = 'simulation_analyses/extract_fasta.py'
-      params:
-         dir = OUTPUT + "{d}/{s}/{l}/{b}/{i}/"
-      output:
-         scoper_hier = directory(OUTPUT + "{d}/{s}/{l}/{b}/{i}/scoper_hier/"),
-         scoper_sp = directory(OUTPUT + "{d}/{s}/{l}/{b}/{i}/scoper_sp/"),
-         changeo = directory(OUTPUT + "{d}/{s}/{l}/{b}/{i}/changeo/")
-      shell:
-         "echo " + platform.node() + " &>> {log} && \
-         export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
-         mkdir {output.scoper_hier} && \
-         mkdir {output.scoper_sp} && \
-         mkdir {output.changeo} && \
-         python {input.script}&>> {log}"
+# rule extract_fasta:
+#       resources:
+#          mem="2G",
+#       threads: 10
+#       log: os.path.join(OUTPUT, "logs", "extract_fasta_{d}_{s}_{l}_{b}_{i}.log")
+#       input:
+#          script = 'simulation_analyses/extract_fasta.py'
+#       params:
+#          dir = OUTPUT + "{d}/{s}/{l}/{b}/{i}/"
+#       output:
+#          scoper_hier = directory(OUTPUT + "{d}/{s}/{l}/{b}/{i}/scoper_hier/"),
+#          scoper_sp = directory(OUTPUT + "{d}/{s}/{l}/{b}/{i}/scoper_sp/"),
+#          changeo = directory(OUTPUT + "{d}/{s}/{l}/{b}/{i}/changeo/")
+#       shell:
+#          "echo " + platform.node() + " &>> {log} && \
+#          export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
+#          mkdir {output.scoper_hier} && \
+#          mkdir {output.scoper_sp} && \
+#          mkdir {output.changeo} && \
+#          python {input.script} {params.dir} &>> {log}"
+
+# rule align_discerned_families:
+#      resources:
+#         mem="2G",
+#      threads: 10
+#      log: os.path.join(OUTPUT, "logs", "align_discerned_families_{d}_{s}_{l}_{b}_{i}.log")
+#      input:
+#         folder = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mixcr_fastas/",
+#         script = 'tree_building/align_families.sh'
+#      output:
+#         check = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mixcr_fastas/align.txt"
+#      shell:
+#         "echo " + platform.node() + " &>> {log} && \
+#         sh {input.script} -d {input.folder} &>> {log}"
+
+# rule build_tree_discerned:
+#      resources:
+#         mem="5G",
+#      threads: 32
+#      log: os.path.join(OUTPUT, "logs", "build_tree_discerned_{d}_{s}_{l}_{b}_{i}.log")
+#      input:
+#         script = 'tree_building/build_sub_trees.sh',
+#         raxml  = RAXML+"raxml-ng",
+#         check = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mixcr_fastas/align.txt"
+#      params:
+#          out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mixcr_fastas/"
+#      output:
+#         tree = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mixcr_fastas/build_tree.txt"
+#      shell:
+#         "echo " + platform.node() + " &>> {log} && \
+#         sh {input.script} -r {input.raxml} -d {params.out} -o {params.out} &>> {log}"
+
+
+# rule mixcr_extract_fastas:
+#      resources:
+#         mem="2G",
+#      threads: 32
+#      log: os.path.join(OUTPUT, "logs", "mixcr_extract_fastas_{d}_{s}_{l}_{b}_{i}.log")
+#      input:
+#         script = 'simulation_analyses/create_mixcr_fasta.sh',
+#         dir = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mixcr_fastas/"
+#      output:
+#         check = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mixcr_fastas/mixcr_fastas.txt"
+#      shell:
+#         "echo " + platform.node() + " &>> {log} && \
+#         sh {input.script} -d {input.dir} &>> {log}"
+
+
+# rule ancestral_sequence:
+#     resources:
+#        mem="10G",
+#     threads: 10
+#     log: os.path.join(OUTPUT, "logs", "ancestral_sequence_{d}_{s}_{l}_{b}_{i}.log")
+#     input:
+#        script = 'germline_search/ancestral_seq_raxml.sh',
+#        raxml  = RAXML+"raxml-ng",
+#        tree = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mixcr_fastas/build_tree.txt"
+#     params:
+#         out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mixcr_fastas/"
+#     output:
+#        all_naive = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mixcr_fastas/root_naive.txt"
+#     shell:
+#        "echo " + platform.node() + " &>> {log} && \
+#        export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log}&& \
+#        sh {input.script} -r {input.raxml} -d {params.out} -o {params.out} &>> {log}"
+
+rule seq_similarity:
+    resources:
+       mem="2G",
+    threads: 10
+    log: os.path.join(OUTPUT, "logs", "seq_similarity_{d}_{s}_{l}_{b}_{i}.log")
+    input:
+       script = 'simulation_analyses/seq_similarity.py',
+       check = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mixcr_fastas/root_naive.txt",
+       parsim = OUTPUT + "{d}/{s}/{l}/{b}/{i}/ancestral_sequences/ancestral_seqs_parsim.tsv"
+    params:
+        out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/"
+    output:
+       similarity = OUTPUT + "{d}/{s}/{l}/{b}/{i}/seq_similarity.tsv"
+    shell:
+       "echo " + platform.node() + " &>> {log} && \
+       python {input.script} {params.out} &>> {log}"
+
+
+# rule mixcr_tsv:
+#     resources:
+#        mem="2G",
+#     threads: 10
+#     log: os.path.join(OUTPUT, "logs", "mixcr_tsv_{d}_{s}_{l}_{b}_{i}.log")
+#     input:
+#        script = 'simulation_analyses/create_mixcr_tsv.py',
+#        check = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mixcr_fastas/root_naive.txt"
+#     params:
+#         out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/"
+#     output:
+#        mixcr = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mixcr.tsv"
+#     shell:
+#        "echo " + platform.node() + " &>> {log} && \
+#        python {input.script} {params.out} &>> {log}"
+
+# rule sensitivity_precision:
+#     resources:
+#        mem="2G",
+#     threads: 10
+#     log: os.path.join(OUTPUT, "logs", "sensitivity_precision_{d}_{s}_{l}_{b}_{i}.log")
+#     input:
+#        script = 'simulation_analyses/sensitivity_precision.py',
+#        check = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mixcr.tsv"
+#     params:
+#         out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/"
+#     output:
+#        similarity = OUTPUT + "{d}/{s}/{l}/{b}/{i}/sensitivity_precision.tsv"
+#     shell:
+#        "echo " + platform.node() + " &>> {log} && \
+#        python {input.script} {params.out} &>> {log}"
+
+
+# rule count_mutations:
+#     resources:
+#        mem="2G",
+#     threads: 10
+#     log: os.path.join(OUTPUT, "logs", "count_mutations_{d}_{s}_{l}_{b}_{i}.log")
+#     input:
+#        script = 'simulation_analyses/count_mutations.py',
+#        check = OUTPUT + "{d}/{s}/{l}/{b}/{i}/naive.fasta"
+#     params:
+#         out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/"
+#     output:
+#        out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mutations.tsv"
+#     shell:
+#        "echo " + platform.node() + " &>> {log} && \
+#        python {input.script} {params.out} &>> {log}"
+
+
+# rule ancestral_phangorn:
+#     resources:
+#        mem="2G",
+#     threads: 10
+#     log: os.path.join(OUTPUT, "logs", "count_mutations_{d}_{s}_{l}_{b}_{i}.log")
+#     input:
+#        script = 'germline_search/ancestral_seq_phangorn.R',
+#        check = OUTPUT + "{d}/{s}/{l}/{b}/{i}/tree_files"
+#     params:
+#         out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/"
+#     output:
+#        out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/ancestral_sequences/ancestral_seqs_parsim.tsv"
+#     shell:
+#        "echo " + platform.node() + " &>> {log} && \
+#        Rscript {input.script} -d {params.out} &>> {log} && \
+#        rm -rf  {params.out}*_ancestral_parsimony.fasta &>> {log} && \
+#        rm -rf  {params.out}*_ancestral_ml.fasta &>> {log}"
+
+
+
+
