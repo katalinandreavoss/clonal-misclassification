@@ -7,12 +7,19 @@ library(stringr)
 library(patchwork)
 library(ggplot2)
 clonal_families<-c(4,6,8,10,12,14,16,18, 20)
+clonal_families<-c(10)
+clonal_families<-c(16)
 #tools<-c("MiXCR", "changeo","scoper_ID","scoper_hierarchical","scoper_spectral")
-SHM<-c("0_001","0_005", "0_01","0_05","0_1","0_2")
+SHM<-c("0_0005", "0_00075","0_001","0_0015","0_002","0_0025","0_003","0_004","0_005", "0_01","0_05","0_1","0_2")
+#SHM<-c("0_001", "0_005", "0_01","0_05","0_1","0_2")
+
 leaves <- c("10","20","50","100")
+leaves <- c("10")
 balance <- c("0_0")
 sims<-seq(1,50,1)
+path<-"/scratch1/kavoss/simulations_mine"
 path<-"/scratch1/kavoss/method_comparison/"
+
 
 get_MSE_median_fam_size<-function(data,df) {
   clone=data[['clones']]
@@ -100,9 +107,9 @@ combined<-number_families[number_families$tool!="scoper_id",]
 
 combined$clones<-as.character(combined$clones)
 
-write.csv(combined, "/home1/kavoss/panfs/method_comparison/output_without_singletons.csv", row.names=FALSE)
+write.csv(combined, "/scratch1/kavoss/method_comparison/output_without_singletons_scoper_many.csv", row.names=FALSE)
 
-all_combined<-rbindlist(list(all4,all6, all8,all10,all12,all14,all16,all18,all20))
+#all_combined<-rbindlist(list(all4,all6, all8,all10,all12,all14,all16,all18,all20))
 
 #write.csv(combined, "/scratch1/kavoss/method_comparison/16_output_all_without_singletons.csv", row.names=FALSE)
 
@@ -136,6 +143,7 @@ MSE_balances_num_fam<-ggplot(combined, aes(balance,MSE_num_fam, fill=tool)) +
   ylab("Mean Squared Error - Number of Families (log)")
 MSE_balances_num_fam
 
+combined$tool <- factor(combined$tool, levels = c("mixcr", "changeo", "scoper_hier","scoper_spec","mptp","gmyc"))
 
 MSE_SHM_size_fam<-ggplot(combined) + 
   geom_boxplot(aes(SHM,MSE_fam_size, fill=tool))+
@@ -143,29 +151,47 @@ MSE_SHM_size_fam<-ggplot(combined) +
   ylab("Mean Squared Error - Median Family Size (log)")+
   scale_fill_brewer(palette = "Paired")
 one<-MSE_SHM_size_fam+
-  theme(text = element_text(face = "bold",size = 30))
+  theme(text = element_text(face = "bold",size = 20))
+one
 combined$tool <- factor(combined$tool)
+
+scoper_only<-combined[combined$tool %in% c("scoper_hier","scoper_spec"),]
+
+MSE_SHM_size_fam<-ggplot(scoper_only) + 
+  geom_boxplot(aes(SHM,MSE_fam_size, fill=tool))+
+  scale_y_continuous(trans='log10')+
+  ylab("Mean Squared Error - Median Family Size (log)")+
+  scale_fill_brewer(palette = "Paired")
+one<-MSE_SHM_size_fam+
+  theme(text = element_text(face = "bold",size = 20))
+
 
 MSE_clones_size_fam<-ggplot(combined, aes(clones,MSE_fam_size, fill=tool)) + 
   geom_boxplot()+
   scale_x_discrete(limits = unique(combined$clones))+
   scale_y_continuous(trans='log10')+
   ylab("Mean Squared Error - Median Family Size (log)")
-MSE_clones_size_fam
+MSE_clones_size_fam+
+  theme(text = element_text(face = "bold",size = 30))+
+  scale_fill_brewer(palette = "Paired")
 
 MSE_leaves_size_fam<-ggplot(combined, aes(leaves,MSE_fam_size, fill=tool)) + 
   geom_boxplot()+
   scale_x_discrete(limits = unique(combined$leaves))+
   scale_y_continuous(trans='log10')+
   ylab("Mean Squared Error - Median Family Size (log)")
-MSE_leaves_size_fam
+MSE_leaves_size_fam+
+  theme(text = element_text(face = "bold",size = 20))+
+  scale_fill_brewer(palette = "Paired")
 
 
 MSE_size_fam<-ggplot(combined, aes(tool,MSE_fam_size, fill=tool)) + 
   geom_boxplot()+
   scale_y_continuous(trans='log10')+
   ylab("Mean Squared Error - Median Family Size (log)")
-MSE_size_fam
+MSE_size_fam+
+  theme(text = element_text(face = "bold",size = 20))+
+  scale_fill_brewer(palette = "Paired")
 
 MSE_SHM_num_fam+MSE_clones_num_fam+ MSE_leaves_num_fam+plot_annotation('number of discerned families',theme=theme(plot.title=element_text(hjust=0.5)))+ plot_layout(guides = "collect")
 MSE_SHM_size_fam+MSE_clones_size_fam+ MSE_leaves_size_fam+plot_annotation('median size of discerned families',theme=theme(plot.title=element_text(hjust=0.5)))+ plot_layout(guides = "collect")

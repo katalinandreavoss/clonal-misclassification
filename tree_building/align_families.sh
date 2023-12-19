@@ -8,7 +8,7 @@ do
     esac
 done
 #change to and from fasta/tsv 
-for fasta in $directory/family*.fasta; do
+for fasta in $directory/family*.tsv; do
   name=${fasta%.tsv}
   name=${name##*/}
   lines=$(cat ${fasta} | wc -l)

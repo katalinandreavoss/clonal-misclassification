@@ -15,6 +15,7 @@ total_df <- do.call(rbind,lapply(filenames,read.csv,sep="\t"))
 
 write.csv(total_df, "/scratch1/kavoss/method_comparison/f1.csv", row.names=FALSE)
 
+total_df$tool <- factor(total_df$tool, levels = c("mixcr", "changeo", "scoper_hier","scoper_sp","mptp","gmyc"))
 
 ggplot(total_df, aes(x=SHM, y=sensitivity, fill = tool))+
   geom_boxplot()+
@@ -24,16 +25,17 @@ ggplot(total_df, aes(x=SHM, y=precision, fill = tool))+
   geom_boxplot()+
   scale_fill_brewer(palette = "Paired")
 
-two<-ggplot(total_df, aes(x=SHM, y=f1, fill = tool))+
+two<-ggplot(total_df, aes(x=leaves, y=f1, fill = tool))+
   geom_boxplot()+
   ylab('F1-Score')+
   scale_fill_brewer(palette = "Paired")+
   theme(text = element_text(face = "bold",size = 20))
+two
 
-
-ggplot(total_df, aes(x=SHM, y=FP, fill = tool))+
+ggplot(total_df, aes(x=SHM, y=FN, fill = tool))+
   geom_boxplot()+
-  scale_fill_manual(values=c("#F8766D","#A3A500","#00BF7D","#E76BF3"))
+  scale_fill_brewer(palette = "Paired")+
+  theme(text = element_text(face = "bold",size = 20))
 
 total_df$leaves<-as.factor(total_df$leaves)
 
@@ -41,3 +43,22 @@ ggplot(total_df, aes(x=leaves, y=f1, fill = tool))+
   geom_boxplot()+
   scale_fill_manual(values=c("#F8766D","#A3A500","#00BF7D","#E76BF3"))
 
+scoper_comp<-total_df[total_df$tool %in% c("scoper_hier","scoper_sp"),]
+
+
+ggplot(scoper_comp, aes(x=SHM, y=FN, fill = tool))+
+  geom_boxplot()+
+  ylab('FN')+
+  scale_fill_brewer(palette = "Paired")+
+  theme(text = element_text(face = "bold",size = 20))
+ggplot(scoper_comp, aes(x=SHM, y=FP, fill = tool))+
+  geom_boxplot()+
+  ylab('FP')+
+  scale_fill_brewer(palette = "Paired")+
+  theme(text = element_text(face = "bold",size = 20))
+
+ggplot(scoper_comp, aes(x=SHM, y=f1, fill = tool))+
+  geom_boxplot()+
+  ylab('F1-Score')+
+  scale_fill_brewer(palette = "Paired")+
+  theme(text = element_text(face = "bold",size = 20))

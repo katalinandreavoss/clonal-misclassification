@@ -10,8 +10,8 @@ do
     esac
 done
 
-${raxml} -model GTR -msa ${directory}/clean_aligned.fasta -seed 42 -prefix ${output}/mega_tree_ --threads auto{32} --search ML tree search
-
+${raxml} -model GTR -msa ${directory}/clean_aligned.fasta -seed 42 -prefix ${output}/mega_tree_ --search ML tree search
+#--threads auto{16}
 #for fasta in $directory/*_aligned.fasta; do
 #  name=${fasta%_aligned.fasta}
 #  name=${name##*/}

@@ -25,9 +25,11 @@ for fasta in $directory/family*_aligned.fasta; do
   name=${name##*/}
   lines=$(cat ${fasta} | grep ">" | wc -l)
   if [ ${name} != "clean" ] && [ ${lines} -gt 4 ] ; then
-    ${raxml} --ancestral -model GTR -msa ${fasta} --tree ${output}/${name}_tree_.raxml.bestTree -prefix ${output}/${name}
+    ${raxml} --ancestral -model GTR -msa ${fasta} --tree ${output}/${name}_tree_rerooted.nexus -prefix ${output}/${name}_rerooted
   fi
 done
+
+#_tree_.raxml.bestTree
 
 for i in ${output}*[^rerooted].raxml.ancestralStates; do  sed '/^N/ s/./>&/' $i > $i.txt; done
 for i in ${output}*[^rerooted].raxml.ancestralStates.txt; do  sed '/>/h; //,$ { //!H; }; $!d; x' $i > $i.txt; done

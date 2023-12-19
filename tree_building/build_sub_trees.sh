@@ -16,6 +16,8 @@ for fasta in $directory/family_*_aligned.fasta; do
   lines=$(cat ${fasta} | grep ">" | wc -l)
   if [ ${lines} -gt 4 ]; then
     ${raxml} -model GTR -msa ${fasta} -seed 42 --redo -prefix ${output}/${name}_tree_ --search ML tree search
+    echo ${name} >> ${output}/build_tree.txt
   fi
+  
 done
-echo "build_tree done" > ${output}/build_tree.txt
+

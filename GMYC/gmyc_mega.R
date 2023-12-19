@@ -1,29 +1,33 @@
+#!/usr/bin/env Rscript
+library("optparse")
 require(ape)
 require(phytools)
 require(splits)
 require(gtools)
+library(phangorn)
 
-temp <- mixedsort(list.files(pattern="/home1/kavoss/simulation_from_scratch/sim_8/0_01/tree_files/*.bestTree"))
-trees <- lapply(temp,read.tree)
+option_list = list(
+  make_option(c("-d", "--dir"), type="character", default="out.txt", 
+              help="directory", metavar="character")
+); 
 
-bin <- list()
-for (i in 1:250){
-  bin[[i]] <- multi2di(trees[[i]])
-}
+opt_parser = OptionParser(option_list=option_list);
+opt = parse_args(opt_parser);
 
-for (i in 1:250){
-  bin[[i]]$edge.length <- bin[[i]]$edge.length+0.01
-}
+path<-opt$dir
 
-tree_edit <- list()
-for (i in 1:250){
-  tree_edit[[i]] <- force.ultrametric(bin[[i]], method = "extend")
-}
+tree_path<-paste0(path,"tree_files/mega_tree_.raxml.bestTree")
+tree<-read.tree(tree_path)
 
-t1 <- list()
-for (i in 1:250){
-  t1[[i]] <- gmyc(tree_edit[[i]])
-}
+consensus_ultra=chronos(tree, lambda=0)  
+midpoint_tree<-midpoint(consensus_ultra)
 
-saveRDS(t1, "gmyc_output_megatrees.rds")
+single<-gmyc(midpoint_tree,method = "single",quiet = TRUE)
+#plot.gmyc(single)
 
+#mulit run really long and is only experimental
+#multi<-gmyc(midpoint_tree,method = "m",quiet = TRUE)
+
+specs<-spec.list(single)
+colnames(specs)<-c("clone_id","sequence_id")
+write.table(specs, file = paste0(path,"gmyc.tsv"), row.names=FALSE, sep="\t",quote = FALSE)

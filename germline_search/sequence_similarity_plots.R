@@ -13,7 +13,7 @@ listed$filenames<-paste(path,listed$clonal_families,listed$SHM,listed$leaves,lis
 get_sub_df<-function(filename) {
   df<-read.csv(filename,sep="\t")
   families<-Reduce(intersect, list(df[df$tool=="correct",]$family,df[df$tool=="mixcr",]$family,df[df$tool=="scoper_hier",]$family,
-                                   df[df$tool=="scoper_sp",]$family,df[df$tool=="changeo",]$family))
+                                   df[df$tool=="scoper_sp",]$family,df[df$tool=="changeo",]$family,df[df$tool=="mptp",]$family))
   return_df<-df[df$family %in% families,] %>% distinct()
   cols<-c("family","tool","hamming_dist","lev_dist","seq_similarity","seq_similarity_lev","midpoint_root")
   return_df<-return_df[cols]
@@ -41,23 +41,36 @@ total_df <- do.call(rbind,lapply(filenames,get_sub_df))
 #  geom_histogram()+
 #  aes(fill = as.factor(tool))+
 #  facet_grid(tool ~ .)
-tools<-c("correct","mixcr","changeo","scoper_hier","scoper_sp")
+tools<-c("correct","mixcr","changeo","scoper_hier","scoper_sp","mptp")
 
-ks.test(total_df[total_df$tool=="correct",]$seq_similarity,total_df[total_df$tool=="mixcr",]$seq_similarity)
+#ks.test(total_df[total_df$tool=="correct",]$seq_similarity,total_df[total_df$tool=="mixcr",]$seq_similarity)
 write.csv(total_df, "/scratch1/kavoss/method_comparison/ancestral_seq.csv", row.names=FALSE)
 
 
 plot<-ggplot(transform(total_df[total_df$tool %in% tools,],
-                 tool=factor(tool,levels=c("correct","mixcr","changeo","scoper_hier","scoper_sp"))))+
+                 tool=factor(tool,levels=c("correct","mixcr","changeo","scoper_hier","scoper_sp","mptp"))))+
   geom_histogram(aes(seq_similarity),binwidth = 0.25)+
   aes(fill = as.factor(tool))+
   facet_grid(midpoint_root ~ tool )+
   guides(fill=guide_legend(title="Tool"))+
-  theme(text = element_text(size-15)) +
-  scale_fill_manual(values=c("black","#A6CEE3", "#1F78B4", "#B2DF8A", "#33A02C"))
-
+  theme(text = element_text(size=15)) +
+  scale_fill_manual(values=c("black","#A6CEE3", "#1F78B4", "#B2DF8A", "#33A02C","#FB9A99"))
 
 plot
+
+midpoint_df<-total_df[total_df$midpoint_root =="True",]
+
+ggplot(transform(midpoint_df[midpoint_df$tool %in% tools,],
+                       tool=factor(tool,levels=c("correct","mixcr","changeo","scoper_hier","scoper_sp","mptp"))))+
+  geom_histogram(aes(seq_similarity),binwidth = 0.25)+
+  aes(fill = as.factor(tool))+
+  facet_grid(. ~ tool )+
+  guides(fill=guide_legend(title="Tool"))+
+  theme(text = element_text(size=15)) +
+  xlim(90,100)+
+  scale_fill_manual(values=c("black","#A6CEE3", "#1F78B4", "#B2DF8A", "#33A02C","#FB9A99"))
+
+
 
 total_counts <- total_df[total_df$tool %in% tools,] %>%
   group_by(tool, midpoint_root) %>%
@@ -109,12 +122,13 @@ colnames(number_families)<- c("tool","clones","SHM","leaves","balance")
 
 
 
-df <- data.frame(x=1:4, y=1, col=letters[1:4])
+df <- data.frame(x=1:5, y=1, col=letters[1:5])
 
 # Construct the plot
-g <- ggplot(df, aes(x=x, y=y, fill=col)) + 
+g <- ggplot(df, aes(x=x, y=y, color=col)) + 
   geom_point(size=5)+
-  scale_fill_brewer(palette = "Paired")
+  scale_colour_brewer(palette = "Paired")
+
 colors <- ggplot_build(g)$data[[1]]$colour
 
 

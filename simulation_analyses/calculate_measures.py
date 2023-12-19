@@ -1,6 +1,7 @@
 import sys
 import pandas as pd
 import statistics
+import os
 path = sys.argv[1]
 
 #path = "/Users/kavoss/Documents/Research/simulations/14/0_2/10/6/"
@@ -21,6 +22,8 @@ changeo_path = path+"vquest_files/combined_db-pass_clone-pass.tsv"
 scoper1_path = path+"results_db_idClones.tsv"
 scoper2_path = path+"results_hierClones.tsv"
 scoper3_path = path+"results_specClones.tsv"
+mptp_path= path+"mptp_data_singletons.txt"
+gmyc_path= path+"gmyc.tsv"
 real_values_path = path+"family_sizes.txt"
 
 
@@ -41,17 +44,17 @@ def mixcr_get_med_var(df):
         mixcr_var_size = "NaN"
     return mixcr_med_size, mixcr_var_size
 
-mixcr = pd.read_csv(mixcr_path,sep='\t')
-mixcr_num_fam = len(mixcr)
-mixcr_med_size, mixcr_var_size = mixcr_get_med_var(mixcr["readCount"])
-mixcr_singletons = len(mixcr[mixcr["readCount"]==1])
-complete.write("mixcr\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(mixcr_num_fam)+"\t"+str(mixcr_med_size)+"\t"+str(mixcr_var_size)+"\t"+str(mixcr_singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
+# mixcr = pd.read_csv(mixcr_path,sep='\t')
+# mixcr_num_fam = len(mixcr)
+# mixcr_med_size, mixcr_var_size = mixcr_get_med_var(mixcr["readCount"])
+# mixcr_singletons = len(mixcr[mixcr["readCount"]==1])
+# complete.write("mixcr\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(mixcr_num_fam)+"\t"+str(mixcr_med_size)+"\t"+str(mixcr_var_size)+"\t"+str(mixcr_singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
 
-#without singletons
-mixcr_num_fam = len(mixcr[mixcr["readCount"]!=1])
-mixcr_singletons = len(mixcr[mixcr["readCount"]!=1])
-mixcr_med_size, mixcr_var_size = mixcr_get_med_var(mixcr[mixcr["readCount"]!=1]["readCount"])
-without_singletons.write("mixcr\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(mixcr_num_fam)+"\t"+str(mixcr_med_size)+"\t"+str(mixcr_var_size)+"\t"+str(mixcr_singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
+# #without singletons
+# mixcr_num_fam = len(mixcr[mixcr["readCount"]!=1])
+# mixcr_singletons = len(mixcr[mixcr["readCount"]!=1])
+# mixcr_med_size, mixcr_var_size = mixcr_get_med_var(mixcr[mixcr["readCount"]!=1]["readCount"])
+# without_singletons.write("mixcr\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(mixcr_num_fam)+"\t"+str(mixcr_med_size)+"\t"+str(mixcr_var_size)+"\t"+str(mixcr_singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
 
 
 def get_med_var(df):
@@ -66,18 +69,18 @@ def get_med_var(df):
         var_size = "NaN"
     return med_size,var_size
 
-changeo = pd.read_csv(changeo_path,sep='\t')
-changeo_num_fam = max(changeo["clone_id"])
-changeo_grouped = changeo.groupby(['clone_id'])['sequence_id'].count()
-changeo_med_size,changeo_var_size = get_med_var(changeo_grouped)
-changeo_singletons = changeo.groupby(['clone_id'])['sequence_id'].filter(lambda x: len(x) == 1).count()
-complete.write("changeo\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(changeo_num_fam)+"\t"+str(changeo_med_size)+"\t"+str(changeo_var_size)+"\t"+str(changeo_singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
+# changeo = pd.read_csv(changeo_path,sep='\t')
+# changeo_num_fam = max(changeo["clone_id"])
+# changeo_grouped = changeo.groupby(['clone_id'])['sequence_id'].count()
+# changeo_med_size,changeo_var_size = get_med_var(changeo_grouped)
+# changeo_singletons = changeo.groupby(['clone_id'])['sequence_id'].filter(lambda x: len(x) == 1).count()
+# complete.write("changeo\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(changeo_num_fam)+"\t"+str(changeo_med_size)+"\t"+str(changeo_var_size)+"\t"+str(changeo_singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
 
-#without singletons
-changeo_num_fam = changeo.groupby(['clone_id'])['sequence_id'].filter(lambda x: len(x) > 1).count()
-changeo_grouped = changeo_grouped[changeo.groupby(['clone_id'])['sequence_id'].apply(lambda x: len(x) > 1)]
-changeo_med_size,changeo_var_size = get_med_var(changeo_grouped)
-without_singletons.write("changeo\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(changeo_num_fam)+"\t"+str(changeo_med_size)+"\t"+str(changeo_var_size)+"\t"+str(changeo_singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
+# #without singletons
+# changeo_num_fam = changeo.groupby(['clone_id'])['sequence_id'].filter(lambda x: len(x) > 1).count()
+# changeo_grouped = changeo_grouped[changeo.groupby(['clone_id'])['sequence_id'].apply(lambda x: len(x) > 1)]
+# changeo_med_size,changeo_var_size = get_med_var(changeo_grouped)
+# without_singletons.write("changeo\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(changeo_num_fam)+"\t"+str(changeo_med_size)+"\t"+str(changeo_var_size)+"\t"+str(changeo_singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
 
 
 scoper1 = pd.read_csv(scoper1_path,sep='\t')
@@ -121,23 +124,53 @@ scoper3_grouped = scoper3_grouped[scoper3.groupby(['clone_id'])['sequence_id'].a
 scoper3_med_size, scoper3_var_size = get_med_var(scoper3_grouped)
 without_singletons.write("scoper_spec\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(scoper3_num_fam)+"\t"+str(scoper3_med_size)+"\t"+str(scoper3_var_size)+"\t"+str(scoper3_singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
 
-scoper_hier = ["0_05","0_1","0_2","0_25","0_3","0_4","0_5"]
-for scop in scoper_hier:
-    print(scop)
-    scop_path = path+"results_hierClones_"+scop+".tsv"
 
-    scoper = pd.read_csv(scop_path,sep='\t')
-    scoper_num_fam = max(scoper["clone_id"])
-    scoper_grouped = scoper.groupby(['clone_id'])['sequence_id'].count()
-    scoper_med_size, scoper_var_size = get_med_var(scoper_grouped)
-    scoper_singletons = scoper.groupby(['clone_id'])['sequence_id'].filter(lambda x: len(x) == 1).count()
-    complete.write("scoper_"+scop+"\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(scoper_num_fam)+"\t"+str(scoper_med_size)+"\t"+str(scoper_var_size)+"\t"+str(scoper_singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
+# mptp = pd.read_csv(mptp_path,sep='\t')
+# mptp_num_fam = max(mptp["clone_id"])
+# mptp_grouped = mptp.groupby(['clone_id'])['sequence_id'].count()
+# mptp_med_size, mptp_var_size = get_med_var(mptp_grouped)
+# mptp_singletons = mptp.groupby(['clone_id'])['sequence_id'].filter(lambda x: len(x) == 1).count()
+# complete.write("mptp\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(mptp_num_fam)+"\t"+str(mptp_med_size)+"\t"+str(mptp_var_size)+"\t"+str(mptp_singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
 
-    #without singletons
-    scoper_num_fam = scoper.groupby(['clone_id'])['sequence_id'].filter(lambda x: len(x) > 1).count()
-    scoper_grouped = scoper_grouped[scoper.groupby(['clone_id'])['sequence_id'].apply(lambda x: len(x) > 1)]
-    scoper_med_size, scoper_var_size = get_med_var(scoper_grouped)
-    without_singletons.write("scoper_"+scop+"\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(scoper_num_fam)+"\t"+str(scoper_med_size)+"\t"+str(scoper_var_size)+"\t"+str(scoper_singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
+# #without singletons
+# mptp_num_fam = mptp.groupby(['clone_id'])['sequence_id'].filter(lambda x: len(x) > 1).count()
+# mptp_grouped = mptp_grouped[mptp.groupby(['clone_id'])['sequence_id'].apply(lambda x: len(x) > 1)]
+# mptp_med_size, mptp_var_size = get_med_var(mptp_grouped)
+# without_singletons.write("mptp\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(mptp_num_fam)+"\t"+str(mptp_med_size)+"\t"+str(mptp_var_size)+"\t"+str(mptp_singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
+
+# if os.path.exists(gmyc_path):
+#     gmyc = pd.read_csv(gmyc_path,sep='\t')
+#     gmyc_num_fam = max(gmyc["clone_id"])
+#     gmyc_grouped = gmyc.groupby(['clone_id'])['sequence_id'].count()
+#     gmyc_med_size, gmyc_var_size = get_med_var(gmyc_grouped)
+#     gmyc_singletons = gmyc.groupby(['clone_id'])['sequence_id'].filter(lambda x: len(x) == 1).count()
+#     complete.write("gmyc\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(gmyc_num_fam)+"\t"+str(gmyc_med_size)+"\t"+str(gmyc_var_size)+"\t"+str(gmyc_singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
+
+#     #without singletons
+#     gmyc_num_fam = gmyc.groupby(['clone_id'])['sequence_id'].filter(lambda x: len(x) > 1).count()
+#     gmyc_grouped = gmyc_grouped[gmyc.groupby(['clone_id'])['sequence_id'].apply(lambda x: len(x) > 1)]
+#     gmyc_med_size, gmyc_var_size = get_med_var(gmyc_grouped)
+#     without_singletons.write("gmyc\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(gmyc_num_fam)+"\t"+str(gmyc_med_size)+"\t"+str(gmyc_var_size)+"\t"+str(gmyc_singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
+
+
+
+# scoper_hier = ["0_05","0_1","0_2","0_25","0_3","0_4","0_5"]
+# for scop in scoper_hier:
+#     print(scop)
+#     scop_path = path+"results_hierClones_"+scop+".tsv"
+
+#     scoper = pd.read_csv(scop_path,sep='\t')
+#     scoper_num_fam = max(scoper["clone_id"])
+#     scoper_grouped = scoper.groupby(['clone_id'])['sequence_id'].count()
+#     scoper_med_size, scoper_var_size = get_med_var(scoper_grouped)
+#     scoper_singletons = scoper.groupby(['clone_id'])['sequence_id'].filter(lambda x: len(x) == 1).count()
+#     complete.write("scoper_"+scop+"\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(scoper_num_fam)+"\t"+str(scoper_med_size)+"\t"+str(scoper_var_size)+"\t"+str(scoper_singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
+
+#     #without singletons
+#     scoper_num_fam = scoper.groupby(['clone_id'])['sequence_id'].filter(lambda x: len(x) > 1).count()
+#     scoper_grouped = scoper_grouped[scoper.groupby(['clone_id'])['sequence_id'].apply(lambda x: len(x) > 1)]
+#     scoper_med_size, scoper_var_size = get_med_var(scoper_grouped)
+#     without_singletons.write("scoper_"+scop+"\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(scoper_num_fam)+"\t"+str(scoper_med_size)+"\t"+str(scoper_var_size)+"\t"+str(scoper_singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
 
 
 complete.flush()

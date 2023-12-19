@@ -26,9 +26,12 @@ fasta = pd.DataFrame({"id": identifiers,"seq":seq})
 changeo_path = path+"vquest_files/combined_db-pass_clone-pass.tsv"
 scoper2_path = path+"results_hierClones.tsv"
 scoper3_path = path+"results_specClones.tsv"
+mptp_path = path+"mptp_data_singletons.txt"
 
-all = [changeo_path,scoper2_path,scoper3_path]
-file_path=pd.DataFrame({"file": all,"dir":["changeo","scoper_hier","scoper_sp"]})
+all = [changeo_path,scoper2_path,scoper3_path,mptp_path]
+file_path=pd.DataFrame({"file": all,"dir":["changeo","scoper_hier","scoper_sp","mptp"]})
+
+
 
 for index, row in file_path.iterrows():
     df = pd.read_csv(row["file"],sep='\t')
