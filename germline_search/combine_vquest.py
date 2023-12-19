@@ -5,7 +5,6 @@ import numpy as np
 path = sys.argv[1]  #vquest directory
 subfolders=glob(path+"/*/", recursive = True)
 
-
 first1 = pd.read_table(path+"/001/1_Summary.txt", delimiter='\t',index_col=0)
 first2 = pd.read_table(path+"/001/2_IMGT-gapped-nt-sequences.txt", delimiter='\t',index_col=0)
 first3 = pd.read_table(path+"/001/3_Nt-sequences.txt", delimiter='\t',index_col=0)
@@ -20,7 +19,8 @@ first6 = first6.apply(lambda x: x.astype(int) if x.dtype == 'float' else x)
 
 
 for sub in subfolders:
-    if not "combined" in sub and not "001" in sub:
+   if "combined" not in sub and "/001/" not in sub:
+        print(sub)
         file1 =pd.read_table(sub + "1_Summary.txt", delimiter='\t', index_col=0)
         file1["V-REGION identity % (with ins/del events)"] = ""
         file1["V-REGION identity nt (with ins/del events)"] = ""
