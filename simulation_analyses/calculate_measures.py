@@ -69,108 +69,55 @@ def get_med_var(df):
         var_size = "NaN"
     return med_size,var_size
 
-# changeo = pd.read_csv(changeo_path,sep='\t')
-# changeo_num_fam = max(changeo["clone_id"])
-# changeo_grouped = changeo.groupby(['clone_id'])['sequence_id'].count()
-# changeo_med_size,changeo_var_size = get_med_var(changeo_grouped)
-# changeo_singletons = changeo.groupby(['clone_id'])['sequence_id'].filter(lambda x: len(x) == 1).count()
+def get_results_all(path):
+    df = pd.read_csv(path, sep='\t')
+    num_fam = max(df["clone_id"])
+    df_grouped = df.groupby(['clone_id'])['sequence_id'].count()
+    med_size, var_size = get_med_var(df_grouped)
+    singletons = df.groupby(['clone_id'])['sequence_id'].filter(lambda x: len(x) == 1).count()
+    # without singletons
+    non_singletons = df.groupby(['clone_id'])['sequence_id'].filter(lambda x: len(x) > 1)
+    num_fam_no_s = len(pd.unique(df.loc[df['sequence_id'].isin(non_singletons)]['clone_id']))
+
+    df_grouped = df_grouped[df.groupby(['clone_id'])['sequence_id'].apply(lambda x: len(x) > 1)]
+    med_size_no_s, var_size_no_s = get_med_var(df_grouped)
+
+    return num_fam, med_size, var_size, singletons,num_fam_no_s,med_size_no_s, var_size_no_s
+
+# changeo_num_fam,changeo_med_size,changeo_var_size,changeo_singletons,changeo_num_fam_no_s,changeo_med_size_no_s,changeo_var_size_no_s = get_results_all(changeo_path)
 # complete.write("changeo\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(changeo_num_fam)+"\t"+str(changeo_med_size)+"\t"+str(changeo_var_size)+"\t"+str(changeo_singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
+# without_singletons.write("changeo\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(changeo_num_fam_no_s)+"\t"+str(changeo_med_size_no_s)+"\t"+str(changeo_var_size_no_s)+"\t"+str(changeo_singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
 
-# #without singletons
-# changeo_num_fam = changeo.groupby(['clone_id'])['sequence_id'].filter(lambda x: len(x) > 1).count()
-# changeo_grouped = changeo_grouped[changeo.groupby(['clone_id'])['sequence_id'].apply(lambda x: len(x) > 1)]
-# changeo_med_size,changeo_var_size = get_med_var(changeo_grouped)
-# without_singletons.write("changeo\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(changeo_num_fam)+"\t"+str(changeo_med_size)+"\t"+str(changeo_var_size)+"\t"+str(changeo_singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
+num_fam,med_size,var_size,singletons,num_fam_no_s,med_size_no_s,var_size_no_s = get_results_all(scoper1_path)
+complete.write("scoper_id\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(num_fam)+"\t"+str(med_size)+"\t"+str(var_size)+"\t"+str(singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
+without_singletons.write("scoper_id\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(num_fam_no_s)+"\t"+str(med_size_no_s)+"\t"+str(var_size_no_s)+"\t"+str(singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
 
+num_fam,med_size,var_size,singletons,num_fam_no_s,med_size_no_s,var_size_no_s = get_results_all(scoper2_path)
+complete.write("scoper_hier\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(num_fam)+"\t"+str(med_size)+"\t"+str(var_size)+"\t"+str(singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
+without_singletons.write("scoper_hier\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(num_fam_no_s)+"\t"+str(med_size_no_s)+"\t"+str(var_size_no_s)+"\t"+str(singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
 
-scoper1 = pd.read_csv(scoper1_path,sep='\t')
-scoper1_num_fam = max(scoper1["clone_id"])
-scoper1_grouped = scoper1.groupby(['clone_id'])['sequence_id'].count()
-scoper1_med_size,scoper1_var_size = get_med_var(scoper1_grouped)
-scoper1_singletons = scoper1.groupby(['clone_id'])['sequence_id'].filter(lambda x: len(x) == 1).count()
-complete.write("scoper_id\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(scoper1_num_fam)+"\t"+str(scoper1_med_size)+"\t"+str(scoper1_var_size)+"\t"+str(scoper1_singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
+num_fam,med_size,var_size,singletons,num_fam_no_s,med_size_no_s,var_size_no_s = get_results_all(scoper3_path)
+complete.write("scoper_spec\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(num_fam)+"\t"+str(med_size)+"\t"+str(var_size)+"\t"+str(singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
+without_singletons.write("scoper_spec\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(num_fam_no_s)+"\t"+str(med_size_no_s)+"\t"+str(var_size_no_s)+"\t"+str(singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
 
-#without singletons
-scoper1_num_fam = scoper1.groupby(['clone_id'])['sequence_id'].filter(lambda x: len(x) > 1).count()
-scoper1_grouped = scoper1_grouped[scoper1.groupby(['clone_id'])['sequence_id'].apply(lambda x: len(x) > 1)]
-scoper1_med_size,scoper1_var_size = get_med_var(scoper1_grouped)
-without_singletons.write("scoper_id\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(scoper1_num_fam)+"\t"+str(scoper1_med_size)+"\t"+str(scoper1_var_size)+"\t"+str(scoper1_singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
+# num_fam,med_size,var_size,singletons,num_fam_no_s,med_size_no_s,var_size_no_s = get_results_all(mptp_path)
+# complete.write("mptp\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(num_fam)+"\t"+str(med_size)+"\t"+str(var_size)+"\t"+str(singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
+# without_singletons.write("mptp\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(num_fam_no_s)+"\t"+str(med_size_no_s)+"\t"+str(var_size_no_s)+"\t"+str(singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
 
-
-scoper2 = pd.read_csv(scoper2_path,sep='\t')
-scoper2_num_fam = max(scoper2["clone_id"])
-scoper2_grouped = scoper2.groupby(['clone_id'])['sequence_id'].count()
-scoper2_med_size, scoper2_var_size = get_med_var(scoper2_grouped)
-scoper2_singletons = scoper2.groupby(['clone_id'])['sequence_id'].filter(lambda x: len(x) == 1).count()
-complete.write("scoper_hier\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(scoper2_num_fam)+"\t"+str(scoper2_med_size)+"\t"+str(scoper2_var_size)+"\t"+str(scoper2_singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
-
-#without singletons
-scoper2_num_fam = scoper2.groupby(['clone_id'])['sequence_id'].filter(lambda x: len(x) > 1).count()
-scoper2_grouped = scoper2_grouped[scoper2.groupby(['clone_id'])['sequence_id'].apply(lambda x: len(x) > 1)]
-scoper2_med_size, scoper2_var_size = get_med_var(scoper2_grouped)
-without_singletons.write("scoper_hier\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(scoper2_num_fam)+"\t"+str(scoper2_med_size)+"\t"+str(scoper2_var_size)+"\t"+str(scoper2_singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
-
-
-scoper3 = pd.read_csv(scoper3_path,sep='\t')
-scoper3_num_fam = max(scoper3["clone_id"])
-scoper3_grouped = scoper3.groupby(['clone_id'])['sequence_id'].count()
-scoper3_med_size, scoper3_var_size = get_med_var(scoper3_grouped)
-scoper3_singletons = scoper3.groupby(['clone_id'])['sequence_id'].filter(lambda x: len(x) == 1).count()
-complete.write("scoper_spec\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(scoper3_num_fam)+"\t"+str(scoper3_med_size)+"\t"+str(scoper3_var_size)+"\t"+str(scoper3_singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
-
-#without singletons
-scoper3_num_fam = scoper3.groupby(['clone_id'])['sequence_id'].filter(lambda x: len(x) > 1).count()
-scoper3_grouped = scoper3_grouped[scoper3.groupby(['clone_id'])['sequence_id'].apply(lambda x: len(x) > 1)]
-scoper3_med_size, scoper3_var_size = get_med_var(scoper3_grouped)
-without_singletons.write("scoper_spec\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(scoper3_num_fam)+"\t"+str(scoper3_med_size)+"\t"+str(scoper3_var_size)+"\t"+str(scoper3_singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
-
-
-# mptp = pd.read_csv(mptp_path,sep='\t')
-# mptp_num_fam = max(mptp["clone_id"])
-# mptp_grouped = mptp.groupby(['clone_id'])['sequence_id'].count()
-# mptp_med_size, mptp_var_size = get_med_var(mptp_grouped)
-# mptp_singletons = mptp.groupby(['clone_id'])['sequence_id'].filter(lambda x: len(x) == 1).count()
-# complete.write("mptp\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(mptp_num_fam)+"\t"+str(mptp_med_size)+"\t"+str(mptp_var_size)+"\t"+str(mptp_singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
-
-# #without singletons
-# mptp_num_fam = mptp.groupby(['clone_id'])['sequence_id'].filter(lambda x: len(x) > 1).count()
-# mptp_grouped = mptp_grouped[mptp.groupby(['clone_id'])['sequence_id'].apply(lambda x: len(x) > 1)]
-# mptp_med_size, mptp_var_size = get_med_var(mptp_grouped)
-# without_singletons.write("mptp\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(mptp_num_fam)+"\t"+str(mptp_med_size)+"\t"+str(mptp_var_size)+"\t"+str(mptp_singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
 
 # if os.path.exists(gmyc_path):
-#     gmyc = pd.read_csv(gmyc_path,sep='\t')
-#     gmyc_num_fam = max(gmyc["clone_id"])
-#     gmyc_grouped = gmyc.groupby(['clone_id'])['sequence_id'].count()
-#     gmyc_med_size, gmyc_var_size = get_med_var(gmyc_grouped)
-#     gmyc_singletons = gmyc.groupby(['clone_id'])['sequence_id'].filter(lambda x: len(x) == 1).count()
-#     complete.write("gmyc\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(gmyc_num_fam)+"\t"+str(gmyc_med_size)+"\t"+str(gmyc_var_size)+"\t"+str(gmyc_singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
-
-#     #without singletons
-#     gmyc_num_fam = gmyc.groupby(['clone_id'])['sequence_id'].filter(lambda x: len(x) > 1).count()
-#     gmyc_grouped = gmyc_grouped[gmyc.groupby(['clone_id'])['sequence_id'].apply(lambda x: len(x) > 1)]
-#     gmyc_med_size, gmyc_var_size = get_med_var(gmyc_grouped)
-#     without_singletons.write("gmyc\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(gmyc_num_fam)+"\t"+str(gmyc_med_size)+"\t"+str(gmyc_var_size)+"\t"+str(gmyc_singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
-
+#     num_fam,med_size,var_size,singletons,num_fam_no_s,med_size_no_s,var_size_no_s = get_results_all(gmyc_path)
+#     complete.write("gmyc\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(num_fam)+"\t"+str(med_size)+"\t"+str(var_size)+"\t"+str(singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
+#     without_singletons.write("gmyc\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(num_fam_no_s)+"\t"+str(med_size_no_s)+"\t"+str(var_size_no_s)+"\t"+str(singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
 
 
 # scoper_hier = ["0_05","0_1","0_2","0_25","0_3","0_4","0_5"]
 # for scop in scoper_hier:
 #     print(scop)
 #     scop_path = path+"results_hierClones_"+scop+".tsv"
-
-#     scoper = pd.read_csv(scop_path,sep='\t')
-#     scoper_num_fam = max(scoper["clone_id"])
-#     scoper_grouped = scoper.groupby(['clone_id'])['sequence_id'].count()
-#     scoper_med_size, scoper_var_size = get_med_var(scoper_grouped)
-#     scoper_singletons = scoper.groupby(['clone_id'])['sequence_id'].filter(lambda x: len(x) == 1).count()
-#     complete.write("scoper_"+scop+"\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(scoper_num_fam)+"\t"+str(scoper_med_size)+"\t"+str(scoper_var_size)+"\t"+str(scoper_singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
-
-#     #without singletons
-#     scoper_num_fam = scoper.groupby(['clone_id'])['sequence_id'].filter(lambda x: len(x) > 1).count()
-#     scoper_grouped = scoper_grouped[scoper.groupby(['clone_id'])['sequence_id'].apply(lambda x: len(x) > 1)]
-#     scoper_med_size, scoper_var_size = get_med_var(scoper_grouped)
-#     without_singletons.write("scoper_"+scop+"\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(scoper_num_fam)+"\t"+str(scoper_med_size)+"\t"+str(scoper_var_size)+"\t"+str(scoper_singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
+#     num_fam,med_size,var_size,singletons,num_fam_no_s,med_size_no_s,var_size_no_s = get_results_all(scop_path)
+#     complete.write("scoper_"+scop+"\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(num_fam)+"\t"+str(med_size)+"\t"+str(var_size)+"\t"+str(singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
+#     without_singletons.write("scoper_"+scop+"\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(num_fam_no_s)+"\t"+str(med_size_no_s)+"\t"+str(var_size_no_s)+"\t"+str(singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
 
 
 complete.flush()
