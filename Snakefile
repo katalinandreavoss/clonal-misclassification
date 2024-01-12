@@ -17,12 +17,12 @@ VDJ=config['VDJ']
 #clones = range(4,21,2)
 clones = range(10,11,5)
 #clones = range(16,21,10)
-#shm = ["0_001", "0_005", "0_01","0_05","0_1","0_2"] 
-shm = ["0_0005", "0_00075", "0_001","0_0015","0_002","0_0025","0_003","0_004","0_005","0_01","0_05","0_1","0_2"] 
-#leaves = ["10","20","50","100"]
-leaves = ["20","50","100"]
+shm = ["0_001", "0_005", "0_01","0_05","0_1","0_2"] 
+#shm = ["0_0005", "0_00075", "0_001","0_0015","0_002","0_0025","0_003","0_004","0_005","0_01","0_05","0_1","0_2"] 
+leaves = ["10","20","50","100"]
+#leaves = ["20","50","100"]
 #balance = ["0_0","0_3","0_5","1_0","1_3"]
-balance = ["0_0"]
+junction_length = ["10","20","30","40","50","60"]
 sims = range(1,51)
 
 
@@ -30,13 +30,14 @@ wildcard_constraints:
     d = "\d+",
     s = "0_\d+",
     l = "\d+",
-    b = "\d_\d",
+    b = "\d+",
     i = "\d+"
 
 rule all:
     input:
-        expand(OUTPUT + "{d}/{s}/{l}/{b}/{i}/sensitivity_precision.tsv" , d=clones, s=shm,l=leaves, b=balance, i=sims),
-        expand(OUTPUT + "{d}/{s}/{l}/{b}/{i}/analysis_complete.tsv" , d=clones, s=shm,l=leaves, b=balance, i=sims)
+        expand(OUTPUT + "{d}/{s}/{l}/{b}/{i}/sensitivity_precision.tsv" , d=clones, s=shm,l=leaves, b=junction_length, i=sims),
+        expand(OUTPUT + "{d}/{s}/{l}/{b}/{i}/results_specClones_vj.tsv" , d=clones, s=shm,l=leaves, b=junction_length, i=sims),
+        expand(OUTPUT + "{d}/{s}/{l}/{b}/{i}/analysis_no_singletons.tsv" , d=clones, s=shm,l=leaves, b=junction_length, i=sims)
        
        
 
@@ -147,21 +148,21 @@ rule align:
         "echo " + platform.node() + " &>> {log} && \
         sh {input.script} -d {params.out} &>> {log}"
 
-# rule align_families:
-#      resources:
-#         mem="2G",
-#      threads: 10
-#      log: os.path.join(OUTPUT, "logs", "align_families_{d}_{s}_{l}_{b}_{i}.log")
-#      input:
-#         all = OUTPUT + "{d}/{s}/{l}/{b}/{i}/family_1.fasta",
-#         script = 'tree_building/align_families.sh'
-#      params:
-#          out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/"
-#      output:
-#         align = OUTPUT + "{d}/{s}/{l}/{b}/{i}/family_1_aligned.fasta"
-#      shell:
-#         "echo " + platform.node() + " &>> {log} && \
-#         sh {input.script} -d {params.out} &>> {log}"
+rule align_families:
+     resources:
+        mem="2G",
+     threads: 10
+     log: os.path.join(OUTPUT, "logs", "align_families_{d}_{s}_{l}_{b}_{i}.log")
+     input:
+        all = OUTPUT + "{d}/{s}/{l}/{b}/{i}/family_1.fasta",
+        script = 'tree_building/align_families.sh'
+     params:
+         out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/"
+     output:
+        align = OUTPUT + "{d}/{s}/{l}/{b}/{i}/family_1_aligned.fasta"
+     shell:
+        "echo " + platform.node() + " &>> {log} && \
+        sh {input.script} -d {params.out} &>> {log}"
 
 
 #important for this rule: you must specify --cpus-per-task=16 in the snakemake command, otherwise it takes forever
@@ -409,14 +410,16 @@ rule changeo:
         script = 'simulation_analyses/change-o.sh',
         summary = OUTPUT + "{d}/{s}/{l}/{b}/{i}/vquest_files/combined/1_Summary.txt",
         dir = OUTPUT + "{d}/{s}/{l}/{b}/{i}/vquest_files/combined/",
-        fasta = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta"
+        fasta = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta",
+        vdj = VDJ
      output:
         db = OUTPUT + "{d}/{s}/{l}/{b}/{i}/vquest_files/combined_db-pass.tsv",
-        clones = OUTPUT + "{d}/{s}/{l}/{b}/{i}/vquest_files/combined_db-pass_clone-pass.tsv"
+        clones = OUTPUT + "{d}/{s}/{l}/{b}/{i}/vquest_files/combined_db-pass_clone-pass.tsv",
+        germline = OUTPUT + "{d}/{s}/{l}/{b}/{i}/vquest_files/combined_db-pass_germ-pass.tsv"
      shell:
         "echo " + platform.node() + " &>> {log} && \
         export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
-        sh {input.script} -d {input.dir} -f {input.fasta}&>> {log}"
+        sh {input.script} -d {input.dir} -f {input.fasta} -v {input.vdj} &>> {log}"
 
 rule scoper:
      resources:
@@ -436,6 +439,22 @@ rule scoper:
         "echo " + platform.node() + " &>> {log} && \
         Rscript {input.script} -d {input.db} -o {params.dir}&>> {log}"
 
+rule scoper_spec:
+     resources:
+        mem="10G",
+     threads: 10
+     log: os.path.join(OUTPUT, "logs", "scoper_spec_{d}_{s}_{l}_{b}_{i}.log")
+     input:
+        script = 'simulation_analyses/scoper_spec.R',
+        db = OUTPUT + "{d}/{s}/{l}/{b}/{i}/vquest_files/combined_db-pass_germ-pass.tsv"
+     params:
+        dir = OUTPUT + "{d}/{s}/{l}/{b}/{i}/"
+     output:
+        spectral = OUTPUT + "{d}/{s}/{l}/{b}/{i}/results_specClones_vj.tsv"
+     shell:
+        "echo " + platform.node() + " &>> {log} && \
+        Rscript {input.script} -d {input.db} -o {params.dir}&>> {log}"
+
 rule combine_analysis:
     resources:
        mem="2G",
@@ -444,7 +463,8 @@ rule combine_analysis:
     input:
        script = 'simulation_analyses/calculate_measures.py',
        spectral = OUTPUT + "{d}/{s}/{l}/{b}/{i}/results_specClones.tsv",
-       real = OUTPUT + "{d}/{s}/{l}/{b}/{i}/family_sizes.txt"
+       real = OUTPUT + "{d}/{s}/{l}/{b}/{i}/family_sizes.txt",
+       spectralvj = OUTPUT + "{d}/{s}/{l}/{b}/{i}/results_specClones_vj.tsv"
     params:
        dir = OUTPUT + "{d}/{s}/{l}/{b}/{i}/"
     output:
@@ -625,7 +645,8 @@ rule sensitivity_precision:
     log: os.path.join(OUTPUT, "logs", "sensitivity_precision_{d}_{s}_{l}_{b}_{i}.log")
     input:
        script = 'simulation_analyses/sensitivity_precision.py',
-       check = OUTPUT + "{d}/{s}/{l}/{b}/{i}/results_specClones.tsv"
+       check = OUTPUT + "{d}/{s}/{l}/{b}/{i}/results_specClones.tsv",
+       spectralvj = OUTPUT + "{d}/{s}/{l}/{b}/{i}/results_specClones_vj.tsv"
     params:
         out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/"
     output:

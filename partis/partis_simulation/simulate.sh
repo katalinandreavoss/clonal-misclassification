@@ -30,7 +30,7 @@ fi
 #echo ${clonal_families}
 
 #set x for number of desired simulations $(seq 1 x)
-#for i in 0.01 0.05 0.1 0.2 0.3; do
+#for i in 0.002 0.0025 0.003 0.004; do
  # echo "$i";
   #$partis simulate --simulate-from-scratch --n-sim-events ${name} --scratch-mute-freq ${i} --outfname $output/sim_${i//./_}.yaml --debug 1
 #done

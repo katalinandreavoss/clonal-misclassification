@@ -15,14 +15,15 @@ mixcr_path = path+"mixcr.tsv"
 changeo_path = path+"vquest_files/combined_db-pass_clone-pass.tsv"
 scoper_hier_path=path+"results_hierClones.tsv"
 scoper_sp_path = path+"results_specClones.tsv"
+scoper_spvj_path = path+"results_specClones_vj.tsv"
 mptp_path = path+"mptp_data_singletons.txt"
 gmyc_path = path+"gmyc.tsv"
 
 
 #all = [mixcr_path,changeo_path,scoper_hier_path,scoper_sp_path,mptp_path,gmyc_path]
 #file_path=pd.DataFrame({"file": all,"tool":["mixcr","changeo","scoper_hier","scoper_sp","mptp","gmyc"]})
-all = [scoper_hier_path,scoper_sp_path]
-file_path=pd.DataFrame({"file": all,"tool":["scoper_hier","scoper_sp"]})
+all = [scoper_hier_path,scoper_sp_path,scoper_spvj_path]
+file_path=pd.DataFrame({"file": all,"tool":["scoper_hier","scoper_sp","scoper_sp_vj"]})
 file_path["TP"]= 0.0
 file_path["TN"] = 0.0
 file_path["FN"] = 0.0

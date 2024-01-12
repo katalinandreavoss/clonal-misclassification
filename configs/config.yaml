@@ -1,4 +1,4 @@
-output: '/scratch1/kavoss/simulations_mine/'
+output: '/scratch1/kavoss/simulations_junctions/'
 partis: '/home1/kavoss/partis_with_simulation/partis/' #specifiy where partis is located
 raxml: '/home1/kavoss/raxml-ng/' #specify where raxml is located
 vquest: '/home1/kavoss/vquest' #specify where vquest is located

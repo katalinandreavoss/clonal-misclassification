@@ -22,6 +22,7 @@ changeo_path = path+"vquest_files/combined_db-pass_clone-pass.tsv"
 scoper1_path = path+"results_db_idClones.tsv"
 scoper2_path = path+"results_hierClones.tsv"
 scoper3_path = path+"results_specClones.tsv"
+scoper4_path = path+"results_specClones_vj.tsv"
 mptp_path= path+"mptp_data_singletons.txt"
 gmyc_path= path+"gmyc.tsv"
 real_values_path = path+"family_sizes.txt"
@@ -99,6 +100,11 @@ without_singletons.write("scoper_hier\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balanc
 num_fam,med_size,var_size,singletons,num_fam_no_s,med_size_no_s,var_size_no_s = get_results_all(scoper3_path)
 complete.write("scoper_spec\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(num_fam)+"\t"+str(med_size)+"\t"+str(var_size)+"\t"+str(singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
 without_singletons.write("scoper_spec\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(num_fam_no_s)+"\t"+str(med_size_no_s)+"\t"+str(var_size_no_s)+"\t"+str(singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
+
+num_fam,med_size,var_size,singletons,num_fam_no_s,med_size_no_s,var_size_no_s = get_results_all(scoper4_path)
+complete.write("scoper_spec_vj\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(num_fam)+"\t"+str(med_size)+"\t"+str(var_size)+"\t"+str(singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
+without_singletons.write("scoper_spec_vj\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(num_fam_no_s)+"\t"+str(med_size_no_s)+"\t"+str(var_size_no_s)+"\t"+str(singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
+
 
 # num_fam,med_size,var_size,singletons,num_fam_no_s,med_size_no_s,var_size_no_s = get_results_all(mptp_path)
 # complete.write("mptp\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(num_fam)+"\t"+str(med_size)+"\t"+str(var_size)+"\t"+str(singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
