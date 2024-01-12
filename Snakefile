@@ -83,14 +83,14 @@ rule simulate_own:
         clones = "{d}",
         shm = "{s}",
         leaves = "{l}",
-        balance = "{b}",
+        junction = "{b}",
         sim = "{i}"
     output:
         out =  OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta",
         fam = OUTPUT + "{d}/{s}/{l}/{b}/{i}/family_1.fasta"
     shell:
         "echo " + platform.node() + " &>> {log} && \
-        Rscript {input.script} -d {params.out_dir} -r {params.shm} -p {input.vdj_dir} -l {params.leaves}&>> {log}"
+        Rscript {input.script} -d {params.out_dir} -r {params.shm} -p {input.vdj_dir} -l {params.leaves} -j {params.junction} &>> {log}"
 
 
 #analyze_partis_output
