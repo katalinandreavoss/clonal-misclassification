@@ -186,7 +186,7 @@ rule build_megatree:
 
 
 
-# #build subtrees
+# build subtrees
 rule build_tree:
      resources:
         mem="5G",
@@ -205,6 +205,7 @@ rule build_tree:
         "echo " + platform.node() + " &>> {log} && \
         sh {input.script} -r {input.raxml} -d {params.out} -o {output.out} &>> {log}"
 
+
 rule reroot_tree:
      resources:
         mem="5G",
@@ -212,11 +213,11 @@ rule reroot_tree:
      log: os.path.join(OUTPUT, "logs", "reroot_tree_{d}_{s}_{l}_{b}_{i}.log")
      input:
         script = 'tree_building/reroot_midpoint.R',
-        tree = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mptp/build_tree.txt"
+        tree = OUTPUT + "{d}/{s}/{l}/{b}/{i}/tree_files/build_tree.txt"
      params:
-         out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mptp/"
+         out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/tree_files/"
      output:
-        check = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mptp/reroot_tree.txt"
+        check = OUTPUT + "{d}/{s}/{l}/{b}/{i}/tree_files/reroot_tree.txt"
      shell:
         "echo " + platform.node() + " &>> {log} && \
         Rscript {input.script} -d {params.out} &>> {log} && \
@@ -329,8 +330,7 @@ rule  mixcr:
         aligned = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta.vdjca",
         clones = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta.vdjca.clns",
         clna = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta.vdjca.clna",
-        IGH = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta.vdjca.clns_IGH.tsv",
-        mixcr = directory(OUTPUT + "{d}/{s}/{l}/{b}/{i}/mixcr_fastas/")
+        IGH = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta.vdjca.clns_IGH.tsv"
      shell:
         "echo " + platform.node() + " &>> {log} && \
         mixcr align --preset rnaseq-bcr-full-length --species HomoSapiens -OsaveOriginalReads=true {input.fasta} {output.aligned} >> {log} 2>&1 && \
@@ -446,7 +446,12 @@ rule combine_analysis:
     input:
        script = 'simulation_analyses/calculate_measures.py',
        spectral = OUTPUT + "{d}/{s}/{l}/{b}/{i}/results_specClones.tsv",
-       real = OUTPUT + "{d}/{s}/{l}/{b}/{i}/family_sizes.txt"
+       hierarchical = OUTPUT + "{d}/{s}/{l}/{b}/{i}/results_hierClones.tsv",
+       real = OUTPUT + "{d}/{s}/{l}/{b}/{i}/family_sizes.txt",
+       mptp = OUTPUT+ "{d}/{s}/{l}/{b}/{i}/mptp_data_singletons.txt",
+       changeo = OUTPUT + "{d}/{s}/{l}/{b}/{i}/vquest_files/combined_db-pass_clone-pass.tsv",
+       gmyc = OUTPUT+ "{d}/{s}/{l}/{b}/{i}/gmyc.tsv",
+       IGH = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta.vdjca.clns_IGH.tsv"
     params:
        dir = OUTPUT + "{d}/{s}/{l}/{b}/{i}/"
     output:
@@ -503,14 +508,16 @@ rule extract_fasta:
       threads: 10
       log: os.path.join(OUTPUT, "logs", "extract_fasta_{d}_{s}_{l}_{b}_{i}.log")
       input:
-         script = 'simulation_analyses/extract_fasta.py'
+         script = 'simulation_analyses/extract_fasta.py',
+         spectral = OUTPUT + "{d}/{s}/{l}/{b}/{i}/results_specClones.tsv",
+         hierarchical = OUTPUT + "{d}/{s}/{l}/{b}/{i}/results_hierClones.tsv",
+         mptp = OUTPUT+ "{d}/{s}/{l}/{b}/{i}/mptp_data_singletons.txt",
+         changeo = OUTPUT + "{d}/{s}/{l}/{b}/{i}/vquest_files/combined_db-pass_clone-pass.tsv",
+         gmyc = OUTPUT+ "{d}/{s}/{l}/{b}/{i}/gmyc.tsv"
       params:
          dir = OUTPUT + "{d}/{s}/{l}/{b}/{i}/"
       output:
-         scoper_hier = directory(OUTPUT + "{d}/{s}/{l}/{b}/{i}/scoper_hier/"),
-         scoper_sp = directory(OUTPUT + "{d}/{s}/{l}/{b}/{i}/scoper_sp/"),
-         changeo = directory(OUTPUT + "{d}/{s}/{l}/{b}/{i}/changeo/"),
-         mptp = directory(OUTPUT + "{d}/{s}/{l}/{b}/{i}/mptp/")
+         extract_check = OUTPUT + "{d}/{s}/{l}/{b}/{i}/extract.txt"
       shell:
          "echo " + platform.node() + " &>> {log} && \
          export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
@@ -518,40 +525,8 @@ rule extract_fasta:
          mkdir {output.scoper_sp} && \
          mkdir {output.mptp} && \
          mkdir {output.changeo} && \
+         echo extracted > {output.extract_check} && \
          python {input.script} {params.dir} &>> {log}"
-
-
-rule align_discerned_families:
-     resources:
-        mem="2G",
-     threads: 10
-     log: os.path.join(OUTPUT, "logs", "align_discerned_families_{d}_{s}_{l}_{b}_{i}.log")
-     input:
-        script = 'tree_building/align_families.sh'
-     output:
-        check = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mixcr_fastas/align.txt"
-     params:
-         folder = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mixcr_fastas/"
-     shell:
-        "echo " + platform.node() + " &>> {log} && \
-        sh {input.script} -d {params.folder} &>> {log}"
-
-rule build_tree_discerned:
-     resources:
-        mem="5G",
-     threads: 32
-     log: os.path.join(OUTPUT, "logs", "build_tree_discerned_{d}_{s}_{l}_{b}_{i}.log")
-     input:
-        script = 'tree_building/build_sub_trees.sh',
-        raxml  = RAXML+"raxml-ng",
-        check = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mixcr_fastas/align.txt"
-     params:
-         out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mixcr_fastas/"
-     output:
-        tree = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mixcr_fastas/build_tree.txt"
-     shell:
-        "echo " + platform.node() + " &>> {log} && \
-        sh {input.script} -r {input.raxml} -d {params.out} -o {params.out} &>> {log}"
 
 
 rule mixcr_extract_fastas:
@@ -561,12 +536,78 @@ rule mixcr_extract_fastas:
      log: os.path.join(OUTPUT, "logs", "mixcr_extract_fastas_{d}_{s}_{l}_{b}_{i}.log")
      input:
         script = 'simulation_analyses/create_mixcr_fasta.sh',
+        IGH = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta.vdjca.clns_IGH.tsv"
+     params:
         dir = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mixcr_fastas/"
      output:
         check = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mixcr_fastas/mixcr_fastas.txt"
      shell:
         "echo " + platform.node() + " &>> {log} && \
-        sh {input.script} -d {input.dir} &>> {log}"
+        sh {input.script} -d {params.dir} &>> {log}"
+
+
+rule align_discerned_families:
+     resources:
+        mem="2G",
+     threads: 10
+     log: os.path.join(OUTPUT, "logs", "align_discerned_families_{d}_{s}_{l}_{b}_{i}.log")
+     input:
+        script = 'tree_building/align_families.sh',
+        extract_check = OUTPUT + "{d}/{s}/{l}/{b}/{i}/extract.txt",
+        check = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mixcr_fastas/mixcr_fastas.txt"
+     output:
+        mixcr = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mixcr_fastas/align.txt",
+        mptp = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mptp/align.txt",
+        changeo = OUTPUT + "{d}/{s}/{l}/{b}/{i}/changeo/align.txt",
+        scoper_hier = OUTPUT + "{d}/{s}/{l}/{b}/{i}/scoper_hier/align.txt",
+        scoper_sp = OUTPUT + "{d}/{s}/{l}/{b}/{i}/scoper_sp/align.txt"
+     params:
+         mixcr = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mixcr_fastas/",
+         mptp = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mptp/",
+         changeo = OUTPUT + "{d}/{s}/{l}/{b}/{i}/changeo/",
+         scoper_hier = OUTPUT + "{d}/{s}/{l}/{b}/{i}/scoper_hier/",
+         scoper_sp = OUTPUT + "{d}/{s}/{l}/{b}/{i}/scoper_sp/"
+     shell:
+        "echo " + platform.node() + " &>> {log} && \
+        sh {input.script} -d {params.mixcr} && \
+        sh {input.script} -d {params.mptp} && \
+        sh {input.script} -d {params.changeo} && \
+        sh {input.script} -d {params.scoper_hier} && \
+        sh {input.script} -d {params.scoper_sp} &>> {log}"
+
+rule build_tree_discerned:
+     resources:
+        mem="5G",
+     threads: 32
+     log: os.path.join(OUTPUT, "logs", "build_tree_discerned_{d}_{s}_{l}_{b}_{i}.log")
+     input:
+        script = 'tree_building/build_sub_trees.sh',
+        raxml  = RAXML+"raxml-ng",
+        mixcr = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mixcr_fastas/align.txt",
+        mptp = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mptp/align.txt",
+        changeo = OUTPUT + "{d}/{s}/{l}/{b}/{i}/changeo/align.txt",
+        scoper_hier = OUTPUT + "{d}/{s}/{l}/{b}/{i}/scoper_hier/align.txt",
+        scoper_sp = OUTPUT + "{d}/{s}/{l}/{b}/{i}/scoper_sp/align.txt"
+     params:
+         mixcr = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mixcr_fastas/",
+         mptp = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mptp/",
+         changeo = OUTPUT + "{d}/{s}/{l}/{b}/{i}/changeo/",
+         scoper_hier = OUTPUT + "{d}/{s}/{l}/{b}/{i}/scoper_hier/",
+         scoper_sp = OUTPUT + "{d}/{s}/{l}/{b}/{i}/scoper_sp/"
+     output:
+         mixcr = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mixcr_fastas/build_tree.txt",
+         mptp = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mptp/build_tree.txt",
+         changeo = OUTPUT + "{d}/{s}/{l}/{b}/{i}/changeo/build_tree.txt",
+         scoper_hier = OUTPUT + "{d}/{s}/{l}/{b}/{i}/scoper_hier/build_tree.txt",
+         scoper_sp = OUTPUT + "{d}/{s}/{l}/{b}/{i}/scoper_sp/build_tree.txt"
+     shell:
+        "echo " + platform.node() + " &>> {log} && \
+        sh {input.script} -r {input.raxml} -d {params.mixcr} -o {params.mixcr} && \
+        sh {input.script} -r {input.raxml} -d {params.mptp} -o {params.mptp} && \
+        sh {input.script} -r {input.raxml} -d {params.changeo} -o {params.changeo} && \
+        sh {input.script} -r {input.raxml} -d {params.scoper_hier} -o {params.scoper_hier} && \
+        sh {input.script} -r {input.raxml} -d {params.scoper_sp} -o {params.scoper_sp} &>> {log}"
+
 
 
 rule ancestral_sequence:
@@ -577,16 +618,31 @@ rule ancestral_sequence:
     input:
        script = 'germline_search/ancestral_seq_raxml.sh',
        raxml  = RAXML+"raxml-ng",
-       tree = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mixcr_fastas/build_tree.txt"
+       mixcr = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mixcr_fastas/build_tree.txt",
+       mptp = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mptp/build_tree.txt",
+       changeo = OUTPUT + "{d}/{s}/{l}/{b}/{i}/changeo/build_tree.txt",
+       scoper_hier = OUTPUT + "{d}/{s}/{l}/{b}/{i}/scoper_hier/build_tree.txt",
+       scoper_sp = OUTPUT + "{d}/{s}/{l}/{b}/{i}/scoper_sp/build_tree.txt"
     params:
-        out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mixcr_fastas/"
+       mixcr = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mixcr_fastas/",
+       mptp = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mptp/",
+       changeo = OUTPUT + "{d}/{s}/{l}/{b}/{i}/changeo/",
+       scoper_hier = OUTPUT + "{d}/{s}/{l}/{b}/{i}/scoper_hier/",
+       scoper_sp = OUTPUT + "{d}/{s}/{l}/{b}/{i}/scoper_sp/"
     output:
-       all_naive = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mixcr_fastas/root_naive.txt"
+       mixcr = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mixcr_fastas/root_naive.txt",
+       mptp = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mptp/root_naive.txt",
+       changeo = OUTPUT + "{d}/{s}/{l}/{b}/{i}/changeo/root_naive.txt",
+       scoper_hier = OUTPUT + "{d}/{s}/{l}/{b}/{i}/scoper_hier/root_naive.txt",
+       scoper_sp = OUTPUT + "{d}/{s}/{l}/{b}/{i}/scoper_sp/root_naive.txt"
     shell:
        "echo " + platform.node() + " &>> {log} && \
        export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log}&& \
-       sh {input.script} -r {input.raxml} -d {params.out} -o {params.out} &>> {log}"
-
+       sh {input.script} -r {input.raxml} -d {params.mixcr} -o {params.mixcr} && \
+       sh {input.script} -r {input.raxml} -d {params.mptp} -o {params.mptp} && \
+       sh {input.script} -r {input.raxml} -d {params.changeo} -o {params.changeo} && \
+       sh {input.script} -r {input.raxml} -d {params.scoper_hier} -o {params.scoper_hier} && \
+       sh {input.script} -r {input.raxml} -d {params.scoper_sp} -o {params.scoper_sp} &>> {log}"
 
 rule seq_similarity:
     resources:
@@ -595,8 +651,13 @@ rule seq_similarity:
     log: os.path.join(OUTPUT, "logs", "seq_similarity_{d}_{s}_{l}_{b}_{i}.log")
     input:
        script = 'simulation_analyses/seq_similarity.py',
-       check = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mixcr_fastas/root_naive.txt",
-       parsim = OUTPUT + "{d}/{s}/{l}/{b}/{i}/ancestral_sequences/ancestral_seqs_parsim.tsv"
+       mixcr = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mixcr_fastas/root_naive.txt",
+       mptp = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mptp/root_naive.txt",
+       changeo = OUTPUT + "{d}/{s}/{l}/{b}/{i}/changeo/root_naive.txt",
+       scoper_hier = OUTPUT + "{d}/{s}/{l}/{b}/{i}/scoper_hier/root_naive.txt",
+       scoper_sp = OUTPUT + "{d}/{s}/{l}/{b}/{i}/scoper_sp/root_naive.txt",
+       parsim = OUTPUT + "{d}/{s}/{l}/{b}/{i}/ancestral_sequences/ancestral_seqs_parsim.tsv",
+       all_naive = OUTPUT + "{d}/{s}/{l}/{b}/{i}/ancestral_sequences/root_naive_rerooted.txt"
     params:
         out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/"
     output:
