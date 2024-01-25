@@ -11,13 +11,13 @@ clonal_families<-c(10)
 clonal_families<-c(16)
 #tools<-c("MiXCR", "changeo","scoper_ID","scoper_hierarchical","scoper_spectral")
 SHM<-c("0_0005", "0_00075","0_001","0_0015","0_002","0_0025","0_003","0_004","0_005", "0_01","0_05","0_1","0_2")
-#SHM<-c("0_001", "0_005", "0_01","0_05","0_1","0_2")
+SHM<-c("0_001", "0_005", "0_01","0_05","0_1","0_2")
 
 leaves <- c("10","20","50","100")
 
-balance <- c("0_0")
+junction_length <- c("10","20","30","40","50","60")
 sims<-seq(1,50,1)
-path<-"/scratch1/kavoss/simulations_mine"
+path<-"/scratch2/kavoss/simulations_junctions"
 path<-"/scratch1/kavoss/method_comparison/"
 
 
@@ -77,13 +77,15 @@ listed$filenames<-paste(path,listed$clonal_families,listed$SHM,listed$leaves,lis
 filenames <- listed$filenames
 total_df <- do.call(rbind,lapply(filenames,read.csv,sep="\t"))
 
-write.csv(total_df, "/scratch1/kavoss/simulations_mine/total_without_singletons_scoper_many.csv", row.names=FALSE)
+write.csv(total_df, "/scratch2/kavoss/simulations_junctions/total_without_singletons_scoper_many.csv", row.names=FALSE)
 
 
 wrong<-total_df[total_df$tool!="scoper_id",]
 wrong_num<-wrong[wrong$num_families!=wrong$real_num_fam,]
 wrong_med<-wrong[wrong$median_size_families!=wrong$real_med_size,]
 wrong$leaves<-as.factor(wrong$leaves)
+wrong$balance<-as.factor(wrong$balance)
+
 
 ggplot(wrong, aes(SHM,num_families, fill=tool)) + 
   geom_boxplot()+
@@ -99,6 +101,12 @@ ggplot(wrong[wrong$leaves==100,], aes(SHM,num_families, fill=tool)) +
   geom_boxplot()+
   ylab("Number of Families at 10 leaves")+
   scale_fill_brewer(palette = "Paired")
+
+ggplot(wrong, aes(balance,num_families, fill=tool)) + 
+  geom_boxplot()+
+  ylab("Number of Families")+
+  scale_fill_brewer(palette = "Paired")+
+  xlab("junction length")
 
 subset<-c("0_0005","0_001","0_0025","0_005", "0_01","0_05","0_1","0_2")
 

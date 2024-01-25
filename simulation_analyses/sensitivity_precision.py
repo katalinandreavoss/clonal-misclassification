@@ -34,6 +34,7 @@ file_path["f1"] = 0.0
 file_path['SHM'] = SHM
 file_path['clones'] = clones
 file_path['leaves'] = leaves
+file_path['junction_length'] = balance
 file_path['sim'] = sim
 
 
