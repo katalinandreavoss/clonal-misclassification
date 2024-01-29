@@ -38,15 +38,15 @@ a complete list of dependencies can be found in ``requirements.txt``
 ## Simulations
 ### partis simulations
 
-``partis/partis_simulation/simulate.sh`` simulates B-cell data from scratch with partis\\
-parameters: \\
-        p) partis directory
-        o) output directory
-        c) number of simulated clones
-        s) SHM rate
-        l) avg number of leaves per clone
-        b) balance of tree (currently only supports 0_0)
-        i) number of simulations per parameter set
+``partis/partis_simulation/simulate.sh`` simulates B-cell data from scratch with partis  
+parameters:  
+        p) partis directory  
+        o) output directory  
+        c) number of simulated clones  
+        s) SHM rate  
+        l) avg number of leaves per clone  
+        b) balance of tree (currently only supports 0_0)  
+        i) number of simulations per parameter set  
 
 ## GMYC
 
