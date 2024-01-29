@@ -166,7 +166,7 @@ rule align_families:
         sh {input.script} -d {params.out} &>> {log}"
 
 
-#important for this rule: you must specify --cpus-per-task=16 in the snakemake command, otherwise it takes forever
+#important for this rule: you must specify at least --cpus-per-task=16 in the snakemake command, otherwise it takes forever
 rule build_megatree:
      resources:
         mem="50G"
