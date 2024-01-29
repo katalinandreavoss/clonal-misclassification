@@ -45,8 +45,17 @@ parameters:
         c) number of simulated clones  
         s) SHM rate  
         l) avg number of leaves per clone  
-        b) balance of tree (currently only supports 0_0)  
+        b) balance of tree (do 0_0, anything else is not supported by partis)  
         i) number of simulations per parameter set  
+
+### our simulations
+``simulation/simulate.R`` currently always simulates 10 clones
+parameters:  
+        d) output directory  
+        r) SHM rate 
+        p) directory of VDJ folder 
+        l) avg number of leaves per clone  
+        j) junction length
 
 ## GMYC
 
