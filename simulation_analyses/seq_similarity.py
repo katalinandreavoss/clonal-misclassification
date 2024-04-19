@@ -26,7 +26,8 @@ scoper_hier=path+"scoper_hier/root_naive.txt"
 scoper_hier_midpoint=path+"scoper_hier/root_naive_rerooted.txt"
 scoper_sp=path+"scoper_sp/root_naive.txt"
 scoper_sp_midpoint=path+"scoper_sp/root_naive_rerooted.txt"
-mptp_midpoint=path+"mptp/root_naive.txt"
+mptp=path+"mptp/root_naive.txt"
+mptp_midpoint=path+"mptp/root_naive_rerooted.txt"
 
 def get_id_seq(filepath):
     with open(filepath) as fasta_file:  # Will close handle cleanly
@@ -80,9 +81,11 @@ scoper_hier_df = get_df(scoper_hier,"scoper_hier",False)
 scoper_hier_midpoint_df = get_df(scoper_hier_midpoint,"scoper_hier",True)
 scoper_sp_df = get_df(scoper_sp,"scoper_sp",False)
 scoper_sp_midpoint_df = get_df(scoper_sp_midpoint,"scoper_sp",True)
+mptp_df = get_df(mptp,"mptp",False)
 mptp_midpoint_df = get_df(mptp_midpoint,"mptp",True)
 
-frames = [correct_df, mixcr_df,changeo_df,scoper_hier_df,scoper_sp_df,correct_parsim_df,correct_ml_df,correct_midpoint_df,mixcr_midpoint_df,changeo_midpoint_df,scoper_hier_midpoint_df,scoper_sp_midpoint_df,mptp_midpoint_df]
+
+frames = [correct_df, mixcr_df,changeo_df,scoper_hier_df,scoper_sp_df,correct_parsim_df,correct_ml_df,correct_midpoint_df,mixcr_midpoint_df,changeo_midpoint_df,scoper_hier_midpoint_df,scoper_sp_midpoint_df,mptp_df,mptp_midpoint_df]
 
 result = pd.concat(frames)
 result = result[result.family != "*"]

@@ -6,20 +6,23 @@ library(reshape2)
 library(stringr)
 library(patchwork)
 library(ggplot2)
-clonal_families<-c(4,6,8,10,12,14,16,18, 20)
+clonal_families<-c(10,12,14,16,18, 20)
 clonal_families<-c(10)
 clonal_families<-c(16)
 #tools<-c("MiXCR", "changeo","scoper_ID","scoper_hierarchical","scoper_spectral")
 SHM<-c("0_0005", "0_00075","0_001","0_0015","0_002","0_0025","0_003","0_004","0_005", "0_01","0_05","0_1","0_2")
 SHM<-c("0_001", "0_005", "0_01","0_05","0_1","0_2")
+SHM<-c("0_005", "0_01","0_1","0_2")
 
 leaves <- c("10","20","50","100")
 
 junction_length <- c("10","20","30","40","50","60")
+balance<-c("0_0")
 sims<-seq(1,50,1)
 path<-"/scratch2/kavoss/simulations_junctions"
 path<-"/scratch1/kavoss/method_comparison/"
-
+path<-"/panfs/qcb-panasas/kavoss/method_comparison/"
+path<-"/scratch1/kavoss/simulations_mine/"
 
 get_MSE_median_fam_size<-function(data,df) {
   clone=data[['clones']]
@@ -77,8 +80,8 @@ listed$filenames<-paste(path,listed$clonal_families,listed$SHM,listed$leaves,lis
 filenames <- listed$filenames
 total_df <- do.call(rbind,lapply(filenames,read.csv,sep="\t"))
 
-write.csv(total_df, "/scratch2/kavoss/simulations_junctions/total_without_singletons_scoper_many.csv", row.names=FALSE)
-
+write.csv(total_df, paste0(path,"output_all_without_singletons.csv"), row.names=FALSE)
+#total_df<-fread(paste0(path,"16_output_all_without_singletons.csv"))
 
 wrong<-total_df[total_df$tool!="scoper_id",]
 wrong_num<-wrong[wrong$num_families!=wrong$real_num_fam,]
@@ -99,7 +102,7 @@ ggplot(wrong[wrong$SHM=="0_01",], aes(leaves,num_families, fill=tool)) +
 
 ggplot(wrong[wrong$leaves==100,], aes(SHM,num_families, fill=tool)) + 
   geom_boxplot()+
-  ylab("Number of Families at 10 leaves")+
+  ylab("Number of Families at 100 leaves")+
   scale_fill_brewer(palette = "Paired")
 
 ggplot(wrong, aes(balance,num_families, fill=tool)) + 
@@ -132,9 +135,9 @@ combined<-number_families[number_families$tool!="scoper_id",]
 
 combined$clones<-as.character(combined$clones)
 
-write.csv(combined, "/scratch1/kavoss/simulations_mine/coutput_without_singletons_scoper_many.csv", row.names=FALSE)
+write.csv(combined, paste0(path,"combined_without_singletons.csv"), row.names=FALSE)
 
-combined<-fread("/scratch1/kavoss/simulations_mine/coutput_without_singletons_scoper_many.csv")
+combined<-fread(paste0(path,"combined_without_singletons_scopers.csv"))
 #all_combined<-rbindlist(list(all4,all6, all8,all10,all12,all14,all16,all18,all20))
 
 #write.csv(combined, "/scratch1/kavoss/method_comparison/16_output_all_without_singletons.csv", row.names=FALSE)
@@ -154,6 +157,7 @@ MSE_clones_num_fam<-ggplot(combined, aes(clones,MSE_num_fam, fill=tool)) +
   ylab("Mean Squared Error - Number of Families (log)")
 MSE_clones_num_fam
 
+combined$tool <- factor(combined$tool, levels = c("mixcr", "changeo", "scoper_hier","scoper_spec","mptp"))
 
 MSE_leaves_num_fam<-ggplot(combined, aes(leaves,MSE_num_fam, fill=tool)) + 
   geom_boxplot()+
@@ -170,7 +174,7 @@ MSE_balances_num_fam<-ggplot(combined, aes(balance,MSE_num_fam, fill=tool)) +
   ylab("Mean Squared Error - Number of Families (log)")
 MSE_balances_num_fam
 
-combined$tool <- factor(combined$tool, levels = c("mixcr", "changeo", "scoper_hier","scoper_spec","mptp","gmyc"))
+combined$tool <- factor(combined$tool, levels = c("mixcr", "changeo", "scoper_hier","scoper_spec","gmyc", "gmyc_extend","mptp"))
 
 MSE_SHM_size_fam<-ggplot(combined) + 
   geom_boxplot(aes(SHM,MSE_fam_size, fill=tool))+
@@ -182,7 +186,7 @@ one<-MSE_SHM_size_fam+
 one
 combined$tool <- factor(combined$tool)
 
-scoper_only<-combined[combined$tool %in% c("scoper_hier","scoper_spec"),]
+scoper_only<-combined[combined$tool %in% c("gmyc", "gmyc_extend"),]
 
 MSE_SHM_size_fam<-ggplot(scoper_only) + 
   geom_boxplot(aes(SHM,MSE_fam_size, fill=tool))+
@@ -191,6 +195,8 @@ MSE_SHM_size_fam<-ggplot(scoper_only) +
 one<-MSE_SHM_size_fam+
   theme(text = element_text(face = "bold",size = 20))
 one
+
+
 
 MSE_clones_size_fam<-ggplot(combined, aes(clones,MSE_fam_size, fill=tool)) + 
   geom_boxplot()+
@@ -210,7 +216,9 @@ MSE_leaves_size_fam+
   theme(text = element_text(face = "bold",size = 20))+
   scale_fill_brewer(palette = "Paired")
 
-MSE_leaves_size_fam<-ggplot(combined[combined$SHM=="0_0015",], aes(leaves,MSE_fam_size, fill=tool)) + 
+
+combined$leaves<-as.factor(combined$leaves)
+MSE_leaves_size_fam<-ggplot(combined[combined$SHM=="0_001",], aes(leaves,MSE_fam_size, fill=tool)) + 
   geom_boxplot()+
   scale_x_discrete(limits = unique(combined$leaves))+
   scale_y_continuous(trans='log10')+

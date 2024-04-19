@@ -17,13 +17,13 @@ scoper_hier_path=path+"results_hierClones.tsv"
 scoper_sp_path = path+"results_specClones.tsv"
 scoper_spvj_path = path+"results_specClones_vj.tsv"
 mptp_path = path+"mptp_data_singletons.txt"
-gmyc_path = path+"gmyc.tsv"
+#gmyc_path = path+"gmyc.tsv"
 
 
-#all = [mixcr_path,changeo_path,scoper_hier_path,scoper_sp_path,mptp_path,gmyc_path]
-#file_path=pd.DataFrame({"file": all,"tool":["mixcr","changeo","scoper_hier","scoper_sp","mptp","gmyc"]})
-all = [scoper_hier_path,scoper_sp_path,scoper_spvj_path]
-file_path=pd.DataFrame({"file": all,"tool":["scoper_hier","scoper_sp","scoper_sp_vj"]})
+all = [mixcr_path,changeo_path,scoper_hier_path,scoper_sp_path,mptp_path]
+file_path=pd.DataFrame({"file": all,"tool":["mixcr","changeo","scoper_hier","scoper_sp","mptp"]})
+#all = [scoper_hier_path,scoper_sp_path,scoper_spvj_path]
+#file_path=pd.DataFrame({"file": all,"tool":["scoper_hier","scoper_sp","scoper_sp_vj"]})
 file_path["TP"]= 0.0
 file_path["TN"] = 0.0
 file_path["FN"] = 0.0
@@ -36,7 +36,9 @@ file_path['clones'] = clones
 file_path['leaves'] = leaves
 file_path['junction_length'] = balance
 file_path['sim'] = sim
+file_path['junction_length_scoper'] = 0.0
 
+junction_length = 0.0
 
 for i, r in file_path.iterrows():
     if os.path.exists(r["file"]):
@@ -52,6 +54,8 @@ for i, r in file_path.iterrows():
         df["sensitivity"] = 0.0
         df["precision"] = 0.0
         df["f1"] = 0.0
+        if "hierClones" in r["file"]:
+            junction_length = df["junction_length"].mean()
         for index, row in df.iterrows():
             family= row["family"]
             clone = row["clone_id"]
@@ -73,6 +77,7 @@ for i, r in file_path.iterrows():
         file_path.loc[i, 'precision'] = df["precision"].mean()
         file_path.loc[i, 'sensitivity'] = df["sensitivity"].mean()
         file_path.loc[i, 'f1'] = df["f1"].mean()
-
+       
+file_path["junction_length_scoper"] = junction_length
 file_path=file_path.drop(columns=['file'])
 file_path.to_csv(path+"sensitivity_precision.tsv", sep='\t',index=False)

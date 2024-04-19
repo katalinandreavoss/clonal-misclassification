@@ -7,12 +7,16 @@ library(stringr)
 library(patchwork)
 library(ggplot2)
 
-clonal_families<-c(10)
-SHM<-c("0_001", "0_005", "0_01","0_05","0_1","0_2")
+clonal_families<-c(16)
+SHM<-c("0_001","0_005", "0_01","0_05","0_1","0_2")
 leaves <- c("10","20","50","100")
-junction_length <- c("10","20","30","40","50","60")
-sims<-seq(1,50,1)
-path<-"/scratch2/kavoss/simulations_junctions"
+#junction_length <- c("10","20","30","40","50","60")
+#junction_length <- c("6","12","18","24","30")
+junction_length <- c("0_0")
+sims<-seq(1,10,1)
+path<-"/scratch1/kavoss/method_comparison/"
+
+#sims<-sims[ !sims == 28]
 
 GeomSplitViolin <- ggproto("GeomSplitViolin", GeomViolin, 
                            draw_group = function(self, data, ..., draw_quantiles = NULL) {
@@ -54,31 +58,47 @@ listed$filenames<-paste(path,listed$clonal_families,listed$SHM,listed$leaves,lis
 filenames <- listed$filenames
 ham_dist_df <- do.call(rbind,lapply(filenames,read.csv,sep="\t"))
 
+
+subset_df <- subset(sp_df, select = c(SHM, leaves, sim,junction_length, junction_length_scoper))
+subset_df<-unique(subset_df)
+
+merged_df <- merge(ham_dist_df, subset_df, by = c("SHM", "leaves", "sim", "junction_length"), all.x = TRUE)
+write.csv(ham_dist_df, paste0(path,"/hamming.csv"), row.names=FALSE)
+
+
 ggplot(ham_dist_df, aes(SHM, ham_dist, fill = category)) +
   geom_split_violin()+
   scale_fill_brewer(palette = "Paired")+
   ylim(c(0,0.3))
 
-ham_dist_df$junction_length<-as.factor(ham_dist_df$junction_length)
+#merged_df$junction_length_scoper<-as.factor(merged_df$junction_length_scoper)
+breaks <- c(-Inf, 60,70,80, Inf)  # Intervals: (-Inf, 60], (60, 90], (90, Inf)
 
-ggplot(ham_dist_df, aes(junction_length, ham_dist, fill = category)) +
+# Create labels for categories
+labels <- c("<60", "60-70","70-80" ,">80")
+
+# Create a new column with categories
+merged_df$length_category <- cut(merged_df$junction_length_scoper, breaks = breaks, labels = labels, include.lowest = TRUE)
+
+ggplot(merged_df, aes(length_category, ham_dist, fill = category)) +
   geom_split_violin()+
   scale_fill_brewer(palette = "Paired")+
-  ylim(c(0,0.4))+
+  ylim(c(0,0.5))+
   geom_hline(yintercept=0.15, linetype="dashed")
 
 
 ggplot(ham_dist_df, aes(junction_length, ham_dist, fill = category)) +
   geom_boxplot()+
-  scale_fill_brewer(palette = "Paired")
+  scale_fill_brewer(palette = "Paired")+
+  geom_hline(yintercept=0.15, linetype="dashed")
 
 
 
-sub_df<-subset(ham_dist_df, SHM == '0_1' & leaves == 100 )
-ggplot(sub_df, aes(junction_length, ham_dist, fill = category)) +
+sub_df<-subset(merged_df, SHM == '0_2')#
+ggplot(sub_df, aes(length_category, ham_dist, fill = category)) +
   geom_split_violin()+
   scale_fill_brewer(palette = "Paired")+
-  ylim(c(0,0.75))+
+  ylim(c(0,0.2))+
   ylab("hamming distance at SHM 0.2 with 100 leaves")+
   geom_hline(yintercept=0.15, linetype="dashed")
 

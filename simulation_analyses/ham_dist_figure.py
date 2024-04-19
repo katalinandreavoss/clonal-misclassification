@@ -96,5 +96,6 @@ reshaped_df = pd.concat([reshaped_df1, reshaped_df2], axis=1)
 reshaped_df[["SHM"]] = SHM
 reshaped_df[["leaves"]] = leaves
 reshaped_df[["junction_length"]] = junction_length
+reshaped_df[["sim"]] = sim
 reshaped_df.to_csv(path+"ham_distance.tsv", sep='\t',index=False)
 

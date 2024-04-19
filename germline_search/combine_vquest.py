@@ -20,7 +20,6 @@ first6 = first6.apply(lambda x: x.astype(int) if x.dtype == 'float' else x)
 
 for sub in subfolders:
    if "combined" not in sub and "/001/" not in sub:
-        print(sub)
         file1 =pd.read_table(sub + "1_Summary.txt", delimiter='\t', index_col=0)
         file1["V-REGION identity % (with ins/del events)"] = ""
         file1["V-REGION identity nt (with ins/del events)"] = ""

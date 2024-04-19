@@ -9,7 +9,7 @@ do
         o) output=${OPTARG};;
     esac
 done
-
+echo "trees" >> ${output}/build_tree.txt
 for fasta in $directory/family_*_aligned.fasta; do
   name=${fasta%_aligned.fasta}
   name=${name##*/}

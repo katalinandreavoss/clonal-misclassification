@@ -24,7 +24,8 @@ scoper2_path = path+"results_hierClones.tsv"
 scoper3_path = path+"results_specClones.tsv"
 scoper4_path = path+"results_specClones_vj.tsv"
 mptp_path= path+"mptp_data_singletons.txt"
-gmyc_path= path+"gmyc.tsv"
+# gmyc_path= path+"gmyc.tsv"
+# gmyc_forced_path= path+"gmyc_force.tsv"
 real_values_path = path+"family_sizes.txt"
 
 
@@ -60,10 +61,10 @@ without_singletons.write("mixcr\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"
 
 def get_med_var(df):
     if len(df)>1:
-        med_size = statistics.median(df)
-        var_size = statistics.variance(df)
+        med_size = statistics.median(df['Count'])
+        var_size = statistics.variance(df['Count'])
     elif len(df)==1:
-        med_size = statistics.median(df)
+        med_size = statistics.median(df['Count'])
         var_size = "NaN"
     else:
         med_size = "NaN"
@@ -74,14 +75,14 @@ def get_results_all(path):
     df = pd.read_csv(path, sep='\t')
     num_fam = max(df["clone_id"])
     df_grouped = df.groupby(['clone_id'])['sequence_id'].count()
-    med_size, var_size = get_med_var(df_grouped)
-    singletons = df.groupby(['clone_id'])['sequence_id'].filter(lambda x: len(x) == 1).count()
+    df_count = pd.DataFrame({'Count': df_grouped}).reset_index()
+    med_size, var_size = get_med_var(df_count)
+    singletons = (df_count['Count'] == 1).sum()
     # without singletons
-    non_singletons = df.groupby(['clone_id'])['sequence_id'].filter(lambda x: len(x) > 1)
-    num_fam_no_s = len(pd.unique(df.loc[df['sequence_id'].isin(non_singletons)]['clone_id']))
 
-    df_grouped = df_grouped[df.groupby(['clone_id'])['sequence_id'].apply(lambda x: len(x) > 1)]
-    med_size_no_s, var_size_no_s = get_med_var(df_grouped)
+    non_singletons = df_count[df_count['Count'] != 1]
+    num_fam_no_s = len(non_singletons)
+    med_size_no_s, var_size_no_s = get_med_var(non_singletons)
 
     return num_fam, med_size, var_size, singletons,num_fam_no_s,med_size_no_s, var_size_no_s
 
@@ -89,9 +90,9 @@ changeo_num_fam,changeo_med_size,changeo_var_size,changeo_singletons,changeo_num
 complete.write("changeo\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(changeo_num_fam)+"\t"+str(changeo_med_size)+"\t"+str(changeo_var_size)+"\t"+str(changeo_singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
 without_singletons.write("changeo\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(changeo_num_fam_no_s)+"\t"+str(changeo_med_size_no_s)+"\t"+str(changeo_var_size_no_s)+"\t"+str(changeo_singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
 
-num_fam,med_size,var_size,singletons,num_fam_no_s,med_size_no_s,var_size_no_s = get_results_all(scoper1_path)
-complete.write("scoper_id\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(num_fam)+"\t"+str(med_size)+"\t"+str(var_size)+"\t"+str(singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
-without_singletons.write("scoper_id\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(num_fam_no_s)+"\t"+str(med_size_no_s)+"\t"+str(var_size_no_s)+"\t"+str(singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
+# num_fam,med_size,var_size,singletons,num_fam_no_s,med_size_no_s,var_size_no_s = get_results_all(scoper1_path)
+# complete.write("scoper_id\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(num_fam)+"\t"+str(med_size)+"\t"+str(var_size)+"\t"+str(singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
+# without_singletons.write("scoper_id\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(num_fam_no_s)+"\t"+str(med_size_no_s)+"\t"+str(var_size_no_s)+"\t"+str(singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
 
 num_fam,med_size,var_size,singletons,num_fam_no_s,med_size_no_s,var_size_no_s = get_results_all(scoper2_path)
 complete.write("scoper_hier\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(num_fam)+"\t"+str(med_size)+"\t"+str(var_size)+"\t"+str(singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
@@ -115,6 +116,11 @@ without_singletons.write("mptp\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+
 #     num_fam,med_size,var_size,singletons,num_fam_no_s,med_size_no_s,var_size_no_s = get_results_all(gmyc_path)
 #     complete.write("gmyc\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(num_fam)+"\t"+str(med_size)+"\t"+str(var_size)+"\t"+str(singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
 #     without_singletons.write("gmyc\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(num_fam_no_s)+"\t"+str(med_size_no_s)+"\t"+str(var_size_no_s)+"\t"+str(singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
+
+# if os.path.exists(gmyc_forced_path):
+#     num_fam,med_size,var_size,singletons,num_fam_no_s,med_size_no_s,var_size_no_s = get_results_all(gmyc_forced_path)
+#     complete.write("gmyc_extend\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(num_fam)+"\t"+str(med_size)+"\t"+str(var_size)+"\t"+str(singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
+#     without_singletons.write("gmyc_extend\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(num_fam_no_s)+"\t"+str(med_size_no_s)+"\t"+str(var_size_no_s)+"\t"+str(singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
 
 
 # scoper_hier = ["0_05","0_1","0_2","0_25","0_3","0_4","0_5"]

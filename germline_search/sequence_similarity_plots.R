@@ -83,11 +83,11 @@ plot + geom_text(data = total_counts,
 
 
 ggplot(transform(total_df,
-                 tool=factor(tool,levels=c("correct","correct_parsim","correct_ml","mixcr","changeo","scoper_hier","scoper_sp"))))+
+                 tool=factor(tool,levels=c("correct","correct_parsim","correct_ml","mixcr","changeo","scoper_hier","scoper_sp","mptp"))))+
   geom_histogram(aes(seq_similarity_lev))+
   aes(fill = as.factor(tool))+
   facet_grid(tool ~ .)+
-  scale_fill_manual(values=c("black","lightblue","blue","#A3A500","#F8766D","#00BF7D","#E76BF3"))
+  scale_fill_manual(values=c("black","darkgrey","lightgrey","#A6CEE3", "#1F78B4", "#B2DF8A", "#33A02C","#FB9A99"))
 
 ggplot(transform(total_df,
                  tool=factor(tool,levels=c("correct","correct_parsim","correct_ml","mixcr","changeo","scoper_hier","scoper_sp"))))+
