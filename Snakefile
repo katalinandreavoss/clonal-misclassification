@@ -16,7 +16,6 @@ VDJ=config['VDJ']
 #clones = range(4,21,2)
 #clones = range(10,11,5)
 clones = range(16,21,10)
-#shm = ["0_001"]
 shm = ["0_001","0_005", "0_01","0_05","0_1","0_2"] 
 #shm = ["0_005", "0_01","0_1","0_2"] 
 #shm = ["0_0005", "0_00075", "0_001","0_0015","0_002","0_0025","0_003","0_004","0_005","0_01","0_05","0_1","0_2"] 
@@ -24,8 +23,10 @@ leaves = ["10","20","50","100"]
 #balance = ["0_0","0_3","0_5","1_0","1_3"]
 balance = ["0_0"]
 #junction_length = ["6","12","18","24","30"]
+#junction_length = ["20","30","40","50"]
 sims = range(1,51)
 #sims = range(1,11)
+
 
 
 
@@ -33,16 +34,14 @@ wildcard_constraints:
     d = "\d+",
     s = "0_\d+",
     l = "\d+",
-    #b = "\d+",
-    b = "0_\d+",
+    b = "\d+",
+    #b = "0_\d+",
     i = "\d+"
 
 
 rule all:
     input:
-        expand(OUTPUT + "{d}/{s}/{l}/{b}/{i}/distance.tsv", d=clones, s=shm,l=leaves, b=balance, i=sims),
-        expand(OUTPUT + "{d}/{s}/{l}/{b}/{i}/ham_distance.tsv", d=clones, s=shm,l=leaves, b=balance, i=sims)
-        
+        expand(OUTPUT + "{d}/{s}/{l}/{b}/{i}/f1_all.tsv", d=clones, s=shm,l=leaves, b=balance, i=sims)
 
 
 #simulation partis
@@ -81,6 +80,28 @@ rule all:
 #     log: os.path.join(OUTPUT, "logs", "simulate_{d}_{s}_{l}_{b}_{i}.log")
 #     input:
 #         script = 'simulation/simulate.R',
+#         vdj_dir = VDJ
+#     params:
+#         out_dir = OUTPUT + "{d}/{s}/{l}/{b}/{i}",
+#         clones = "{d}",
+#         shm = "{s}",
+#         leaves = "{l}",
+#         junction = "{b}",
+#     output:
+#         out =  OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta",
+#         fam = OUTPUT + "{d}/{s}/{l}/{b}/{i}/family_1.fasta"
+#     shell:
+#         "echo " + platform.node() + " &>> {log} && \
+#         Rscript {input.script} -d {params.out_dir} -r {params.shm} -p {input.vdj_dir} -l {params.leaves} -j {params.junction} &>> {log}"
+
+
+# rule simulate_fake_V:
+#     resources:
+#         mem="2G",
+#     threads: 10
+#     log: os.path.join(OUTPUT, "logs", "simulate_{d}_{s}_{l}_{b}_{i}.log")
+#     input:
+#         script = 'simulation/simulate_new_V_genes.R',
 #         vdj_dir = VDJ
 #     params:
 #         out_dir = OUTPUT + "{d}/{s}/{l}/{b}/{i}",
@@ -237,7 +258,7 @@ rule all:
 #      log: os.path.join(OUTPUT, "logs", "get_mptp_values_{d}_{s}_{l}_{b}_{i}.log")
 #      input:
 #         script = 'simulation_analyses/analyse_ptp_output.py',
-#         partitions = OUTPUT+ "{d}/{s}/{l}/{i}/mega_mptp.txt"
+#         partitions = OUTPUT+ "{d}/{s}/{l}/{b}/{i}/mega_mptp.txt"
 #      params:
 #         out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/"
 #      output:
@@ -303,7 +324,7 @@ rule all:
 #         sh {input.script} -d {params.out} -c {params.clones} -s {params.shm} -l {params.leaves} -i {params.sim} &>> {log}"
 
 
-# rule  mixcr:
+# rule mixcr:
 #      resources:
 #         mem="20G",
 #      threads: 10
@@ -316,7 +337,8 @@ rule all:
 #         aligned = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta.vdjca",
 #         clones = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta.vdjca.clns",
 #         clna = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta.vdjca.clna",
-#         IGH = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta.vdjca.clns_IGH.tsv"
+#         IGH = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta.vdjca.clns_IGH.tsv",
+#         mixcr = directory(OUTPUT + "{d}/{s}/{l}/{b}/{i}/mixcr_fastas/")
 #      shell:
 #         "echo " + platform.node() + " &>> {log} && \
 #         mixcr align --preset rnaseq-bcr-full-length --species HomoSapiens -OsaveOriginalReads=true {input.fasta} {output.aligned} >> {log} 2>&1 && \
@@ -448,6 +470,27 @@ rule all:
 #        python {input.script} {params.dir} >> {log} 2>&1"
 
 
+# rule combine_analysis:
+#     resources:
+#        mem="2G",
+#     threads: 10
+#     log: os.path.join(OUTPUT, "logs", "combine_analysis_{d}_{s}_{l}_{b}_{i}.log")
+#     input:
+#        script = 'simulation_analyses/calculate_measures.py',
+#        real = OUTPUT + "{d}/{s}/{l}/{b}/{i}/family_sizes.txt",
+#        mptp = OUTPUT+ "{d}/{s}/{l}/{b}/{i}/mptp_data_singletons.txt",
+#     params:
+#        dir = OUTPUT + "{d}/{s}/{l}/{b}/{i}/"
+#     output:
+#        complete = OUTPUT + "{d}/{s}/{l}/{b}/{i}/analysis_complete.tsv",
+#        without_singletons = OUTPUT + "{d}/{s}/{l}/{b}/{i}/analysis_no_singletons.tsv"
+#     shell:
+#        "echo " + platform.node() + " >> {log} 2>&1 && \
+#        export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log}&& \
+#        echo {params.dir} >> {log} 2>&1 && \
+#        python {input.script} {params.dir} >> {log} 2>&1"
+
+
 #out = directory(OUTPUT + "{d}/{s}/{l}/{b}/{i}/ancestral_sequences/"),
 # rule ancestral_sequence_true:
 #     resources:
@@ -520,8 +563,7 @@ rule all:
 #      threads: 32
 #      log: os.path.join(OUTPUT, "logs", "mixcr_extract_fastas_{d}_{s}_{l}_{b}_{i}.log")
 #      input:
-#         script = 'simulation_analyses/create_mixcr_fasta.sh',
-#         IGH = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta.vdjca.clns_IGH.tsv"
+#         script = 'simulation_analyses/create_mixcr_fasta.sh'
 #      params:
 #         dir = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mixcr_fastas/"
 #      output:
@@ -529,7 +571,7 @@ rule all:
 #      shell:
 #         "echo " + platform.node() + " &>> {log} && \
 #         sh {input.script} -d {params.dir} &>> {log}"
-
+# IGH = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta.vdjca.clns_IGH.tsv"
 
 # rule align_discerned_families:
 #      resources:
@@ -708,7 +750,7 @@ rule all:
 #     log: os.path.join(OUTPUT, "logs", "mixcr_tsv_{d}_{s}_{l}_{b}_{i}.log")
 #     input:
 #        script = 'simulation_analyses/create_mixcr_tsv.py',
-#        check = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mixcr_fastas/root_naive.txt"
+#        check = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mixcr_fastas/mixcr_fastas.txt"
 #     params:
 #         out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/"
 #     output:
@@ -717,23 +759,38 @@ rule all:
 #        "echo " + platform.node() + " &>> {log} && \
 #        python {input.script} {params.out} &>> {log}"
 
-# rule sensitivity_precision:
-#     resources:
-#        mem="2G",
-#     threads: 10
-#     log: os.path.join(OUTPUT, "logs", "sensitivity_precision_{d}_{s}_{l}_{b}_{i}.log")
-#     input:
-#        script = 'simulation_analyses/sensitivity_precision.py',
+rule sensitivity_precision:
+    resources:
+       mem="2G",
+    threads: 10
+    log: os.path.join(OUTPUT, "logs", "sensitivity_precision_{d}_{s}_{l}_{b}_{i}.log")
+    input:
+       script = 'simulation_analyses/sensitivity_precision.py'
+    params:
+        out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/"
+    output:
+       similarity = OUTPUT + "{d}/{s}/{l}/{b}/{i}/sensitivity_precision.tsv"
+    shell:
+       "echo " + platform.node() + " &>> {log} && \
+       python {input.script} {params.out} &>> {log}"
+
+# ,
 #        check = OUTPUT + "{d}/{s}/{l}/{b}/{i}/results_specClones.tsv"
-#     params:
-#         out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/"
-#     output:
-#        similarity = OUTPUT + "{d}/{s}/{l}/{b}/{i}/sensitivity_precision.tsv"
-#     shell:
-#        "echo " + platform.node() + " &>> {log} && \
-#        python {input.script} {params.out} &>> {log}"
 
-
+rule f1_all:
+    resources:
+       mem="2G",
+    threads: 10
+    log: os.path.join(OUTPUT, "logs", "f1_all_{d}_{s}_{l}_{b}_{i}.log")
+    input:
+       script = 'simulation_analyses/f1_all_sequences.py'
+    params:
+        out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/"
+    output:
+       similarity = OUTPUT + "{d}/{s}/{l}/{b}/{i}/f1_all.tsv"
+    shell:
+       "echo " + platform.node() + " &>> {log} && \
+       python {input.script} {params.out} &>> {log}"
 
 # rule count_mutations:
 #     resources:

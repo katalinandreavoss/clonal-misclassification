@@ -46,17 +46,21 @@ def mixcr_get_med_var(df):
         mixcr_var_size = "NaN"
     return mixcr_med_size, mixcr_var_size
 
-mixcr = pd.read_csv(mixcr_path,sep='\t')
-mixcr_num_fam = len(mixcr)
-mixcr_med_size, mixcr_var_size = mixcr_get_med_var(mixcr["readCount"])
-mixcr_singletons = len(mixcr[mixcr["readCount"]==1])
-complete.write("mixcr\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(mixcr_num_fam)+"\t"+str(mixcr_med_size)+"\t"+str(mixcr_var_size)+"\t"+str(mixcr_singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
+if os.path.exists(mixcr_path):
+    mixcr = pd.read_csv(mixcr_path,sep='\t')
+    mixcr_num_fam = len(mixcr)
+    mixcr_med_size, mixcr_var_size = mixcr_get_med_var(mixcr["readCount"])
+    mixcr_singletons = len(mixcr[mixcr["readCount"]==1])
+    complete.write("mixcr\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(mixcr_num_fam)+"\t"+str(mixcr_med_size)+"\t"+str(mixcr_var_size)+"\t"+str(mixcr_singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
 
-#without singletons
-mixcr_num_fam = len(mixcr[mixcr["readCount"]!=1])
-mixcr_singletons = len(mixcr[mixcr["readCount"]!=1])
-mixcr_med_size, mixcr_var_size = mixcr_get_med_var(mixcr[mixcr["readCount"]!=1]["readCount"])
-without_singletons.write("mixcr\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(mixcr_num_fam)+"\t"+str(mixcr_med_size)+"\t"+str(mixcr_var_size)+"\t"+str(mixcr_singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
+    #without singletons
+    mixcr_num_fam = len(mixcr[mixcr["readCount"]!=1])
+    mixcr_singletons = len(mixcr[mixcr["readCount"]!=1])
+    mixcr_med_size, mixcr_var_size = mixcr_get_med_var(mixcr[mixcr["readCount"]!=1]["readCount"])
+    without_singletons.write("mixcr\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(mixcr_num_fam)+"\t"+str(mixcr_med_size)+"\t"+str(mixcr_var_size)+"\t"+str(mixcr_singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
+else:
+    complete.write("mixcr\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+"NaN"+"\t"+"NaN"+"\t"+"NaN"+"\t"+"NaN"+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
+    without_singletons.write("mixcr\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+"NaN"+"\t"+"NaN"+"\t"+"NaN"+"\t"+"NaN"+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
 
 
 def get_med_var(df):
@@ -86,21 +90,32 @@ def get_results_all(path):
 
     return num_fam, med_size, var_size, singletons,num_fam_no_s,med_size_no_s, var_size_no_s
 
-changeo_num_fam,changeo_med_size,changeo_var_size,changeo_singletons,changeo_num_fam_no_s,changeo_med_size_no_s,changeo_var_size_no_s = get_results_all(changeo_path)
-complete.write("changeo\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(changeo_num_fam)+"\t"+str(changeo_med_size)+"\t"+str(changeo_var_size)+"\t"+str(changeo_singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
-without_singletons.write("changeo\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(changeo_num_fam_no_s)+"\t"+str(changeo_med_size_no_s)+"\t"+str(changeo_var_size_no_s)+"\t"+str(changeo_singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
+if os.path.exists(changeo_path):
+    changeo_num_fam,changeo_med_size,changeo_var_size,changeo_singletons,changeo_num_fam_no_s,changeo_med_size_no_s,changeo_var_size_no_s = get_results_all(changeo_path)
+    complete.write("changeo\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(changeo_num_fam)+"\t"+str(changeo_med_size)+"\t"+str(changeo_var_size)+"\t"+str(changeo_singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
+    without_singletons.write("changeo\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(changeo_num_fam_no_s)+"\t"+str(changeo_med_size_no_s)+"\t"+str(changeo_var_size_no_s)+"\t"+str(changeo_singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
+else:
+    complete.write("changeo\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+"NaN"+"\t"+"NaN"+"\t"+"NaN"+"\t"+"NaN"+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
+    without_singletons.write("changeo\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+"NaN"+"\t"+"NaN"+"\t"+"NaN"+"\t"+"NaN"+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
 
 # num_fam,med_size,var_size,singletons,num_fam_no_s,med_size_no_s,var_size_no_s = get_results_all(scoper1_path)
 # complete.write("scoper_id\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(num_fam)+"\t"+str(med_size)+"\t"+str(var_size)+"\t"+str(singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
 # without_singletons.write("scoper_id\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(num_fam_no_s)+"\t"+str(med_size_no_s)+"\t"+str(var_size_no_s)+"\t"+str(singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
+if os.path.exists(scoper2_path):
+    num_fam,med_size,var_size,singletons,num_fam_no_s,med_size_no_s,var_size_no_s = get_results_all(scoper2_path)
+    complete.write("scoper_hier\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(num_fam)+"\t"+str(med_size)+"\t"+str(var_size)+"\t"+str(singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
+    without_singletons.write("scoper_hier\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(num_fam_no_s)+"\t"+str(med_size_no_s)+"\t"+str(var_size_no_s)+"\t"+str(singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
+else:
+    complete.write("scoper_hier\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+"NaN"+"\t"+"NaN"+"\t"+"NaN"+"\t"+"NaN"+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
+    without_singletons.write("scoper_hier\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+"NaN"+"\t"+"NaN"+"\t"+"NaN"+"\t"+"NaN"+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
 
-num_fam,med_size,var_size,singletons,num_fam_no_s,med_size_no_s,var_size_no_s = get_results_all(scoper2_path)
-complete.write("scoper_hier\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(num_fam)+"\t"+str(med_size)+"\t"+str(var_size)+"\t"+str(singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
-without_singletons.write("scoper_hier\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(num_fam_no_s)+"\t"+str(med_size_no_s)+"\t"+str(var_size_no_s)+"\t"+str(singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
-
-num_fam,med_size,var_size,singletons,num_fam_no_s,med_size_no_s,var_size_no_s = get_results_all(scoper3_path)
-complete.write("scoper_spec\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(num_fam)+"\t"+str(med_size)+"\t"+str(var_size)+"\t"+str(singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
-without_singletons.write("scoper_spec\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(num_fam_no_s)+"\t"+str(med_size_no_s)+"\t"+str(var_size_no_s)+"\t"+str(singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
+if os.path.exists(scoper3_path):
+    num_fam,med_size,var_size,singletons,num_fam_no_s,med_size_no_s,var_size_no_s = get_results_all(scoper3_path)
+    complete.write("scoper_spec\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(num_fam)+"\t"+str(med_size)+"\t"+str(var_size)+"\t"+str(singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
+    without_singletons.write("scoper_spec\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(num_fam_no_s)+"\t"+str(med_size_no_s)+"\t"+str(var_size_no_s)+"\t"+str(singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
+else:
+    complete.write("scoper_spec\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+"NaN"+"\t"+"NaN"+"\t"+"NaN"+"\t"+"NaN"+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
+    without_singletons.write("scoper_spec\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+"NaN"+"\t"+"NaN"+"\t"+"NaN"+"\t"+"NaN"+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")
 
 # num_fam,med_size,var_size,singletons,num_fam_no_s,med_size_no_s,var_size_no_s = get_results_all(scoper4_path)
 # complete.write("scoper_spec_vj\t"+clones+"\t"+SHM+"\t"+leaves+"\t"+balance+"\t"+str(num_fam)+"\t"+str(med_size)+"\t"+str(var_size)+"\t"+str(singletons)+"\t"+str(real_values_num_fam)+"\t"+str(real_values_med_size)+"\t"+str(real_values_var_size)+"\n")

@@ -23,7 +23,7 @@ def get_id_seq(filepath):
             identifiers.append(seq_record.id)
     return identifiers
 
-files = glob.glob(mixcr_path+"family*_aligned.fasta")
+files = glob.glob(mixcr_path+"family*.fasta")
 print(files)
 i=1
 for file in files:

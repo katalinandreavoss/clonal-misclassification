@@ -3,10 +3,10 @@ library(ggplot2)
 clonal_families<-c(16)
 SHM<-c("0_005", "0_01","0_05","0_1","0_2")
 leaves <- c("10","20","50","100")
-balance=c("6","12","18","24","30")
+balance=c("6","12","18")
 #balance <- c("0_0")
 sims<-seq(1,10,1)
-path<-"/scratch1/kavoss/simulation_junctions"
+path<-"/scratch1/kavoss/sims_fake_V/"
 
 listed<-tidyr::expand_grid(clonal_families,SHM, leaves,balance,sims)
 listed$filenames<-paste(path,listed$clonal_families,listed$SHM,listed$leaves,listed$balance,listed$sims,"sensitivity_precision.tsv", sep="/")
@@ -46,6 +46,7 @@ ggplot(sp_df, aes(x=clones, y=f1, fill = tool))+
   scale_fill_brewer(palette = "Paired")+
   theme(text = element_text(face = "bold",size = 20))
 
+sp_df$leaves<-as.character(sp_df$leaves)
 ggplot(sp_df, aes(x=leaves, y=FN, fill = tool))+
   geom_boxplot()+
   scale_fill_brewer(palette = "Paired")+
@@ -57,7 +58,7 @@ ggplot(sp_df, aes(x=leaves, y=FP, fill = tool))+
   theme(text = element_text(face = "bold",size = 20))
 sp_df$junction_length<-factor(sp_df$junction_length)
 
-
+sp_df$junction_length<-as.character(sp_df$junction_length)
 ggplot(sp_df, aes(x=junction_length, y=f1, fill = tool))+
   geom_boxplot()+
   scale_fill_brewer(palette = "Paired")+
