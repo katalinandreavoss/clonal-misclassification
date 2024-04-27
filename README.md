@@ -18,7 +18,7 @@ I installed it from scratch. Make sure you also have installed all the dependenc
 
 raxml: https://github.com/amkozlov/raxml-ng
 
-vquest: this one is more complicated because they do not have an API. I use https://github.com/ShawHahnLab/vquest with a few tweaks to make sure I get the correct output:
+vquest: this one is more complicated because they do not have an API. I use https://github.com/ShawHahnLab/vquest with a few tweaks to make sure I get the correct output: https://github.com/katalinandreavoss/v-quest-excel
 
 
 mptp: https://github.com/Pas-Kapli/mptp
