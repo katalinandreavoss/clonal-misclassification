@@ -7,11 +7,18 @@ library(stringr)
 library(patchwork)
 library(ggplot2)
 clonal_families<-c(10)
-SHM<-c("0_005", "0_01","0_05","0_1","0_2")
+SHM<-c("0_001","0_005", "0_01","0_05","0_1","0_2")
 leaves <- c("10","20","50","100")
-balance<-c("20","30","40","50")
+balance<-c("20","30","40")
 sims<-seq(1,10,1)
 path<-"/scratch1/kavoss/sims_fake_V/"
+
+clonal_families<-c(16)
+SHM<-c("0_001","0_005", "0_01","0_05","0_1","0_2")
+leaves <- c("10","20","50","100")
+balance<-c("0_0")
+sims<-seq(1,50,1)
+path<-"/scratch1/kavoss/method_comparison/"
 
 listed<-tidyr::expand_grid(clonal_families,SHM, leaves,balance,sims)
 listed$filenames<-paste(path,listed$clonal_families,listed$SHM,listed$leaves,listed$balance,listed$sims,"f1_all.tsv", sep="/")
@@ -28,7 +35,36 @@ sp_df$junction_length<-as.character(sp_df$junction_length)
 
 
 sp_df$f1 <- ifelse(is.na(sp_df$f1), 0, sp_df$f1)
+
+ggplot(sp_df, aes(x=SHM, y=sensitivity, fill = tool))+
+  geom_boxplot()+
+  ylab('F1-Score')+
+  scale_fill_brewer(palette = "Paired")+
+  theme(text = element_text(face = "bold",size = 20),
+        panel.background = element_rect(fill = "white") )
+
 ggplot(sp_df, aes(x=SHM, y=f1, fill = tool))+
+  geom_boxplot()+
+  ylab('F1-Score')+
+  scale_fill_brewer(palette = "Paired")+
+  theme(text = element_text(face = "bold",size = 20),
+        panel.background = element_rect(fill = "white") )
+
+ggplot(sp_df, aes(x=SHM, y=singletons, fill = tool))+
+  geom_boxplot()+
+  ylab('# singletons')+
+  scale_fill_brewer(palette = "Paired")+
+  theme(text = element_text(face = "bold",size = 20),
+        panel.background = element_rect(fill = "white") )
+
+ggplot(sp_df[sp_df$SHM =="0_05",], aes(x=leaves, y=f1, fill = tool))+
+  geom_boxplot()+
+  ylab('F1-Score')+
+  scale_fill_brewer(palette = "Paired")+
+  theme(text = element_text(face = "bold",size = 20),
+        panel.background = element_rect(fill = "white") )
+
+ggplot(sp_df, aes(x=leaves, y=f1, fill = tool))+
   geom_boxplot()+
   ylab('F1-Score')+
   scale_fill_brewer(palette = "Paired")+
@@ -52,7 +88,7 @@ ggplot(sp_df, aes(x=leaves, y=solved, fill = tool))+
 
 ggplot(sp_df, aes(x=SHM, y=ratio, fill = tool))+
   geom_boxplot()+
-  ylab('ratio of solved samples/all samples')+
+  ylab('ratio of solved samples/all samples log')+
   scale_fill_brewer(palette = "Paired")+
   theme(text = element_text(face = "bold",size = 20),
         panel.background = element_rect(fill = "white") )
@@ -66,6 +102,15 @@ ggplot(sp_df, aes(x=junction_length, y=ratio, fill = tool))+
   xlab('# mutations added to known V genes to create new V genes')+
   theme(text = element_text(face = "bold",size = 20),
         panel.background = element_rect(fill = "white"))
+
+ggplot(sp_df, aes(x=junction_length, y=f1, fill = tool))+
+  geom_boxplot()+
+  scale_fill_brewer(palette = "Paired")+
+  ylab('ratio')+
+  xlab('# mutations added to known V genes to create new V genes')+
+  theme(text = element_text(face = "bold",size = 20),
+        panel.background = element_rect(fill = "white"))
+
 
 sp_df$rand <- ifelse(is.na(sp_df$rand), 0, sp_df$rand)
 

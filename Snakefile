@@ -14,18 +14,18 @@ MPTP=config['MPTP']
 VDJ=config['VDJ']
 
 #clones = range(4,21,2)
-#clones = range(10,11,5)
-clones = range(16,21,10)
+clones = range(10,11,5)
+#clones = range(16,21,10)
 shm = ["0_001","0_005", "0_01","0_05","0_1","0_2"] 
 #shm = ["0_005", "0_01","0_1","0_2"] 
 #shm = ["0_0005", "0_00075", "0_001","0_0015","0_002","0_0025","0_003","0_004","0_005","0_01","0_05","0_1","0_2"] 
 leaves = ["10","20","50","100"]
 #balance = ["0_0","0_3","0_5","1_0","1_3"]
-balance = ["0_0"]
+#balance = ["0_0"]
 #junction_length = ["6","12","18","24","30"]
-#junction_length = ["20","30","40","50"]
-sims = range(1,51)
-#sims = range(1,11)
+junction_length = ["20","30","40"]
+#sims = range(1,51)
+sims = range(1,11)
 
 
 
@@ -41,7 +41,7 @@ wildcard_constraints:
 
 rule all:
     input:
-        expand(OUTPUT + "{d}/{s}/{l}/{b}/{i}/f1_all.tsv", d=clones, s=shm,l=leaves, b=balance, i=sims)
+        expand(OUTPUT + "{d}/{s}/{l}/{b}/{i}/analysis_no_singletons.tsv", d=clones, s=shm,l=leaves, b=junction_length, i=sims)
 
 
 #simulation partis
@@ -470,25 +470,25 @@ rule all:
 #        python {input.script} {params.dir} >> {log} 2>&1"
 
 
-# rule combine_analysis:
-#     resources:
-#        mem="2G",
-#     threads: 10
-#     log: os.path.join(OUTPUT, "logs", "combine_analysis_{d}_{s}_{l}_{b}_{i}.log")
-#     input:
-#        script = 'simulation_analyses/calculate_measures.py',
-#        real = OUTPUT + "{d}/{s}/{l}/{b}/{i}/family_sizes.txt",
-#        mptp = OUTPUT+ "{d}/{s}/{l}/{b}/{i}/mptp_data_singletons.txt",
-#     params:
-#        dir = OUTPUT + "{d}/{s}/{l}/{b}/{i}/"
-#     output:
-#        complete = OUTPUT + "{d}/{s}/{l}/{b}/{i}/analysis_complete.tsv",
-#        without_singletons = OUTPUT + "{d}/{s}/{l}/{b}/{i}/analysis_no_singletons.tsv"
-#     shell:
-#        "echo " + platform.node() + " >> {log} 2>&1 && \
-#        export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log}&& \
-#        echo {params.dir} >> {log} 2>&1 && \
-#        python {input.script} {params.dir} >> {log} 2>&1"
+rule combine_analysis:
+    resources:
+       mem="2G",
+    threads: 10
+    log: os.path.join(OUTPUT, "logs", "combine_analysis_{d}_{s}_{l}_{b}_{i}.log")
+    input:
+       script = 'simulation_analyses/calculate_measures.py',
+       real = OUTPUT + "{d}/{s}/{l}/{b}/{i}/family_sizes.txt",
+       mptp = OUTPUT+ "{d}/{s}/{l}/{b}/{i}/mptp_data_singletons.txt",
+    params:
+       dir = OUTPUT + "{d}/{s}/{l}/{b}/{i}/"
+    output:
+       complete = OUTPUT + "{d}/{s}/{l}/{b}/{i}/analysis_complete.tsv",
+       without_singletons = OUTPUT + "{d}/{s}/{l}/{b}/{i}/analysis_no_singletons.tsv"
+    shell:
+       "echo " + platform.node() + " >> {log} 2>&1 && \
+       export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log}&& \
+       echo {params.dir} >> {log} 2>&1 && \
+       python {input.script} {params.dir} >> {log} 2>&1"
 
 
 #out = directory(OUTPUT + "{d}/{s}/{l}/{b}/{i}/ancestral_sequences/"),
@@ -828,39 +828,39 @@ rule f1_all:
 #        rm -rf  {params.out}*_ancestral_ml.fasta &>> {log}"
 
 
-rule ham_distance:
-    resources:
-       mem="2G",
-    threads: 100
-    log: os.path.join(OUTPUT, "logs", "ham_distance_{d}_{s}_{l}_{b}_{i}.log")
-    input:
-       script = 'simulation_analyses/ham_dist_figure.py',
-       check = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta"
-    params:
-        out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/"
-    output:
-       out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/ham_distance.tsv"
-    shell:
-       "echo " + platform.node() + " &>> {log} && \
-       python {input.script} {params.out} &>> {log}"
+# rule ham_distance:
+#     resources:
+#        mem="2G",
+#     threads: 100
+#     log: os.path.join(OUTPUT, "logs", "ham_distance_{d}_{s}_{l}_{b}_{i}.log")
+#     input:
+#        script = 'simulation_analyses/ham_dist_figure.py',
+#        check = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta"
+#     params:
+#         out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/"
+#     output:
+#        out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/ham_distance.tsv"
+#     shell:
+#        "echo " + platform.node() + " &>> {log} && \
+#        python {input.script} {params.out} &>> {log}"
 
 
-rule distance_naive:
-    resources:
-       mem="2G",
-    threads: 100
-    log: os.path.join(OUTPUT, "logs", "ham_distance_{d}_{s}_{l}_{b}_{i}.log")
-    input:
-       script = 'simulation_analyses/ham_dist_naive.py',
-       check = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta",
-       naive = OUTPUT + "{d}/{s}/{l}/{b}/{i}/naive.fasta"
-    params:
-        out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/"
-    output:
-       out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/distance.tsv"
-    shell:
-       "echo " + platform.node() + " &>> {log} && \
-       python {input.script} {params.out} &>> {log}"
+# rule distance_naive:
+#     resources:
+#        mem="2G",
+#     threads: 100
+#     log: os.path.join(OUTPUT, "logs", "ham_distance_{d}_{s}_{l}_{b}_{i}.log")
+#     input:
+#        script = 'simulation_analyses/ham_dist_naive.py',
+#        check = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta",
+#        naive = OUTPUT + "{d}/{s}/{l}/{b}/{i}/naive.fasta"
+#     params:
+#         out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/"
+#     output:
+#        out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/distance.tsv"
+#     shell:
+#        "echo " + platform.node() + " &>> {log} && \
+#        python {input.script} {params.out} &>> {log}"
 
 
 

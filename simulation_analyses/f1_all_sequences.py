@@ -4,7 +4,7 @@ import os
 from Bio import SeqIO
 
 path = sys.argv[1]
-#path = "/Users/kavoss/Documents/Research/test_data/44/"
+#path = "/Users/kavoss/Documents/Research/test_data/3/"
 params = path.split("/")
 sim = params[-2]
 balance = params[-3]
@@ -28,11 +28,9 @@ def read_fasta(file_path):
 
 
 sequence_names = read_fasta(real_values_path)
-print(sequence_names)
 
 def add_missing_sequences(df, sequence_names):
     max_clone_id = df['clone_id'].max() if not df.empty else 0
-
     for name in sequence_names:
         if name not in df['sequence_id'].values:
             max_clone_id += 1
@@ -60,7 +58,7 @@ file_path['solved'] = 0.0
 file_path['all'] = len(sequence_names)
 file_path['unsolved'] = len(sequence_names)
 file_path['ratio'] = 0.0
-file_path['rand'] = 0.0
+file_path['singletons'] = len(sequence_names)
 
 junction_length = 0.0
 
@@ -72,8 +70,8 @@ for i, r in file_path.iterrows():
         all_sequences = len(df)
         df["family"] = df["sequence_id"].str.split('_c').str[0]
         df_grouped = df.groupby(['clone_id'], as_index=False)['sequence_id'].count()
-        clones = df_grouped[df_grouped["sequence_id"] != 1]["clone_id"].values
-        df = df.loc[df['clone_id'].isin(clones)]
+        clones = df_grouped[df_grouped["sequence_id"] == 1]["clone_id"].values
+        #df = df.loc[df['clone_id'].isin(clones)]
         df["TP"] = 0.0
         df["TN"] = 0.0
         df["FN"] = 0.0
@@ -111,6 +109,7 @@ for i, r in file_path.iterrows():
         file_path.loc[i, 'all'] = all_sequences
         file_path.loc[i, 'unsolved'] = all_sequences-solved_sequences
         file_path.loc[i, 'ratio'] = solved_sequences/all_sequences
+        file_path.loc[i, 'singletons'] = len(clones)
 
 file_path["junction_length_scoper"] = junction_length
 file_path = file_path.drop(columns=['file'])

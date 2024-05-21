@@ -46,7 +46,7 @@ ggplot(sp_df, aes(x=clones, y=f1, fill = tool))+
   scale_fill_brewer(palette = "Paired")+
   theme(text = element_text(face = "bold",size = 20))
 
-sp_df$leaves<-as.character(sp_df$leaves)
+sp_df$leaves<-as.factor(sp_df$leaves)
 ggplot(sp_df, aes(x=leaves, y=FN, fill = tool))+
   geom_boxplot()+
   scale_fill_brewer(palette = "Paired")+

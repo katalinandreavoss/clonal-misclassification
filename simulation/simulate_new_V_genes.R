@@ -20,7 +20,7 @@ option_list = list(
   make_option(c("-l", "--leaves"), type="integer", 
               help="number of leaves", metavar="character"),
   make_option(c("-j", "--junction"), type="integer", 
-              help="length of junction region", metavar="character")
+              help="amount of mutations introduced", metavar="character")
 ); 
 
 opt_parser = OptionParser(option_list=option_list);
@@ -58,8 +58,8 @@ mutate_sequence <- function(sequence, mut_avg) {
   sample_number <- floor(rnorm(1, mean = mut_avg, sd = 5))
   #print(sample_number)
   mutation_positions <- sample.int(nchar(sequence), size = sample_number, replace = FALSE)
-  insertion_positions <- sort(sample.int(nchar(sequence) + 1, size = min(5, nchar(sequence)), replace = TRUE))
-  deletion_positions <- sort(sample.int(nchar(sequence), size = min(5, nchar(sequence)), replace = TRUE))
+  insertion_positions <- sort(sample.int(nchar(sequence) + 1, size = 3, replace = TRUE))
+  deletion_positions <- sort(sample.int(nchar(sequence), size = 3, replace = TRUE))
   
   # Apply mutations, insertions, and deletions
   mutated_sequence <- strsplit(sequence, "")[[1]]
@@ -68,14 +68,14 @@ mutate_sequence <- function(sequence, mut_avg) {
   }
   #total_insertions<-0
   for (pos in insertion_positions) {
-    insertion_length <- sample(1:5, size = 1)  # Random insertion length (up to 5)
+    insertion_length <- sample(1:4, size = 1)  # Random insertion length (up to 4)
     #total_insertions<-total_insertions+insertion_length
     insertion_chunk <- sample(nucleotides, size = insertion_length, replace = TRUE)
     mutated_sequence <- c(mutated_sequence[1:(pos - 1)], insertion_chunk, mutated_sequence[pos:length(mutated_sequence)])
   }
   #total_deletions<-0
   for (pos in deletion_positions) {
-    deletion_length <- sample(1:min(5, length(mutated_sequence) - pos + 1), size = 1)  # Random deletion length (up to 5)
+    deletion_length <- sample(1:4, size = 1)  # Random deletion length (up to 4)
     #total_deletions<-total_deletions+deletion_length
     mutated_sequence <- c(mutated_sequence[1:(pos - 1)], mutated_sequence[(pos + deletion_length):length(mutated_sequence)])
   }

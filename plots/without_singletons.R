@@ -17,12 +17,13 @@ SHM<-c("0_005", "0_01","0_1","0_2")
 leaves <- c("10","20","50","100")
 
 junction_length <- c("10","20","30","40","50","60")
+junction_length<-c("20","30","40")
 balance<-c("0_0")
-sims<-seq(1,50,1)
+sims<-seq(1,10,1)
 path<-"/scratch2/kavoss/simulations_junctions"
 path<-"/scratch1/kavoss/method_comparison/"
 path<-"/panfs/qcb-panasas/kavoss/method_comparison/"
-path<-"/scratch1/kavoss/simulations_mine/"
+path<-"/scratch1/kavoss/sims_fake_V/"
 
 get_MSE_median_fam_size<-function(data,df) {
   clone=data[['clones']]
@@ -73,8 +74,8 @@ get_MSE_fam_number<-function(data,df) {
 }
 
 
-listed<-tidyr::expand_grid(clonal_families,SHM, leaves,balance,sims)
-listed$filenames<-paste(path,listed$clonal_families,listed$SHM,listed$leaves,listed$balance,listed$sims,"analysis_no_singletons.tsv", sep="/")
+listed<-tidyr::expand_grid(clonal_families,SHM, leaves,junction_length,sims)
+listed$filenames<-paste(path,listed$clonal_families,listed$SHM,listed$leaves,listed$junction_length,listed$sims,"analysis_no_singletons.tsv", sep="/")
 
 
 filenames <- listed$filenames
@@ -121,13 +122,14 @@ ggplot(subset_df[subset_df$tool=="scoper_spec",], aes(leaves,num_families, color
   ylab("Number of Families")
 
 
-number_families<-tidyr::expand_grid(unique(total_df$tool),clonal_families,SHM, leaves,balance)
+number_families<-tidyr::expand_grid(unique(total_df$tool),clonal_families,SHM, leaves,junction_length)
 colnames(number_families)<- c("tool","clones","SHM","leaves","balance")
 
 number_families$MSE_num_fam<-apply(number_families,1, FUN=get_MSE_fam_number, df=total_df)
 number_families$MSE_fam_size<-apply(number_families,1, FUN=get_MSE_median_fam_size, df=total_df)
 #number_families$MSE_var_fam_size<-apply(number_families,1, FUN=get_MSE_var_fam_size, df=total_df)
 number_families$clones<-as.character(number_families$clones)
+number_families$tool <- factor(number_families$tool, levels = c("mixcr", "changeo", "scoper_hier","scoper_spec","mptp"))
 
 
 combined<-number_families[number_families$tool!="scoper_id",]
@@ -174,7 +176,7 @@ MSE_balances_num_fam<-ggplot(combined, aes(balance,MSE_num_fam, fill=tool)) +
   ylab("Mean Squared Error - Number of Families (log)")
 MSE_balances_num_fam
 
-combined$tool <- factor(combined$tool, levels = c("mixcr", "changeo", "scoper_hier","scoper_spec","gmyc", "gmyc_extend","mptp"))
+combined$tool <- factor(combined$tool, levels = c("mixcr", "changeo", "scoper_hier","scoper_spec","mptp"))
 
 MSE_SHM_size_fam<-ggplot(combined) + 
   geom_boxplot(aes(SHM,MSE_fam_size, fill=tool))+
@@ -218,7 +220,7 @@ MSE_leaves_size_fam+
 
 
 combined$leaves<-as.factor(combined$leaves)
-MSE_leaves_size_fam<-ggplot(combined[combined$SHM=="0_001",], aes(leaves,MSE_fam_size, fill=tool)) + 
+MSE_leaves_size_fam<-ggplot(combined[combined$SHM=="0_01",], aes(leaves,MSE_fam_size, fill=tool)) + 
   geom_boxplot()+
   scale_x_discrete(limits = unique(combined$leaves))+
   scale_y_continuous(trans='log10')+

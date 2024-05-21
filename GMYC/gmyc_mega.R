@@ -19,7 +19,9 @@ path<-opt$dir
 tree_path<-paste0(path,"tree_files/mega_tree_.raxml.bestTree")
 tree<-read.tree(tree_path)
 
-consensus_ultra=chronos(tree, lambda=0)  
+#consensus_ultra=chronos(tree, lambda=0)
+consensus_ultra=force.ultrametric(tree, method="extend")
+
 midpoint_tree<-midpoint(consensus_ultra)
 
 single<-gmyc(midpoint_tree,method = "single",quiet = TRUE)
@@ -30,4 +32,4 @@ single<-gmyc(midpoint_tree,method = "single",quiet = TRUE)
 
 specs<-spec.list(single)
 colnames(specs)<-c("clone_id","sequence_id")
-write.table(specs, file = paste0(path,"gmyc.tsv"), row.names=FALSE, sep="\t",quote = FALSE)
+write.table(specs, file = paste0(path,"gmyc_force.tsv"), row.names=FALSE, sep="\t",quote = FALSE)
