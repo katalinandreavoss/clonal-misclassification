@@ -157,4 +157,36 @@ parameters: 1st param: input directory
 ``simulation_analyses/f1_all_sequences.py`` calculate measures dependent on TP,TN, FP,FN for all tools (include singletons)
 parameters: 1st param: input directory
 
+## Ancestral Sequence
 
+``tree_building/align_families.sh`` align all sequences from the families discerned by a tool (need to extract fastas first)
+parameters: d) directory of the extracted fastas
+
+``tree_building/build_sub_trees.sh`` build trees for the discerned families
+parameters:
+        d) directory of aligned sequences
+        r) location of raxml
+        o) output directory
+
+``tree_building/reroot_midpoint.R`` reroot trees at the midpoint
+parameters: d) directory of the trees
+
+``germline_search/ancestral_seq_raxml.sh`` reconstruct ancestral sequence based on tree
+parameters: 
+        d) directory of the trees
+        r) raxml
+        o) output directory
+
+``simulation_analyses/seq_similarity.py`` compare naive to reconstructed ancestral sequences
+parameters: 1st param: input directory
+
+
+## Extra Evaluations
+``simulation_analyses/count_mutations.py`` count number of mutations introduced by SHM in simulations
+parameters: 1st param: directory where naive.fasta and clean.fasta are located
+
+``simulation_analyses/ham_dist_figure.py`` calculate ham distance between all simulated sequences, special focus on max. dist. within a family and min. dist. between families
+parameters: 1st param: directory where naive.fasta and clean.fasta are located
+
+``simulation_analyses/ham_dist_naive.py`` calculate ham dist. from sequences to naive germline sequence
+parameters: 1st param: directory where naive.fasta and clean.fasta are located
