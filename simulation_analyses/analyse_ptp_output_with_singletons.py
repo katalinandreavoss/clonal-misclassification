@@ -1,9 +1,10 @@
 import sys
 import statistics
-path = sys.argv[1]  # .yaml file from partis partition as input
+path1 = sys.argv[1]  
+path2 = sys.argv[2] 
 
-file1 = open(path+"mega_mptp.txt", 'r')
-file2 = open(path+"mptp_data_singletons.txt", 'w')
+file1 = open(path1, 'r')
+file2 = open(path2, 'w')
 Lines = file1.readlines()
 
 species=False

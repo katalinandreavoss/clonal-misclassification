@@ -8,4 +8,4 @@ do
     esac
 done
 
-clustalo -i ${directory}/clean.fasta -t DNA --outfmt=fasta -o ${directory}/clean_aligned.fasta
+clustalo -i ${directory}/clean.fasta -t DNA --outfmt=fasta -o ${directory}/clean_aligned.fasta -v

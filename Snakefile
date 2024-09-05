@@ -13,22 +13,26 @@ VQUEST=config['vquest']
 MPTP=config['MPTP']
 VDJ=config['VDJ']
 
-#clones = range(4,21,2)
 #clones = range(10,11,5)
-#clones = range(16,21,10)
-clones = [10,20,50]
-#shm = ["0_001","0_005", "0_01","0_05","0_1","0_2"] 
+clones = range(16,21,10)
+#clones = [10,20,50]
+#clones = ["cattle"]
+shm = ["0_001","0_005", "0_01","0_05","0_1","0_2"] 
 #shm = ["0_005", "0_01","0_1","0_2"] 
+#shm = ["0_05","0_1","0_2","0_3"] 
 #shm = ["0_0005", "0_00075", "0_001","0_0015","0_002","0_0025","0_003","0_004","0_005","0_01","0_05","0_1","0_2"] 
-shm = ["0_01"]
-#leaves = ["10","20","50","100"]
-leaves = ["20","50"]
-#balance = ["0_0","0_3","0_5","1_0","1_3"]
+#shm = ["0_01"]
+#shm = [14363]
+leaves = ["10","20","50","100"]
+#leaves = ["20","50"]
+#leaves = [1]
 balance = ["0_0"]
+#balance = [1]
 #junction_length = ["6","12","18","24","30"]
 #junction_length = ["20","30","40"]
-#sims = range(1,51)
-sims = range(1,11)
+sims = range(1,51)
+#sims = range(1,11)
+#sims = ["day0_z_subset","day28_z_subset"]
 
 
 
@@ -40,39 +44,74 @@ wildcard_constraints:
     b = "0_\d+",
     i = "\d+"
 
+# wildcard_constraints:
+#     d = "\w+",
+#     s = "\d+",
+#     l = "\d+",
+#     #b = "\d+",
+#     b = "\d+",
+   # i = "\w+\d"
+
 
 rule all:
     input:
-        expand(OUTPUT + "{d}/{s}/{l}/{b}/{i}/sensitivity_precision.tsv", d=clones, s=shm,l=leaves, b=balance, i=sims)
-
+        expand(OUTPUT + "{d}/{s}/{l}/{b}/{i}/tree_files/upgma.tre", d=clones, s=shm,l=leaves, b=balance, i=sims)
 
 #simulation partis
-rule simulate:
-    resources:
-        mem="20G",
-    threads: 10
-    log: os.path.join(OUTPUT, "logs", "simulate_{d}_{s}_{l}_{b}_{i}.log")
-    input:
-        script = 'partis/partis_simulation/simulate.sh',
-        partis = PARTIS+"bin/partis"
-    params:
-        out_dir = OUTPUT + "{d}/{s}/{l}/{b}/{i}",
-        clones = "{d}",
-        shm = "{s}",
-        leaves = "{l}",
-        balance = "{b}",
-        sim = "{i}"
-    output:
-        out =  OUTPUT + "{d}/{s}/{l}/{b}/{i}/simu.yaml"
-    shell:
-        "module purge &>> {log} && \
-        module load gcc/8.3.0 &>> {log} && \
-        module load gsl/2.5 &>> {log} && \
-        module load git &>> {log} && \
-        export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
-        echo " + platform.node() + " &>> {log} && \
-        export LD_LIBRARY_PATH=/home1/kavoss/partis_with_simulation/partis/packages/bpp-newlik/_build/lib64:$LD_LIBRARY_PATH &>> {log} && \
-        sh {input.script} -p {input.partis} -o {params.out_dir} -c {params.clones} -s {params.shm} -l {params.leaves} -b {params.balance} -i {params.sim} &>> {log}"
+# rule simulate:
+#     resources:
+#         mem="20G",
+#     threads: 10
+#     log: os.path.join(OUTPUT, "logs", "simulate_{d}_{s}_{l}_{b}_{i}.log")
+#     input:
+#         script = 'partis/partis_simulation/simulate.sh',
+#         partis = PARTIS+"bin/partis"
+#     params:
+#         out_dir = OUTPUT + "{d}/{s}/{l}/{b}/{i}",
+#         clones = "{d}",
+#         shm = "{s}",
+#         leaves = "{l}",
+#         balance = "{b}",
+#         sim = "{i}"
+#     output:
+#         out =  OUTPUT + "{d}/{s}/{l}/{b}/{i}/simu.yaml"
+#     shell:
+#         "module purge &>> {log} && \
+#         module load gcc/8.3.0 &>> {log} && \
+#         module load gsl/2.5 &>> {log} && \
+#         module load git &>> {log} && \
+#         export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
+#         echo " + platform.node() + " &>> {log} && \
+#         export LD_LIBRARY_PATH=/home1/kavoss/partis_with_simulation/partis/packages/bpp-newlik/_build/lib64:$LD_LIBRARY_PATH &>> {log} && \
+#         sh {input.script} -p {input.partis} -o {params.out_dir} -c {params.clones} -s {params.shm} -l {params.leaves} -b {params.balance} -i {params.sim} &>> {log}"
+
+# rule simulate_restrict_genes:
+#     resources:
+#         mem="20G",
+#     threads: 10
+#     log: os.path.join(OUTPUT, "logs", "simulate_restrict_genes_{d}_{s}_{l}_{b}_{i}.log")
+#     input:
+#         script = 'partis/partis_simulation/simulate_restrict_genes.sh',
+#         partis = PARTIS+"bin/partis"
+#     params:
+#         out_dir = OUTPUT + "{d}/{s}/{l}/{b}/{i}",
+#         clones = "{d}",
+#         shm = "{s}",
+#         leaves = "{l}",
+#         balance = "{b}",
+#         sim = "{i}"
+#     output:
+#         out =  OUTPUT + "{d}/{s}/{l}/{b}/{i}/simu.yaml"
+#     shell:
+#         "module purge &>> {log} && \
+#         module load gcc/8.3.0 &>> {log} && \
+#         module load gsl/2.5 &>> {log} && \
+#         module load git &>> {log} && \
+#         export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
+#         echo " + platform.node() + " &>> {log} && \
+#         export LD_LIBRARY_PATH=/home1/kavoss/partis_with_simulation/partis/packages/bpp-newlik/_build/lib64:$LD_LIBRARY_PATH &>> {log} && \
+#         sh {input.script} -p {input.partis} -o {params.out_dir} -c {params.clones} -s {params.shm} -l {params.leaves} -b {params.balance} -i {params.sim} &>> {log}"
+
 
 #simulation new
 # rule simulate_own:
@@ -160,8 +199,8 @@ rule remove_singletons:
 
 rule align:
      resources:
-        mem="2G",
-     threads: 10
+        mem="100G",
+     threads: 100
      log: os.path.join(OUTPUT, "logs", "align_{d}_{s}_{l}_{b}_{i}.log")
      input:
         all = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta",
@@ -194,7 +233,7 @@ rule align:
 # #important for this rule: you must specify at least --cpus-per-task=16 in the snakemake command, otherwise it takes forever
 rule build_megatree:
      resources:
-        mem="50G"
+        mem="20G"
      log: os.path.join(OUTPUT, "logs", "build_megatree_{d}_{s}_{l}_{b}_{i}.log")
      input:
         script = 'tree_building/build_tree.sh',
@@ -209,6 +248,20 @@ rule build_megatree:
         "echo " + platform.node() + " &>> {log} && \
         sh {input.script} -r {input.raxml} -d {params.dir} -o {params.out} &>> {log}"
 
+rule build_upgma_tree:
+     resources:
+        mem="20G"
+     log: os.path.join(OUTPUT, "logs", "build_upgma_tree_{d}_{s}_{l}_{b}_{i}.log")
+     input:
+        script = 'tree_building/distance_matrix_UPGMA.R',
+        fasta = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta"
+     params:
+         out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/tree_files/"
+     output:
+        tree = OUTPUT + "{d}/{s}/{l}/{b}/{i}/tree_files/upgma.tre"
+     shell:
+        "echo " + platform.node() + " &>> {log} && \
+        Rscript {input.script} -f {input.fasta} -o {params.out} &>> {log}"
 
 
 # # build subtrees
@@ -252,6 +305,23 @@ rule cut_tree_mptp:
         "echo " + platform.node() + " &>> {log} && \
         {input.mptp} --ml --single --tree_file {input.tree} --output_file {params.out} &>> {log}"
 
+rule cut_upgma_tree_mptp:
+     resources:
+        mem="200G",
+     threads: 10
+     log: os.path.join(OUTPUT, "logs", "cut_upgma_tree_mptp_{d}/{s}/{l}/{b}/{i}/.log")
+     input:
+        mptp  = MPTP+"mptp",
+        tree = OUTPUT + "{d}/{s}/{l}/{b}/{i}/tree_files/upgma.tre"
+     params:
+         out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/mega_upgma_mptp"
+     output:
+        partitions = OUTPUT+ "{d}/{s}/{l}/{b}/{i}/mega_upgma_mptp.txt",
+        svg = OUTPUT+ "{d}/{s}/{l}/{b}/{i}/mega_upgma_mptp.svg"
+     shell:
+        "echo " + platform.node() + " &>> {log} && \
+        {input.mptp} --ml --single --tree_file {input.tree} --output_file {params.out} &>> {log}"
+
 
 rule get_mptp_values:
      resources:
@@ -268,7 +338,24 @@ rule get_mptp_values:
      shell:
         "echo " + platform.node() + " &>> {log} && \
         export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
-        python {input.script} {params.out} &>> {log}"
+        python {input.script} {input.partitions} {output.out}&>> {log}"
+
+rule get_upgma_mptp_values:
+     resources:
+        mem="2G",
+     threads: 10
+     log: os.path.join(OUTPUT, "logs", "get_upgma_mptp_values_{d}_{s}_{l}_{b}_{i}.log")
+     input:
+        script = 'simulation_analyses/analyse_ptp_output.py',
+        partitions = OUTPUT+ "{d}/{s}/{l}/{b}/{i}/mega_upgma_mptp.txt"
+     params:
+        out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/"
+     output:
+        out = OUTPUT+ "{d}/{s}/{l}/{b}/{i}/mega_upgma_mptp_data.txt"
+     shell:
+        "echo " + platform.node() + " &>> {log} && \
+        export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
+        python {input.script} {input.partitions} {output.out}&>> {log}"
 
 
 rule get_mptp_values_singletons:
@@ -286,7 +373,25 @@ rule get_mptp_values_singletons:
      shell:
         "echo " + platform.node() + " &>> {log} && \
         export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
-        python {input.script} {params.out} &>> {log}"
+        python {input.script} {input.partitions} {output.out}&>> {log}"
+
+
+rule get_upgma_mptp_values_singletons:
+     resources:
+        mem="2G",
+     threads: 10
+     log: os.path.join(OUTPUT, "logs", "get_upgma_mptp_values_singletons_{d}_{s}_{l}_{b}_{i}.log")
+     input:
+        script = 'simulation_analyses/analyse_ptp_output_with_singletons.py',
+        partitions = OUTPUT+ "{d}/{s}/{l}/{b}/{i}/mega_upgma_mptp.txt"
+     params:
+        out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/"
+     output:
+        out = OUTPUT+ "{d}/{s}/{l}/{b}/{i}/mega_upgma_mptp_data_singletons.txt"
+     shell:
+        "echo " + platform.node() + " &>> {log} && \
+        export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
+        python {input.script} {input.partitions} {output.out}&>> {log}"
 
 # rule gmyc:
 #      resources:
