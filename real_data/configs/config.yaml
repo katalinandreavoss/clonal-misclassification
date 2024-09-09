@@ -1,0 +1,5 @@
+output: '/project/mpennell_978/kavoss/real_data_cf/14007/'
+raxml: '/home1/kavoss/raxml-ng/' #specify where raxml is located
+MPTP: '/home1/kavoss/mptp-0.2.4-linux-x86_64/bin/' #specifiy where mptp is located
+
+

@@ -55,7 +55,7 @@ wildcard_constraints:
 
 rule all:
     input:
-        expand(OUTPUT + "{d}/{s}/{l}/{b}/{i}/tree_files/upgma.tre", d=clones, s=shm,l=leaves, b=balance, i=sims)
+        expand(OUTPUT + "{d}/{s}/{l}/{b}/{i}/sensitivity_precision.tsv", d=clones, s=shm,l=leaves, b=balance, i=sims)
 
 #simulation partis
 # rule simulate:
@@ -206,12 +206,13 @@ rule align:
         all = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta",
         script = 'tree_building/align_partitions.sh'
      params:
-         out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/"
+         out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/",
+         filename = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean"
      output:
         align = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean_aligned.fasta"
      shell:
         "echo " + platform.node() + " &>> {log} && \
-        sh {input.script} -d {params.out} &>> {log}"
+        sh {input.script} -d {params.out} -f {params.filename} &>> {log}"
 
 # rule align_families:
 #      resources:
@@ -246,7 +247,7 @@ rule build_megatree:
         tree = OUTPUT + "{d}/{s}/{l}/{b}/{i}/tree_files/mega_tree_.raxml.bestTree"
      shell:
         "echo " + platform.node() + " &>> {log} && \
-        sh {input.script} -r {input.raxml} -d {params.dir} -o {params.out} &>> {log}"
+        sh {input.script} -r {input.raxml} -f {input.align_check} -o {params.out} -f &>> {log}"
 
 rule build_upgma_tree:
      resources:
@@ -431,30 +432,30 @@ rule get_family_sizes:
         sh {input.script} -d {params.out} -c {params.clones} -s {params.shm} -l {params.leaves} -i {params.sim} &>> {log}"
 
 
-rule mixcr:
-     resources:
-        mem="20G",
-     threads: 10
-     log: os.path.join(OUTPUT, "logs", "mixcr_{d}_{s}_{l}_{b}_{i}.log")
-     input:
-        fasta = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta"
-     params:
-         out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta.vdjca.clns.tsv"
-     output:
-        aligned = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta.vdjca",
-        clones = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta.vdjca.clns",
-        clna = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta.vdjca.clna",
-        IGH = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta.vdjca.clns_IGH.tsv",
-        mixcr = directory(OUTPUT + "{d}/{s}/{l}/{b}/{i}/mixcr_fastas/")
-     shell:
-        "echo " + platform.node() + " &>> {log} && \
-        mixcr align --preset rnaseq-bcr-full-length --species HomoSapiens -OsaveOriginalReads=true {input.fasta} {output.aligned} >> {log} 2>&1 && \
-        mixcr assemble {output.aligned} {output.clones} &>> {log} && \
-        mixcr assemble {output.aligned} {output.clna} &>> {log} && \
-        mixcr exportClones {output.clones} {params.out} &>> {log} && \
-        mkdir {output.mixcr} && \
-        var=$(cut -f1 {output.IGH} | tail -n +2 | paste -s -d' ') && \
-        mixcr exportReadsForClones --id $var -s {output.clna} {output.mixcr}/clean.fastq.gz &>> {log}"
+# rule mixcr:
+#      resources:
+#         mem="20G",
+#      threads: 10
+#      log: os.path.join(OUTPUT, "logs", "mixcr_{d}_{s}_{l}_{b}_{i}.log")
+#      input:
+#         fasta = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta"
+#      params:
+#          out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta.vdjca.clns.tsv"
+#      output:
+#         aligned = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta.vdjca",
+#         clones = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta.vdjca.clns",
+#         clna = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta.vdjca.clna",
+#         IGH = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta.vdjca.clns_IGH.tsv",
+#         mixcr = directory(OUTPUT + "{d}/{s}/{l}/{b}/{i}/mixcr_fastas/")
+#      shell:
+#         "echo " + platform.node() + " &>> {log} && \
+#         mixcr align --preset rnaseq-bcr-full-length --species HomoSapiens -OsaveOriginalReads=true {input.fasta} {output.aligned} >> {log} 2>&1 && \
+#         mixcr assemble {output.aligned} {output.clones} &>> {log} && \
+#         mixcr assemble {output.aligned} {output.clna} &>> {log} && \
+#         mixcr exportClones {output.clones} {params.out} &>> {log} && \
+#         mkdir {output.mixcr} && \
+#         var=$(cut -f1 {output.IGH} | tail -n +2 | paste -s -d' ') && \
+#         mixcr exportReadsForClones --id $var -s {output.clna} {output.mixcr}/clean.fastq.gz &>> {log}"
 
 
 rule findVDJ:
@@ -476,63 +477,63 @@ rule findVDJ:
         "echo " + platform.node() + " &>> {log} && \
         sh {input.script} -f {input.fasta} -v {input.vquest} -o {output.out} &>> {log}"
 
-rule combine_vquest:
-     resources:
-        mem="10G",
-     threads: 10
-     log: os.path.join(OUTPUT, "logs", "combine_vquest_{d}_{s}_{l}_{b}_{i}.log")
-     input:
-        script = 'germline_search/combine_vquest.py',
-        seq = OUTPUT + "{d}/{s}/{l}/{b}/{i}/vquest_files/001/3_Nt-sequences.txt",
-        fasta = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta",
-        dir = OUTPUT + "{d}/{s}/{l}/{b}/{i}/vquest_files/"
-     params:
-         out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/"
-     output:
-        out = directory(OUTPUT + "{d}/{s}/{l}/{b}/{i}/vquest_files/combined/"),
-        Nt = OUTPUT + "{d}/{s}/{l}/{b}/{i}/vquest_files/combined/3_Nt-sequences.txt",
-        summary = OUTPUT + "{d}/{s}/{l}/{b}/{i}/vquest_files/combined/1_Summary.txt"
-     shell:
-        "echo " + platform.node() + " &>> {log} && \
-        mkdir -p {output.out} &>> {log} && \
-        python {input.script} {input.dir} &>> {log}"
+# rule combine_vquest:
+#      resources:
+#         mem="10G",
+#      threads: 10
+#      log: os.path.join(OUTPUT, "logs", "combine_vquest_{d}_{s}_{l}_{b}_{i}.log")
+#      input:
+#         script = 'germline_search/combine_vquest.py',
+#         seq = OUTPUT + "{d}/{s}/{l}/{b}/{i}/vquest_files/001/3_Nt-sequences.txt",
+#         fasta = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta",
+#         dir = OUTPUT + "{d}/{s}/{l}/{b}/{i}/vquest_files/"
+#      params:
+#          out = OUTPUT + "{d}/{s}/{l}/{b}/{i}/"
+#      output:
+#         out = directory(OUTPUT + "{d}/{s}/{l}/{b}/{i}/vquest_files/combined/"),
+#         Nt = OUTPUT + "{d}/{s}/{l}/{b}/{i}/vquest_files/combined/3_Nt-sequences.txt",
+#         summary = OUTPUT + "{d}/{s}/{l}/{b}/{i}/vquest_files/combined/1_Summary.txt"
+#      shell:
+#         "echo " + platform.node() + " &>> {log} && \
+#         mkdir -p {output.out} &>> {log} && \
+#         python {input.script} {input.dir} &>> {log}"
 
-rule changeo:
-     resources:
-        mem="2G",
-     threads: 10
-     log: os.path.join(OUTPUT, "logs", "changeo_{d}_{s}_{l}_{b}_{i}.log")
-     input:
-        script = 'simulation_analyses/change-o.sh',
-        summary = OUTPUT + "{d}/{s}/{l}/{b}/{i}/vquest_files/combined/1_Summary.txt",
-        dir = OUTPUT + "{d}/{s}/{l}/{b}/{i}/vquest_files/combined/",
-        fasta = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta",
-        vdj = VDJ
-     output:
-        db = OUTPUT + "{d}/{s}/{l}/{b}/{i}/vquest_files/combined_db-pass.tsv",
-        clones = OUTPUT + "{d}/{s}/{l}/{b}/{i}/vquest_files/combined_db-pass_clone-pass.tsv",
-        germline = OUTPUT + "{d}/{s}/{l}/{b}/{i}/vquest_files/combined_db-pass_germ-pass.tsv"
-     shell:
-        "echo " + platform.node() + " &>> {log} && \
-        export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
-        sh {input.script} -d {input.dir} -f {input.fasta} -v {input.vdj} &>> {log}"
+# rule changeo:
+#      resources:
+#         mem="2G",
+#      threads: 10
+#      log: os.path.join(OUTPUT, "logs", "changeo_{d}_{s}_{l}_{b}_{i}.log")
+#      input:
+#         script = 'simulation_analyses/change-o.sh',
+#         summary = OUTPUT + "{d}/{s}/{l}/{b}/{i}/vquest_files/combined/1_Summary.txt",
+#         dir = OUTPUT + "{d}/{s}/{l}/{b}/{i}/vquest_files/combined/",
+#         fasta = OUTPUT + "{d}/{s}/{l}/{b}/{i}/clean.fasta",
+#         vdj = VDJ
+#      output:
+#         db = OUTPUT + "{d}/{s}/{l}/{b}/{i}/vquest_files/combined_db-pass.tsv",
+#         clones = OUTPUT + "{d}/{s}/{l}/{b}/{i}/vquest_files/combined_db-pass_clone-pass.tsv",
+#         germline = OUTPUT + "{d}/{s}/{l}/{b}/{i}/vquest_files/combined_db-pass_germ-pass.tsv"
+#      shell:
+#         "echo " + platform.node() + " &>> {log} && \
+#         export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
+#         sh {input.script} -d {input.dir} -f {input.fasta} -v {input.vdj} &>> {log}"
 
-rule scoper:
-     resources:
-        mem="2G",
-     threads: 10
-     log: os.path.join(OUTPUT, "logs", "scoper_{d}_{s}_{l}_{b}_{i}.log")
-     input:
-        script = 'simulation_analyses/scoper.R',
-        db = OUTPUT + "{d}/{s}/{l}/{b}/{i}/vquest_files/combined_db-pass_clone-pass.tsv"
-     params:
-        dir = OUTPUT + "{d}/{s}/{l}/{b}/{i}/"
-     output:
-        hierarchical = OUTPUT + "{d}/{s}/{l}/{b}/{i}/results_hierClones.tsv",
-        spectral = OUTPUT + "{d}/{s}/{l}/{b}/{i}/results_specClones.tsv"
-     shell:
-        "echo " + platform.node() + " &>> {log} && \
-        Rscript {input.script} -d {input.db} -o {params.dir}&>> {log}"
+# rule scoper:
+#      resources:
+#         mem="2G",
+#      threads: 10
+#      log: os.path.join(OUTPUT, "logs", "scoper_{d}_{s}_{l}_{b}_{i}.log")
+#      input:
+#         script = 'simulation_analyses/scoper.R',
+#         db = OUTPUT + "{d}/{s}/{l}/{b}/{i}/vquest_files/combined_db-pass_clone-pass.tsv"
+#      params:
+#         dir = OUTPUT + "{d}/{s}/{l}/{b}/{i}/"
+#      output:
+#         hierarchical = OUTPUT + "{d}/{s}/{l}/{b}/{i}/results_hierClones.tsv",
+#         spectral = OUTPUT + "{d}/{s}/{l}/{b}/{i}/results_specClones.tsv"
+#      shell:
+#         "echo " + platform.node() + " &>> {log} && \
+#         Rscript {input.script} -d {input.db} -o {params.dir}&>> {log}"
 
 # # rule scoper_spec:
 # #      resources:

@@ -1,16 +1,16 @@
 #!/bin/bash
 
-while getopts r:d:o: flag
+while getopts r:o:f: flag
 do
     # shellcheck disable=SC2220
     case "${flag}" in
         r) raxml=${OPTARG};;
-        d) directory=${OPTARG};;
         o) output=${OPTARG};;
+        f) filename=${OPTARG};;
     esac
 done
 
-${raxml} -model GTR -msa ${directory}/clean_aligned.fasta -seed 42 -prefix ${output}/mega_tree_ --search ML tree search --blopt nr_safe --threads auto{64}
+${raxml} -model GTR -msa ${filename} -seed 42 -prefix ${output}/mega_tree_ --search ML tree search --blopt nr_safe --threads auto{64} --redo --log debug
 #for fasta in $directory/*_aligned.fasta; do
 #  name=${fasta%_aligned.fasta}
 #  name=${name##*/}

@@ -1,7 +1,7 @@
 from Bio import SeqIO
 
-input_file = "/project/mpennell_978/kavoss/real_data_cf/cattle/14363/1/1/day28_z/clean.fasta"
-output_file = "/project/mpennell_978/kavoss/real_data_cf/cattle/14363/1/1/day28_z_subset/clean.fasta"
+input_file = "/project/mpennell_978/kavoss/real_data_cf/14007/6.fasta"
+output_file = "/project/mpennell_978/kavoss/real_data_cf/14007/6_subset.fasta"
 
 # Load sequences from the input fasta file
 sequences = list(SeqIO.parse(input_file, "fasta"))

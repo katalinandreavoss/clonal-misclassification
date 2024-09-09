@@ -1,11 +1,12 @@
 #!/bin/bash
 
-while getopts d: flag
+while getopts d:f: flag
 do
     # shellcheck disable=SC2220
     case "${flag}" in
         d) directory=${OPTARG};;
+        f) filename=${OPTARG};;
     esac
 done
 
-clustalo -i ${directory}/clean.fasta -t DNA --outfmt=fasta -o ${directory}/clean_aligned.fasta -v
+clustalo -i ${filename}.fasta -t DNA --outfmt=fasta -o ${filename}_aligned.fasta -v
