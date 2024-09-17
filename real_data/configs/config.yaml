@@ -1,5 +1,6 @@
-output: '/project/mpennell_978/kavoss/real_data_cf/14007/'
+output: '/project/mpennell_978/kavoss/real_data_cf/raw_reads/'
 raxml: '/home1/kavoss/raxml-ng/' #specify where raxml is located
 MPTP: '/home1/kavoss/mptp-0.2.4-linux-x86_64/bin/' #specifiy where mptp is located
+FastMe: '/home1/kavoss/fastme-2.1.6.4/binaries/fastme-2.1.6.2-linux64' #specifiy where mptp is located
 
 
