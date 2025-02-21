@@ -4,7 +4,7 @@ library(clue)  # For Adjusted Rand Index
 
 # Load both files
 path<-"/project/mpennell_978/kavoss/real_data_cf/14007/"
-folder<-"3"
+folder<-"0"
 mapping_file = paste0("mapping.csv")
 singleton_file = "mptp_data_singletons.txt"
 
@@ -81,6 +81,9 @@ colnames(family_counts)[2]<-"family_id_count"
 df <- df %>%
   left_join(clone_counts, by = "clone_id") %>%
   left_join(family_counts, by = "family")
+
+write.csv(df, paste0(path,folder,"/grouping_merged"), row.names=FALSE, quote = FALSE)
+
 
 # Plot the data
 ggplot(df, aes(x = family_id_count, y = clone_count)) +

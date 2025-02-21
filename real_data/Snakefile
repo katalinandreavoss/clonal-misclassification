@@ -5,37 +5,42 @@ import os
 
 configfile: "configs/config.yaml"
 
-
 OUTPUT=config['output']
 RAXML=config['raxml']
 MPTP=config['MPTP']
+FASTME=config['FastMe']
 
-timepoints =  ["-3","0","3","6"]
+
+#timepoints =  ["-3","0","3","6"]
+
+#timepoints =  ["-3","0","3","6","-3_subset","0_subset","3_subset","6_subset"]
+
+timepoints = ["day0","week3"]
 
 rule all:
     input:
         expand(OUTPUT + "{t}_aligned.fasta", t=timepoints)
 
 
-rule build_upgma_tree:
-     resources:
-        mem="20G"
-     log: os.path.join(OUTPUT, "logs", "build_upgma_tree_{t}.log")
-     input:
-        script = '../tree_building/distance_matrix_UPGMA.R',
-        fasta = OUTPUT + "{t}.fasta"
-     params:
-         out = OUTPUT + "{t}/tree_files/"
-     output:
-        tree = OUTPUT + "{t}/tree_files/upgma.tre"
-     shell:
-        "echo " + platform.node() + " &>> {log} && \
-        Rscript {input.script} -f {input.fasta} -o {params.out} &>> {log}"
+# rule build_upgma_tree:
+#      resources:
+#         mem="20G"
+#      log: os.path.join(OUTPUT, "logs", "build_upgma_tree_{t}.log")
+#      input:
+#         script = '../tree_building/distance_matrix_UPGMA.R',
+#         fasta = OUTPUT + "{t}.fasta"
+#      params:
+#          out = OUTPUT + "{t}/tree_files/"
+#      output:
+#         tree = OUTPUT + "{t}/tree_files/upgma.tre"
+#      shell:
+#         "echo " + platform.node() + " &>> {log} && \
+#         Rscript {input.script} -f {input.fasta} -o {params.out} &>> {log}"
 
 
 rule align:
      resources:
-        mem="100G",
+        mem="500G",
      threads: 100
      log: os.path.join(OUTPUT, "logs", "align_{t}.log")
      input:
@@ -51,19 +56,104 @@ rule align:
         sh {input.script} -d {params.out} -f {params.filename} &>> {log}"
 
 
-rule build_megatree:
+# rule build_megatree:
+#      resources:
+#         mem="200G"
+#      log: os.path.join(OUTPUT, "logs", "build_megatree_{t}.log")
+#      input:
+#         script = '../tree_building/build_tree.sh',
+#         raxml  = RAXML+"raxml-ng",
+#         align_check = OUTPUT + "{t}_aligned.fasta"
+#      params:
+#          dir = OUTPUT + "{t}/",
+#          out = OUTPUT + "{t}/tree_files/"
+#      output:
+#         tree = OUTPUT + "{t}/tree_files/mega_tree_.raxml.bestTree"
+#      shell:
+#         "echo " + platform.node() + " &>> {log} && \
+#         sh {input.script} -r {input.raxml} -f {input.align_check} -o {params.out} &>> {log}"
+
+# rule fastaToPhylip:
+#      resources:
+#         mem="200G"
+#      log: os.path.join(OUTPUT, "logs", "fastaToPhylip_{t}.log")
+#      input:
+#         script = "fasta_to_phylip.py",
+#         align_check = OUTPUT + "{t}_aligned.fasta"
+#      params:
+#          dir = OUTPUT + "{t}/"
+#      output:
+#         phylip = OUTPUT + "{t}_phylip.phy"
+#      shell:
+#         "echo " + platform.node() + " &>> {log} && \
+#         python3 {input.script} {input.align_check} {output.phylip} &>> {log}"
+
+
+rule build_veryfasttree:
      resources:
         mem="200G"
-     log: os.path.join(OUTPUT, "logs", "build_megatree_{t}.log")
+     log: os.path.join(OUTPUT, "logs", "build_veryfasttree_{t}.log")
      input:
-        script = '../tree_building/build_tree.sh',
-        raxml  = RAXML+"raxml-ng",
         align_check = OUTPUT + "{t}_aligned.fasta"
      params:
          dir = OUTPUT + "{t}/",
          out = OUTPUT + "{t}/tree_files/"
      output:
-        tree = OUTPUT + "{t}/tree_files/mega_tree_.raxml.bestTree"
+        tree = OUTPUT + "{t}/tree_files/veryfasttree.nwk"
      shell:
         "echo " + platform.node() + " &>> {log} && \
-        sh {input.script} -r {input.raxml} -f {input.align_check} -o {params.out} &>> {log}"
+        VeryFastTree -nt {input.align_check} > {output.tree} &>> {log}"
+
+
+# rule cut_tree_mptp:
+#      resources:
+#         mem="200G",
+#      threads: 10
+#      log: os.path.join(OUTPUT, "logs", "cut_tree_mptp_{t}.log")
+#      input:
+#         mptp  = MPTP+"mptp",
+#         tree = OUTPUT + "{t}/tree_files/veryfasttree.nwk"
+#      params:
+#          out = OUTPUT + "{t}/mptp"
+#      output:
+#         partitions = OUTPUT+ "{t}/mptp.txt",
+#         svg = OUTPUT+ "{t}/mptp.svg"
+#      shell:
+#         "echo " + platform.node() + " &>> {log} && \
+#         {input.mptp} --ml --single --tree_file {input.tree} --output_file {params.out} &>> {log}"
+
+
+rule get_mptp_values:
+     resources:
+        mem="20G",
+     threads: 10
+     log: os.path.join(OUTPUT, "logs", "get_mptp_values_{t}.log")
+     input:
+        script = '../simulation_analyses/analyse_ptp_output.py',
+        partitions = OUTPUT+ "{t}/mptp.txt"
+     params:
+        out = OUTPUT + "{t}/"
+     output:
+        out = OUTPUT+ "{t}/mptp_data.txt"
+     shell:
+        "echo " + platform.node() + " &>> {log} && \
+        export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
+        python {input.script} {input.partitions} {output.out}&>> {log}"
+
+
+rule get_mptp_values_singletons:
+     resources:
+        mem="20G",
+     threads: 10
+     log: os.path.join(OUTPUT, "logs", "get_mptp_values_{t}.log")
+     input:
+        script = '../simulation_analyses/analyse_ptp_output_with_singletons.py',
+        partitions = OUTPUT+ "{t}/mptp.txt"
+     params:
+        out = OUTPUT + "{t}/"
+     output:
+        out = OUTPUT+ "{t}/mptp_data_singletons.txt"
+     shell:
+        "echo " + platform.node() + " &>> {log} && \
+        export PATH=/home1/kavoss/anaconda2/bin:$PATH &>> {log} && \
+        python {input.script} {input.partitions} {output.out}&>> {log}"

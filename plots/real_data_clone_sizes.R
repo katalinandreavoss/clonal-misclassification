@@ -64,6 +64,8 @@ write.csv(combined_data_all, paste0("/project/mpennell_978/kavoss/real_data_cf/1
 write.csv(combined_data, paste0("/project/mpennell_978/kavoss/real_data_cf/14007/","clone_sizes.csv"), row.names=FALSE, quote = FALSE)
 
 
+combined_data_all<-read.table(paste0("/project/mpennell_978/kavoss/real_data_cf/14007/","clone_sizes_all.csv"),header = TRUE, sep = "\t")
+
 for (folder in folders) {
   file_path <- paste0("/project/mpennell_978/kavoss/real_data_cf/14007/",folder,"/mapping.csv")
   

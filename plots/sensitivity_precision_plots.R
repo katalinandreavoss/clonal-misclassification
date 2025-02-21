@@ -5,8 +5,8 @@ SHM<-c("0_005", "0_01","0_05","0_1","0_2")
 leaves <- c("10","20","50","100")
 balance=c("6","12","18")
 #balance <- c("0_0")
-sims<-seq(1,10,1)
-path<-"/scratch1/kavoss/sims_fake_V/"
+sims<-seq(1,50,1)
+path<-"/project/mpennell_978/kavoss/method_comparison/"
 
 listed<-tidyr::expand_grid(clonal_families,SHM, leaves,balance,sims)
 listed$filenames<-paste(path,listed$clonal_families,listed$SHM,listed$leaves,listed$balance,listed$sims,"sensitivity_precision.tsv", sep="/")
@@ -14,11 +14,11 @@ listed$filenames<-paste(path,listed$clonal_families,listed$SHM,listed$leaves,lis
 filenames <- listed$filenames
 sp_df <- do.call(rbind,lapply(filenames,read.csv,sep="\t"))
 
-write.csv(sp_df, paste0(path,"f1.csv"), row.names=FALSE)
+write.csv(sp_df, paste0(path,"f1_upgma.csv"), row.names=FALSE)
 sp_df<-fread(paste0(path,"f1.csv"))
 sp_df$tool <- factor(sp_df$tool, levels = c("mixcr", "changeo", "scoper_hier","scoper_sp","gmyc", "gmyc_extend","mptp"))
 
-sp_df$tool <- factor(sp_df$tool, levels = c("mixcr", "changeo", "scoper_hier","scoper_sp","mptp"))
+sp_df$tool <- factor(sp_df$tool, levels = c("mixcr", "changeo", "scoper_hier","scoper_sp","mptp","mptp_upgma"))
 
 sp_df$tool <- factor(sp_df$tool, levels = c("scoper_sp", "scoper_sp_vj", "scoper_hier"))
 sp_df<- sp_df[sp_df$tool %in% c("scoper_hier","scoper_sp"),]

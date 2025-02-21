@@ -9,13 +9,14 @@ library(ggplot2)
 clonal_families<-c(10,12,14,16,18, 20)
 clonal_families<-c(10)
 clonal_families<-c(16)
+clonal_families<-c(10,20,50)
 #tools<-c("MiXCR", "changeo","scoper_ID","scoper_hierarchical","scoper_spectral")
 SHM<-c("0_0005", "0_00075","0_001","0_0015","0_002","0_0025","0_003","0_004","0_005", "0_01","0_05","0_1","0_2")
 SHM<-c("0_001", "0_005", "0_01","0_05","0_1","0_2")
 SHM<-c("0_005", "0_01","0_1","0_2")
-
+SHM<-c("0_01")
 leaves <- c("10","20","50","100")
-
+leaves <- c("20","50")
 junction_length <- c("10","20","30","40","50","60")
 junction_length<-c("20","30","40")
 balance<-c("0_0")
@@ -23,7 +24,7 @@ sims<-seq(1,10,1)
 path<-"/scratch2/kavoss/simulations_junctions"
 path<-"/scratch1/kavoss/method_comparison/"
 path<-"/panfs/qcb-panasas/kavoss/method_comparison/"
-path<-"/scratch1/kavoss/sims_fake_V/"
+path<-"/scratch1/kavoss/compare_clone_count/"
 
 get_MSE_median_fam_size<-function(data,df) {
   clone=data[['clones']]
@@ -156,7 +157,8 @@ MSE_clones_num_fam<-ggplot(combined, aes(clones,MSE_num_fam, fill=tool)) +
   geom_boxplot()+
   scale_x_discrete(limits = unique(combined$clones))+
   scale_y_continuous(trans='log10')+
-  ylab("Mean Squared Error - Number of Families (log)")
+  ylab("Mean Squared Error - Number of Families (log)")+
+  scale_fill_brewer(palette = "Paired")
 MSE_clones_num_fam
 
 combined$tool <- factor(combined$tool, levels = c("mixcr", "changeo", "scoper_hier","scoper_spec","mptp"))
@@ -203,7 +205,6 @@ one
 MSE_clones_size_fam<-ggplot(combined, aes(clones,MSE_fam_size, fill=tool)) + 
   geom_boxplot()+
   scale_x_discrete(limits = unique(combined$clones))+
-  scale_y_continuous(trans='log10')+
   ylab("Mean Squared Error - Median Family Size (log)")
 MSE_clones_size_fam+
   theme(text = element_text(face = "bold",size = 30))+
